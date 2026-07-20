@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Media Manager — Jacob Fogelhut</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&family=Schibsted+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { background: var(--bg); color: var(--text); }
+    .mm-wrap { max-width: 1120px; margin: 0 auto; padding: clamp(28px, 6vw, 64px) clamp(20px, 5vw, 56px) 140px; }
+
+    .mm-head { border-bottom: 1px solid var(--line); padding-bottom: 26px; margin-bottom: 14px; }
+    .mm-kicker { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+    .mm-title { font-family: var(--font-marker); font-size: clamp(40px, 8vw, 78px); line-height: 1; margin: 12px 0 0; }
+    .mm-lead { color: var(--muted); font-size: 15.5px; max-width: 60ch; margin-top: 16px; line-height: 1.6; }
+    .mm-lead b { color: var(--text); font-weight: 500; }
+    .mm-nav { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 22px; }
+    .mm-nav a {
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--text); border: 1px solid var(--line-strong); border-radius: 100px; padding: 9px 16px;
+      transition: background .25s, color .25s;
+    }
+    .mm-nav a:hover { background: var(--text); color: var(--bg); }
+    .mm-nav a.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .mm-section { margin-top: clamp(40px, 6vw, 64px); }
+    .mm-sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+    .mm-sec-head h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(22px, 3vw, 30px); letter-spacing: -0.01em; }
+    .mm-sec-head .mm-hint { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+
+    .mm-grid { display: grid; gap: clamp(16px, 2.4vw, 26px); }
+    .mm-grid.wide { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+    .mm-grid.banner { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+    .mm-grid.square { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+
+    .mm-card { display: flex; flex-direction: column; gap: 9px; }
+    .mm-card image-slot { width: 100%; }
+    .mm-card .mm-label { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .04em; color: var(--muted); display: flex; gap: 7px; align-items: baseline; line-height: 1.35; }
+    .mm-card .mm-label b { color: var(--text); font-weight: 500; text-transform: none; letter-spacing: 0; font-family: var(--font-body); font-size: 13px; }
+
+    .mm-foot { margin-top: 70px; border-top: 1px solid var(--line); padding-top: 22px; color: var(--muted); font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; }
+
+    /* image-slot empty state tuned to the site palette */
+    image-slot::part(frame) { background: color-mix(in srgb, var(--accent) 9%, var(--surface-2)); }
+
+    /* ---- audio upload section ---- */
+    .mm-audio-drop {
+      border: 1.5px dashed var(--line-strong); border-radius: 14px; padding: 26px;
+      transition: border-color .2s, background .2s; cursor: pointer;
+    }
+    .mm-audio-drop.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 6%, transparent); }
+    .mm-audio-drop-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+    .mm-audio-ic { font-size: 26px; }
+    .mm-audio-cap { font-size: 14px; color: var(--text); }
+    .mm-audio-title {
+      width: min(360px, 100%); font-family: var(--font-body); font-size: 13.5px; padding: 9px 12px;
+      border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--text);
+    }
+    .mm-audio-status { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .04em; text-transform: uppercase; min-height: 14px; color: var(--muted); }
+    .mm-audio-list { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+    .mm-audio-empty { font-family: var(--font-mono); font-size: 11px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+    .mm-audio-row {
+      display: grid; grid-template-columns: 1fr auto minmax(200px, 320px) auto; align-items: center; gap: 14px;
+      padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface);
+    }
+    .mm-audio-row-title { font-size: 13.5px; color: var(--text); }
+    .mm-audio-row-size { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); }
+    .mm-audio-row audio { width: 100%; height: 32px; }
+    .mm-audio-remove {
+      width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--line-strong); background: var(--surface);
+      color: var(--text); font-size: 12px; display: grid; place-items: center;
+    }
+    .mm-audio-remove:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="mm-wrap">
+    <header class="mm-head">
+      <div class="mm-kicker">Behind the scenes</div>
+      <h1 class="mm-title">Media</h1>
+      <p class="mm-lead">
+        Drag photos from your computer onto any slot below — or click to browse.
+        Drops <b>save automatically</b> and appear on your live site instantly.
+        Double-click a filled photo to <b>reframe</b> (drag to pan, corner-drag to zoom).
+        Everything here is permanent and travels with the real site.
+      </p>
+      <nav class="mm-nav">
+        <a class="primary" href="index.html">← Back to site</a>
+        <a href="Playground.html">Playground</a>
+        <a href="media-qa.html">Photo quality check →</a>
+      </nav>
+    </header>
+    <div id="mm-root"></div>
+    <footer class="mm-foot" id="mm-foot">Loading media slots…</footer>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="image-slot.js"></script>
+  <script src="audio-store.js"></script>
+  <script src="media-manager.js"></script>
+</body>
+</html>
