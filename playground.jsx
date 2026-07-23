@@ -784,9 +784,37 @@ function Photos({ onClose, gallery = [] }) {
    Album cover — a draggable polaroid on the desk. Click opens its viewer.
    (Drag vs click distinguished like Obj.)
    ---------------------------------------------------------------------- */
-function AlbumPolaroid({ album, init, z, onOpen, pkey }) {
+/* ----------------------------------------------------------------------
+   PhotoFrame — the single merged desk object (replaces the 4 album
+   polaroids). Shuffle-cycles through every uploaded photo across every
+   album/category, cross-fading every 4s. Hover shows the CURRENT photo's
+   category as a small marker-font caption. Click opens the GalleryViewer.
+   ---------------------------------------------------------------------- */
+function PhotoFrame({ categories, init, z, onOpen, pkey }) {
   const ref = useRef(null);
-  useEffect(() => {const el = ref.current;const p = getPos(pkey, init);el.style.left = p.x + "px";el.style.top = p.y + "px";}, []);
+  useEffect(() => {
+    const el = ref.current;
+    const p = getPos(pkey, init);
+    // re-clamp the resolved (possibly stale-cached, from before the frame's
+    // real ~460px-tall footprint was accounted for) position against the
+    // CURRENT viewport every mount — a cached position from an older/buggier
+    // layout must never be trusted blindly.
+    const x = Math.max(0, Math.min(window.innerWidth - 360, p.x));
+    const y = Math.max(54, Math.min(window.innerHeight - 470, p.y));
+    el.style.left = x + "px";el.style.top = y + "px";
+  }, []);
+  const flat = useMemo(() => {
+    const list = [];
+    categories.forEach((c, ci) => c.photos.forEach((p) => list.push({ src: p, cat: ci })));
+    for (let i = list.length - 1; i > 0; i--) {const j = Math.floor(Math.random() * (i + 1));[list[i], list[j]] = [list[j], list[i]];}
+    return list;
+  }, [categories]);
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    if (flat.length < 2) return;
+    const id = setInterval(() => setIdx((i) => (i + 1) % flat.length), 4000);
+    return () => clearInterval(id);
+  }, [flat.length]);
   const onDown = (e) => {
     e.preventDefault();
     const el = ref.current;el.classList.add("grab");bumpZ(el);
@@ -794,65 +822,208 @@ function AlbumPolaroid({ album, init, z, onOpen, pkey }) {
     const sx = e.clientX,sy = e.clientY,ox = r.left,oy = r.top;let moved = 0;
     const move = (ev) => {
       moved += Math.abs(ev.movementX) + Math.abs(ev.movementY);
-      el.style.left = Math.max(0, Math.min(window.innerWidth - 60, ox + ev.clientX - sx)) + "px";
-      el.style.top = Math.max(64, Math.min(window.innerHeight - 80, oy + ev.clientY - sy)) + "px";
+      el.style.left = Math.max(0, Math.min(window.innerWidth - 100, ox + ev.clientX - sx)) + "px";
+      el.style.top = Math.max(64, Math.min(window.innerHeight - 120, oy + ev.clientY - sy)) + "px";
     };
     const up = () => {
       el.classList.remove("grab");
       window.removeEventListener("pointermove", move);window.removeEventListener("pointerup", up);
       savePos(pkey, parseInt(el.style.left, 10) || 0, parseInt(el.style.top, 10) || 0);
-      if (moved < 6) onOpen();
+      if (moved < 6) onOpen({ rect: el.getBoundingClientRect(), photo: cur ? { src: cur.src, cat: cur.cat } : null });
     };
     window.addEventListener("pointermove", move);window.addEventListener("pointerup", up);
   };
-  const n = album.photos.length;
+  const cur = flat[idx];
+  const catName = cur ? categories[cur.cat].name : null;
   return (
-    <div className="obj album-obj" ref={ref} style={{ width: 269, zIndex: z, "--rot": (album.rot || 0) + "deg" }} onPointerDown={onDown}>
+    <div className="obj photoframe-obj" ref={ref} style={{ width: 340, zIndex: z, "--rot": (init.rot || -3) + "deg" }} onPointerDown={onDown}>
       <span className="hint">click to open</span>
-      <div className="pola">
-        <div className="pola-img">
-          {album.cover ? <CroppedImg value={album.cover} /> : <span className="pola-empty">{album.name}</span>}
-          {n > 0 && <span className="pola-count">{n}</span>}
+      <div className="pf-frame">
+        <div className="pf-mat">
+          <div className="pf-photo">
+            {cur ? <CroppedImg key={idx} value={cur.src} /> : <div className="pf-empty">drop photos in the Media Manager</div>}
+          </div>
         </div>
       </div>
-      <div className="pola-cap-hover">{album.name}</div>
+      {catName && <div className="pf-cap-hover">{catName}</div>}
       <ScaleGrip pkey={"objscale:" + pkey} />
     </div>);
+
 }
 
 /* ----------------------------------------------------------------------
-   Album viewer — big hero that AUTO-CYCLES + a thumbnail grid; click a
-   thumbnail to enlarge it (and the auto-cycle continues from there).
+   GalleryViewer — a scrollable visual directory/index, dark + editorial:
+   - a "main player" (like the project-page pattern) up top, holds whatever
+     photo was showing on the desk frame at click-time
+   - a sticky category rail under it (scroll-linked active highlight)
+   - every category stacked below as a card banner (cover photo) + a
+     horizontal-scrolling thumbnail row
+   - clicking a thumbnail/banner opens the shared fullscreen enlarge view
+     (shrinks back to its origin spot on close) and also updates the main
+     player; clicking a category starts a 30s auto-shuffle within it;
+     3 minutes fully idle resumes shuffling across every photo
    ---------------------------------------------------------------------- */
-function AlbumViewer({ album, onClose }) {
-  const photos = album.photos.length ? album.photos : album.cover ? [album.cover] : [];
-  const [i, setI] = useState(0);
-  useEffect(() => {
-    if (photos.length < 2) return;
-    const id = setInterval(() => setI((x) => (x + 1) % photos.length), 3200);
-    return () => clearInterval(id);
-  }, [photos.length, i]); // i in deps → manual click restarts the timer
+function ThumbRow({ photos, onPick }) {
+  const trackRef = useRef(null);
+  const scrollBy = (d) => {const el = trackRef.current;if (el) el.scrollBy({ left: d * 220, behavior: "smooth" });};
   return (
-    <div className="scrim" onPointerDown={(e) => e.target.classList.contains("scrim") && onClose()}>
-      <div className="panel album-panel">
-        <ResizeHandles pkey={"sz-album-" + album.a} min={{ w: 340, h: 320 }} aspect={true} />
-        <button className="p-x" onClick={onClose}>✕</button>
-        <div className="al-head"><b>{album.name}</b><span className="al-sub">{photos.length} photo{photos.length === 1 ? "" : "s"}</span></div>
-        <div className="al-hero">
-          {photos.length ?
-          <CroppedImg key={i} value={photos[i]} /> :
-          <span className="al-empty">no photos yet — add them in the Media Manager</span>}
+    <div className="gv-row">
+      <button className="gv-row-arrow left" onClick={() => scrollBy(-1)} aria-label="Scroll left">‹</button>
+      <div className="gv-row-track" ref={trackRef}>
+        {photos.map((p, i) =>
+        <button key={i} className="gv-thumb" onClick={(e) => onPick(p, i, e.currentTarget)}>
+            <CroppedImg value={p} />
+          </button>
+        )}
+      </div>
+      <button className="gv-row-arrow right" onClick={() => scrollBy(1)} aria-label="Scroll right">›</button>
+    </div>);
+
+}
+
+function GalleryViewer({ categories, fromPhoto, fromRect, onClose }) {
+  const [closing, setClosing] = useState(false);
+  const [cat, setCat] = useState(fromPhoto ? fromPhoto.cat : Math.max(0, categories.findIndex((c) => c.photos.length)));
+  const [main, setMain] = useState(fromPhoto || { src: null, cat: 0 });
+  const [mode, setMode] = useState("hold"); // hold | shuffle-cat | shuffle-all
+  const [mainAspect, setMainAspect] = useState(1);
+  const [enlarge, setEnlarge] = useState(null); // {idx, originRect} or null — always over the FULL flat photo list
+  const [enlargeClosing, setEnlargeClosing] = useState(false);
+  const lastInteract = useRef(Date.now());
+  const mainRef = useRef(null);
+
+  const flat = useMemo(() => {
+    const list = [];
+    categories.forEach((c, ci) => c.photos.forEach((p) => list.push({ src: p, cat: ci })));
+    return list;
+  }, [categories]);
+
+  useEffect(() => {
+    if (!main.src) return;
+    const url = typeof main.src === "string" ? main.src : main.src.u;
+    if (!url) return;
+    const img = new Image();
+    img.onload = () => {if (img.naturalWidth && img.naturalHeight) setMainAspect(img.naturalWidth / img.naturalHeight);};
+    img.src = url;
+  }, [main.src]);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (Date.now() - lastInteract.current > 180000 && mode !== "shuffle-all") setMode("shuffle-all");
+    }, 10000);
+    return () => clearInterval(id);
+  }, [mode]);
+
+  useEffect(() => {
+    if (mode !== "shuffle-all" || !flat.length) return;
+    const id = setInterval(() => setMain(flat[Math.floor(Math.random() * flat.length)]), 4000);
+    return () => clearInterval(id);
+  }, [mode, flat]);
+
+  useEffect(() => {
+    if (mode !== "shuffle-cat") return;
+    const photos = categories[cat].photos;
+    if (!photos.length) return;
+    const id = setInterval(() => setMain({ src: photos[Math.floor(Math.random() * photos.length)], cat }), 30000);
+    return () => clearInterval(id);
+  }, [mode, cat, categories]);
+
+  const touch = () => {lastInteract.current = Date.now();};
+  const pickThumb = (src, ci) => {touch();setMode("hold");setMain({ src, cat: ci });};
+  const pickCategory = (ci) => {
+    touch();setCat(ci);setMode("shuffle-cat");
+    setMain({ src: categories[ci].photos[0] || null, cat: ci });
+  };
+
+  const openEnlarge = (photo, originEl) => {
+    touch();
+    const idx = flat.findIndex((f) => f.src === photo);
+    if (idx < 0) return;
+    setEnlarge({ idx, originRect: originEl ? originEl.getBoundingClientRect() : null });
+  };
+  const closeEnlarge = () => {
+    setEnlargeClosing(true);
+    setTimeout(() => {setEnlarge(null);setEnlargeClosing(false);}, 240);
+  };
+  const navEnlarge = (d) => setEnlarge((p) => p && { idx: (p.idx + d + flat.length) % flat.length, originRect: null });
+  const jumpEnlarge = (idx) => setEnlarge((p) => p && { idx, originRect: null });
+  const requestClose = () => {setClosing(true);setTimeout(onClose, 280);};
+
+  // keyboard nav — only while the fullscreen enlarge view is open
+  useEffect(() => {
+    if (!enlarge) return;
+    const onKey = (e) => {
+      if (e.key === "ArrowLeft") navEnlarge(-1);
+      else if (e.key === "ArrowRight") navEnlarge(1);
+      else if (e.key === "Escape" || e.key === "f" || e.key === "F") closeEnlarge();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [enlarge, flat.length]);
+
+  const panelStyle = fromRect ? {
+    "--fx": fromRect.left + fromRect.width / 2 - window.innerWidth / 2 + "px",
+    "--fy": fromRect.top + fromRect.height / 2 - window.innerHeight / 2 + "px",
+    "--fs": Math.max(fromRect.width / Math.min(760, window.innerWidth * 0.92), 0.15)
+  } : {};
+  const enlargeStyle = (() => {
+    const r = enlarge && enlarge.originRect;
+    if (!r) return {};
+    const bigW = Math.min(900, window.innerWidth * 0.88), bigH = Math.min(720, window.innerHeight * 0.78);
+    return {
+      "--ox": r.left + r.width / 2 - window.innerWidth / 2 + "px",
+      "--oy": r.top + r.height / 2 - window.innerHeight / 2 + "px",
+      "--os": Math.max(r.width / bigW, r.height / bigH, 0.12)
+    };
+  })();
+  const curPhotos = categories[cat].photos;
+  const curEnlarged = enlarge ? flat[enlarge.idx] : null;
+
+  return (
+    <div className={`gv-scrim ${closing ? "closing" : ""}`} onPointerDown={(e) => e.target.classList.contains("gv-scrim") && requestClose()}>
+      <div className={`gv-panel ${closing ? "closing" : ""}`} style={panelStyle}>
+        <button className="gv-x" onClick={requestClose} aria-label="Close">✕</button>
+
+        <button className="gv-main" ref={mainRef} style={{ "--asp": mainAspect }}
+        onClick={(e) => main.src && openEnlarge(main.src, e.currentTarget)}>
+          {main.src ? <CroppedImg key={typeof main.src === "string" ? main.src : main.src.u} value={main.src} /> : <div className="gv-main-empty">no photos yet — add them in the Media Manager</div>}
+        </button>
+
+        <div className="gv-cats-grid">
+          {categories.map((c, i) =>
+          <div className="gv-section" key={i}>
+              <button className={`gv-banner-sm ${cat === i ? "on" : ""}`} onClick={() => pickCategory(i)}>
+                <div className="gv-banner-sm-pic">
+                  {c.photos[0] ? <CroppedImg value={c.photos[0]} /> : <div className="gv-banner-sm-empty" />}
+                </div>
+                <span className="gv-banner-sm-name">{c.name}</span>
+              </button>
+              {c.photos.length ?
+            <div className="gv-row gv-row-fade">
+                  <ThumbRow photos={c.photos} onPick={(src) => pickThumb(src, i)} />
+                </div> :
+
+            <div className="gv-section-empty">no photos yet</div>}
+            </div>
+          )}
         </div>
-        {photos.length > 1 &&
-        <div className="al-strip">
-            {photos.map((p, idx) =>
-          <button key={idx} className={`al-thumb ${idx === i ? "on" : ""}`} onClick={() => setI(idx)}>
-                <CroppedImg value={p} />
+      </div>
+      {enlarge && curEnlarged &&
+      <div className={`gv-enlarge ${enlargeClosing ? "closing" : ""}`} onPointerDown={(e) => e.target.classList.contains("gv-enlarge") && closeEnlarge()}>
+          <button className="gv-nav gv-prev" onClick={() => navEnlarge(-1)} aria-label="Previous">‹</button>
+          <div className="gv-big" style={enlargeStyle} key={enlarge.idx}><CroppedImg value={curEnlarged.src} /></div>
+          <button className="gv-nav gv-next" onClick={() => navEnlarge(1)} aria-label="Next">›</button>
+          <button className="gv-x gv-x2" onClick={closeEnlarge} aria-label="Close enlarged view (Esc / F)">✕</button>
+          <div className="gv-fs-strip">
+            {flat.map((f, i) =>
+          <button key={i} className={`gv-fs-thumb ${i === enlarge.idx ? "on" : ""}`} onClick={() => jumpEnlarge(i)} aria-label={`Photo ${i + 1}`}>
+                <CroppedImg value={f.src} />
               </button>
           )}
-          </div>}
-      </div>
+          </div>
+        </div>}
     </div>);
+
 }
 
 /* ----------------------------------------------------------------------
@@ -862,9 +1033,9 @@ function layout() {
   const W = window.innerWidth,H = window.innerHeight;
   const clampX = (x) => Math.max(20, Math.min(W - 180, x));
   const clampY = (y) => Math.max(96, Math.min(H - 210, y));
-  // bigger polaroids (336px) need more room so they don't run off-screen
-  const clampAX = (x) => Math.max(20, Math.min(W - 290, x));
-  const clampAY = (y) => Math.max(96, Math.min(H - 330, y));
+  // taller 4:5 portrait frame (~460px incl. border/mat/caption) needs a bigger budget than the old square album footprint
+  const clampAX = (x) => Math.max(20, Math.min(W - 360, x));
+  const clampAY = (y) => Math.max(96, Math.min(H - 470, y));
   return {
     monitor: { x: clampX(W * 0.5 - 75), y: clampY(H * 0.30) },
     radio: { x: clampX(W * 0.16), y: clampY(H * 0.58) },
@@ -875,12 +1046,7 @@ function layout() {
     squiggle: { x: clampX(W * 0.24), y: clampY(H * 0.28) },
     liveNote: { x: Math.max(16, W * 0.04), y: 88 },
     liveGuest: { x: Math.max(16, Math.min(W - 360, W * 0.63)), y: 88 },
-    albums: [
-    { x: clampAX(W * 0.06), y: clampAY(H * 0.54), rot: -4 },
-    { x: clampAX(W * 0.30), y: clampAY(H * 0.60), rot: 3 },
-    { x: clampAX(W * 0.06), y: clampAY(H * 0.20), rot: 5 },
-    { x: clampAX(W * 0.30), y: clampAY(H * 0.24), rot: -2 }]
-
+    frame: { x: clampAX(W * 0.40), y: clampAY(H * 0.34), rot: -3 }
   };
 }
 
@@ -1020,19 +1186,18 @@ function Playground() {
   const [t, setTweak] = useTweaks(PG_DEFAULTS, "jf-tweaks-pg");
   const [pos] = useState(layout); // computed once
   const [overlay, setOverlay] = useState(null); // (unused legacy modals)
-  const [albumOpen, setAlbumOpen] = useState(null); // album object or null
+  const [galleryOpen, setGalleryOpen] = useState(null); // fromRect (or true) or null
   const [fontOpen, setFontOpen] = useState(true); // font story panel open (#4)
   const [liveGuest, setLiveGuest] = useState(true); // guestbook open on the desk (#9)
   const [xp, setXp] = useState(true); // computer window is always open by default now
   const player = window.usePlayer();
   const slots = useMediaSlots();
-  const albums = useMemo(() => {
+  const categories = useMemo(() => {
+    const names = PG.galleryCategoryNames || PG.albumNames || [];
     const out = [];
-    const names = PG.albumNames || [];
     for (let a = 0; a < 4; a++) {
-      const cover = window.MediaSlots.crop(slots, "alb:" + a + ":cover");
       const photos = window.MediaSlots.collectCrops(slots, "alb:" + a + ":", 5);
-      if (cover || photos.length) out.push({ a, name: names[a] || ("album " + (a + 1)), cover: cover || photos[0] || null, photos });
+      out.push({ a, name: names[a] || ("category " + (a + 1)), photos });
     }
     return out;
   }, [slots]);
@@ -1076,9 +1241,7 @@ function Playground() {
         {liveGuest ?
         <LiveGuest init={pos.liveGuest} z={11} pkey="guest" onMin={() => setLiveGuest(false)} /> :
         <Obj kind="guestbook" label="guestbook" hint="open" size={128} init={pos.liveGuest} z={8} pkey="guest" onClick={() => setLiveGuest(true)} plainTag />}
-        {albums.map((al) =>
-        <AlbumPolaroid key={al.a} album={{ ...al, rot: pos.albums[al.a].rot }} init={pos.albums[al.a]} z={9} pkey={"album:" + al.a} onOpen={() => setAlbumOpen(al)} />
-        )}
+        <PhotoFrame categories={categories} init={pos.frame} z={9} pkey="frame" onOpen={(r) => setGalleryOpen(r || true)} />
       </div>
 
       <div className="pg-top">
@@ -1091,7 +1254,7 @@ function Playground() {
 
       {overlay === "notebook" && <Notebook marker={t.markerNotes} onClose={() => setOverlay(null)} />}
       {overlay === "guestbook" && <Guestbook onClose={() => setOverlay(null)} />}
-      {albumOpen && <AlbumViewer album={albumOpen} onClose={() => setAlbumOpen(null)} />}
+      {galleryOpen && <GalleryViewer categories={categories} fromPhoto={galleryOpen && galleryOpen.photo} fromRect={galleryOpen && galleryOpen.rect} onClose={() => setGalleryOpen(null)} />}
       {xp && <ComputerWindow onExit={() => setXp(false)} marker={t.markerNotes} wallpaper={t.wallpaper} wallpaperCrop={wallPick} />}
 
       <TweaksPanel>
