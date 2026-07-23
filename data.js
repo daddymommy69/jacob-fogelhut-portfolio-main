@@ -140,9 +140,12 @@ window.PORTFOLIO_DATA = {
        The downloadable file is fonts/jacob-custom.otf (offered as
        "Lloyd Fogelhut.otf"). Original-handwriting scan = slot "font:scan".
        ---------------------------------------------------------------------- */
-    /* Album names shown on the desk hover label, the album viewer, and the
-       Media Manager section headers. Add/remove entries to change album count. */
+    /* Album names shown in the Media Manager section headers (upload-side
+       organization, unchanged). Gallery-facing category labels are separate
+       (see galleryCategoryNames) so the desk/gallery can use different names
+       than the raw upload sections. */
     albumNames: ["Berlin", "Vietnam", "Food", "Me"],
+    galleryCategoryNames: ["Europe", "Asia", "Food", "Me"],
 
     fontStory: {
       title: "My Dads Handwriting",
