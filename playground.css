@@ -1,5 +1,5 @@
 /* =====================================================================
-   PLAYGROUND — Jacob's desk. Draggable objects you can also click.
+   PLAYGROUND â€” Jacob's desk. Draggable objects you can also click.
    The computer monitor opens a little Windows-XP (2004) desktop.
    Art style switches via [data-desk]: "lineart" | "marker" | "color".
    Shares @font-face (JacobMarker) + tokens from styles.css.
@@ -90,7 +90,7 @@
   transform: scale(var(--obj-scale, 1)); transform-origin: center center;
   transition: filter .2s;
 }
-/* 8 resize zones (4 corners + 4 edges) on a desk object — proportional
+/* 8 resize zones (4 corners + 4 edges) on a desk object â€” proportional
    scaling. INVISIBLE: no markers/guides, only the resize cursor shows on hover */
 .objrz { position: absolute; inset: -7px; z-index: 5; pointer-events: none; }
 .objrzh { position: absolute; pointer-events: auto; touch-action: none; }
@@ -192,7 +192,7 @@
 .winamp-skin .rb-note { color: #3a3f4dbb; }
 
 /* =====================================================================
-   SCENE PANELS (notebook / guestbook / photos) — centered modals
+   SCENE PANELS (notebook / guestbook / photos) â€” centered modals
    ===================================================================== */
 .scrim { position: fixed; inset: 0; z-index: 70; background: rgba(20,16,10,.45); display: grid; place-items: center; padding: 20px; animation: fade .25s; }
 @keyframes fade { from { opacity: 0; } }
@@ -224,7 +224,7 @@
 .notebook textarea.plain { font-family: var(--font-mono, monospace); font-size: 15px; line-height: 32px; color: #2a2118; }
 .notebook .nb-foot { padding: 8px 16px 12px; font-family: var(--font-mono, monospace); font-size: 9px; letter-spacing: .08em; color: #8a7f63; text-transform: uppercase; }
 
-/* guestbook — cork board with sticky notes */
+/* guestbook â€” cork board with sticky notes */
 .gboard {
   background: #c79a4e; border: 2px solid #1b1a16; border-radius: 4px; box-shadow: 8px 8px 0 #1b1a16;
   background-image: radial-gradient(#00000018 1px, transparent 1.5px); background-size: 9px 9px;
@@ -267,49 +267,114 @@
 .photo-nav button:hover { background: #ffffff44; }
 .photo-nav .pn-count { font-family: var(--font-mono, monospace); font-size: 11px; letter-spacing: .1em; color: #fff; }
 
-/* ---- album cover polaroids on the desk ---- */
-.album-obj { --rot: 0deg; }
-.album-obj .pola {
+/* ---- merged photo frame (ornate gold) on the desk ---- */
+.photoframe-obj { --rot: -3deg; }
+.pf-frame {
   width: 100%; box-sizing: border-box;
-  background: #fff; padding: 8px 8px 24px; border: 1px solid #00000022;
-  box-shadow: 2px 6px 14px -5px rgba(0,0,0,.4);
-  transform: rotate(var(--rot)); transition: transform .2s var(--ease, ease);
+  padding: 16px; border-radius: 4px;
+  background: linear-gradient(135deg, #e6c674, #a3792f 35%, #6b4f1e 55%, #d4af5a 75%, #8a651f);
+  box-shadow: inset 0 0 0 2px #4a3512, inset 0 0 14px rgba(0,0,0,.5), 3px 8px 20px -8px rgba(0,0,0,.5);
+  transform: rotate(0deg); transition: transform .25s var(--ease, ease);
 }
-.album-obj:hover .pola { transform: rotate(0deg) translateY(-3px); }
-.pola-cap-hover {
+.photoframe-obj:hover .pf-frame { transform: rotate(var(--rot)) translateY(-3px); }
+.pf-mat { width: 100%; box-sizing: border-box; padding: 10px; background: #f6f1e4; box-shadow: inset 0 0 0 1px #d8cfbe; }
+.pf-photo { position: relative; aspect-ratio: 4/5; overflow: hidden; background: #d8cfbe; }
+.pf-photo .cropimg { width: 100%; height: 100%; animation: fade .6s; }
+.pf-empty { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; text-align: center; font-family: var(--font-mono, monospace); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: #8a7f6b; }
+.pf-cap-hover {
   position: absolute; left: 50%; bottom: -26px; transform: translateX(-50%);
   font-family: "JacobMarker", serif; font-size: 20px; color: #2a2118;
   opacity: 0; pointer-events: none; transition: opacity .2s var(--ease, ease); white-space: nowrap;
 }
-.album-obj:hover .pola-cap-hover { opacity: 1; }
-.pola-img { position: relative; aspect-ratio: 1/1; overflow: hidden; background: #d8cfbe; }
-.pola-img .cropimg { width: 100%; height: 100%; }
-.pola-empty { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-mono, monospace); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #8a7f6b; }
-.pola-count {
-  position: absolute; top: 6px; right: 6px; min-width: 18px; height: 18px; padding: 0 5px;
-  display: grid; place-items: center; background: rgba(27,26,22,.78); color: #fff;
-  font-family: var(--font-mono, monospace); font-size: 10px; border-radius: 999px;
-}
+.photoframe-obj:hover .pf-cap-hover { opacity: 1; }
 
-/* ---- album viewer (auto-cycle hero + thumbnail grid) ---- */
-.album-panel {
-  width: min(680px, 94vw); background: #f7f5ef; border: 1px solid #1b1a16; border-radius: 10px;
-  padding: 18px; box-shadow: 0 24px 60px -20px rgba(0,0,0,.6);
+/* ---- gallery viewer: scrollable visual directory, dark + editorial ---- */
+.gv-scrim {
+  position: fixed; inset: 0; z-index: 220; background: rgba(6,6,8,.88); backdrop-filter: blur(6px);
+  display: grid; place-items: center; animation: gvfade .25s ease;
 }
-.al-head { display: flex; align-items: baseline; gap: 12px; padding-right: 40px; }
-.al-head b { font-family: "JacobMarker", serif; font-size: 26px; color: #1b1a16; }
-.al-sub { font-family: var(--font-mono, monospace); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #8a7f6b; }
-.al-hero { margin-top: 12px; aspect-ratio: 4/3; background: #d8cfbe; border-radius: 6px; overflow: hidden; }
-.al-hero .cropimg { width: 100%; height: 100%; animation: fade .45s; }
-.al-empty { display: grid; place-items: center; height: 100%; font-family: var(--font-mono, monospace); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #8a7f6b; text-align: center; padding: 20px; }
-.al-strip { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
-.al-thumb { width: 62px; height: 62px; border-radius: 4px; overflow: hidden; border: 2px solid transparent; padding: 0; background: #d8cfbe; cursor: pointer; transition: border-color .15s, transform .15s; }
-.al-thumb:hover { transform: translateY(-2px); }
-.al-thumb.on { border-color: #e8624a; }
-.al-thumb .cropimg { width: 100%; height: 100%; }
+.gv-scrim.closing { animation: gvfade .28s ease reverse; }
+@keyframes gvfade { from { opacity: 0; } to { opacity: 1; } }
+.gv-panel {
+  --fx: 0px; --fy: 0px; --fs: 1;
+  position: relative; width: min(680px, 92vw); max-height: 90vh; overflow-y: auto;
+  background: #131316; border-radius: 12px; padding: 22px 24px 26px; box-shadow: 0 40px 100px -30px rgba(0,0,0,.8);
+  animation: gvzoom .38s cubic-bezier(.22,.61,.36,1);
+  display: block;
+}
+.gv-panel.closing { animation: gvzoom .28s cubic-bezier(.4,0,1,1) reverse; }
+@keyframes gvzoom {
+  from { transform: translate(var(--fx), var(--fy)) scale(var(--fs)); opacity: .4; }
+  to { transform: translate(0, 0) scale(1); opacity: 1; }
+}
+.gv-x { position: absolute; top: 16px; right: 16px; z-index: 6; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.08); color: #fff; font-size: 13px; display: grid; place-items: center; }
+.gv-x:hover { background: rgba(255,255,255,.18); }
+
+.gv-banners { display: flex; gap: 10px; flex-wrap: wrap; padding-right: 40px; }
+.gv-cats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 22px; margin-top: 18px; }
+.gv-section { padding-top: 14px; border-top: 1px solid rgba(255,255,255,.08); }
+.gv-banner-sm { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; padding: 0; border: 0; background: none; cursor: pointer; }
+.gv-banner-sm-pic { width: 66px; height: 66px; border-radius: 8px; overflow: hidden; background: #232326; box-shadow: 0 0 0 2px transparent; transition: box-shadow .15s, transform .15s; }
+.gv-banner-sm:hover .gv-banner-sm-pic { transform: translateY(-2px); }
+.gv-banner-sm.on .gv-banner-sm-pic { box-shadow: 0 0 0 2px #fff; }
+.gv-banner-sm-pic .cropimg { width: 100%; height: 100%; }
+.gv-banner-sm-empty { width: 100%; height: 100%; background: rgba(255,255,255,.06); }
+.gv-banner-sm-name { font-family: "JacobMarker", serif; font-size: 22px; color: rgba(255,255,255,.75); line-height: 1; }
+.gv-banner-sm.on .gv-banner-sm-name { color: #fff; }
+
+.gv-main {
+  display: block; margin: 0 auto 6px; width: 100%; max-width: 100%; height: auto;
+  aspect-ratio: 16/9; border-radius: 10px; overflow: hidden;
+  background: #1c1c20; padding: 0; border: 0; cursor: zoom-in; box-shadow: 0 20px 50px -20px rgba(0,0,0,.7);
+}
+.gv-main .cropimg { width: 100%; height: 100%; animation: fade .5s; }
+.gv-main-empty { display: grid; place-items: center; height: 100%; font-family: var(--font-mono, monospace); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,.4); text-align: center; padding: 20px; }
+
+.gv-row { position: relative; display: flex; align-items: center; gap: 5px; }
+.gv-row-fade { animation: gvrowfade .35s ease; }@keyframes gvrowfade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.gv-row-track { display: flex; gap: 5px; overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; padding: 2px; }
+.gv-row-track::-webkit-scrollbar { display: none; }
+.gv-thumb {
+  flex: none; width: 21px; height: 21px; border-radius: 3px; overflow: hidden; padding: 0; border: 0; background: #232326;
+  cursor: pointer; transition: transform .15s ease;
+}
+.gv-thumb:hover { transform: translateY(-2px) scale(1.15); }
+.gv-thumb .cropimg { width: 100%; height: 100%; }
+.gv-row-arrow { display: none; }
+.gv-section-empty { padding: 8px 4px; font-family: var(--font-mono, monospace); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: rgba(255,255,255,.35); }
+
+.gv-enlarge {
+  position: fixed; inset: 0; z-index: 240; background: rgba(4,4,6,.94); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
+  animation: gvfade .2s ease;
+}
+.gv-enlarge.closing { animation: gvfade .22s ease reverse; }
+.gv-big {
+  --ox: 0px; --oy: 0px; --os: 1;
+  width: min(900px, 88vw); height: min(640px, 68vh); border-radius: 6px; overflow: hidden;
+  animation: gvbig .3s cubic-bezier(.22,.61,.36,1); box-shadow: 0 40px 100px -30px rgba(0,0,0,.8);
+}
+.gv-enlarge.closing .gv-big { animation: gvbig .24s cubic-bezier(.4,0,1,1) reverse; }
+@keyframes gvbig { from { opacity: 0; transform: translate(var(--ox), var(--oy)) scale(var(--os)); } to { opacity: 1; transform: translate(0, 0) scale(1); } }
+.gv-big .cropimg { width: 100%; height: 100%; }
+.gv-nav {
+  position: absolute; top: 46%; transform: translateY(-50%); width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(255,255,255,.08); color: #fff; font-size: 22px; display: grid; place-items: center;
+}
+.gv-nav:hover { background: rgba(255,255,255,.18); }
+.gv-prev { left: 24px; } .gv-next { right: 24px; }
+.gv-x2 { position: absolute; top: 24px; right: 24px; }
+.gv-fs-strip { display: flex; gap: 6px; max-width: 90vw; overflow-x: auto; padding: 4px; scrollbar-width: none; }
+.gv-fs-strip::-webkit-scrollbar { display: none; }
+.gv-fs-thumb {
+  flex: none; width: 44px; height: 44px; border-radius: 4px; overflow: hidden; padding: 0; border: 0; background: #232326;
+  cursor: pointer; opacity: .55; transition: opacity .15s, transform .15s;
+}
+.gv-fs-thumb:hover { opacity: .85; transform: translateY(-2px); }
+.gv-fs-thumb.on { opacity: 1; box-shadow: 0 0 0 2px #fff; }
+.gv-fs-thumb .cropimg { width: 100%; height: 100%; }
 
 /* =====================================================================
-   WINDOWS-XP DESKTOP (opens from the monitor) — full overlay
+   WINDOWS-XP DESKTOP (opens from the monitor) â€” full overlay
    ===================================================================== */
 .xp { position: fixed; inset: 0; z-index: 90; overflow: hidden; animation: xpin .4s cubic-bezier(.22,.61,.36,1); display: flex; flex-direction: column; }
 .xp.xp-win { position: absolute; inset: 0; z-index: 1; border-radius: 0; animation: none; }
@@ -332,7 +397,7 @@
     radial-gradient(46px 17px at 78% 20%, #ffffff99, transparent 70%);
 }
 .pg-body[data-wall="cycle"] .xp-wall { background-size: cover; background-position: center; }
-/* uploaded wallpaper photo — sits ABOVE the painted bliss hills/clouds */
+/* uploaded wallpaper photo â€” sits ABOVE the painted bliss hills/clouds */
 .xp-wall-photo { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
 .xp-wall-photo .cropimg { width: 100%; height: 100%; }
 
@@ -582,10 +647,10 @@
 .fc-bar b { font-family: "JacobMarker", serif; font-size: 21px; line-height: 1; }
 .fc-bar .dc-min { margin-left: auto; }
 .fc-body { position: relative; flex: 1; min-height: 0; }
-/* blurred dad photo behind the content — two layers: a mostly-sharp base,
-   and a more-blurred copy masked to fade in top→bottom (via --fc-grad-start),
+/* blurred dad photo behind the content â€” two layers: a mostly-sharp base,
+   and a more-blurred copy masked to fade in topâ†’bottom (via --fc-grad-start),
    so the top of the panel stays clearer and the bottom gets softer for text.
-   All four knobs are Tweak-controlled (also editable via the ⚙ mini panel). */
+   All four knobs are Tweak-controlled (also editable via the âš™ mini panel). */
 .fc-bg { position: absolute; inset: 0; overflow: hidden; }
 .fc-bg-sharp, .fc-bg-blur { position: absolute; inset: 0; overflow: hidden; }
 .fc-bg-sharp .cropimg, .fc-bg-blur .cropimg { width: 100%; height: 100%; object-fit: cover; transform: scale(1.08); }
