@@ -144,10 +144,10 @@
     const name = albumNames[a] || ("Album " + (a + 1));
     const cards = [
     card("alb:" + a + ":cover", `<b>${name}</b><span>cover \u00b7 shows on the desk</span>`, { height: 170, shape: "rounded", radius: 3 })];
-    for (let p = 0; p < 5; p++) {
+    for (let p = 0; p < 10; p++) {
       cards.push(card("alb:" + a + ":" + p, `<b>Photo ${p + 1}</b>`, { height: 150, shape: "rounded", radius: 3 }));
     }
-    section(name, "1 cover + 5 photos", "square", cards);
+    section(name, "1 cover + 10 photos", "square", cards);
   }
 
   // 6 ── Desk cutouts (real object photos, transparent PNG) -----------------
