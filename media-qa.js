@@ -67,7 +67,7 @@
     });
     for (let a = 0; a < 4; a++) {
       const slots = [{ id: "alb:" + a + ":cover", name: "Cover" }];
-      for (let p = 0; p < 5; p++) slots.push({ id: "alb:" + a + ":" + p, name: "Photo " + (p + 1) });
+      for (let p = 0; p < 10; p++) slots.push({ id: "alb:" + a + ":" + p, name: "Photo " + (p + 1) });
       groups.push({ title: "Album " + (a + 1), hint: "polaroids", slots });
     }
     groups.push({
