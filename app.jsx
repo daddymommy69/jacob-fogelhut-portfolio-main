@@ -981,7 +981,7 @@ function Teaser({ style }) {
     for (let a = 0; a < 4; a++) {
       const c = window.MediaSlots.crop(slots, "alb:" + a + ":cover");
       if (c) out.push(c);
-      out.push(...window.MediaSlots.collectCrops(slots, "alb:" + a + ":", 5));
+      out.push(...window.MediaSlots.collectCrops(slots, "alb:" + a + ":", 10));
     }
     // de-dupe by data-url
     const seen = new Set();
@@ -1156,7 +1156,7 @@ function App() {
     for (let a = 0; a < 4; a++) {
       const c = window.MediaSlots.url(slots, "alb:" + a + ":cover");
       if (c) play.push(c);
-      play.push(...window.MediaSlots.collect(slots, "alb:" + a + ":", 5));
+      play.push(...window.MediaSlots.collect(slots, "alb:" + a + ":", 10));
     }
     const wall = window.MediaSlots.collect(slots, "wall:", 12);
     let pool;
