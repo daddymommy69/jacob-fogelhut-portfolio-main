@@ -1196,7 +1196,7 @@ function Playground() {
     const names = PG.galleryCategoryNames || PG.albumNames || [];
     const out = [];
     for (let a = 0; a < 4; a++) {
-      const photos = window.MediaSlots.collectCrops(slots, "alb:" + a + ":", 5);
+      const photos = window.MediaSlots.collectCrops(slots, "alb:" + a + ":", 10);
       out.push({ a, name: names[a] || ("category " + (a + 1)), photos });
     }
     return out;
