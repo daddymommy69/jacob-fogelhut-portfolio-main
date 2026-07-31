@@ -50,18 +50,22 @@ window.MediaSlots = (function () {
   }
   function url(map, id) {
     const v = map && map[id];
-    if (!v) return null;
-    const u = typeof v === "string" ? v : v.u;
-    return u && /^data:image\//.test(u) ? u : null;
+    const u = v && (typeof v === "string" ? v : v.u);
+    if (u && /^(data:image\/|https?:\/\/)/.test(u)) return u;
+    const r = window.REMOTE_MEDIA && window.REMOTE_MEDIA[id];
+    if (!r) return null;
+    return typeof r === "string" ? r : r.u;
   }
   // full reframe record {u,s,x,y} for a slot (s=scale, x/y=pan in frame-%).
   // Pre-reframe sidecars stored a bare data-URL string; normalize either shape.
   function crop(map, id) {
     const v = map && map[id];
-    if (!v) return null;
-    const o = typeof v === "string" ? { u: v } : v;
-    if (!o.u || !/^data:image\//.test(o.u)) return null;
-    return { u: o.u, s: o.s || 1, x: o.x || 0, y: o.y || 0 };
+    const o = v && (typeof v === "string" ? { u: v } : v);
+    if (o && o.u && /^(data:image\/|https?:\/\/)/.test(o.u)) return { u: o.u, s: o.s || 1, x: o.x || 0, y: o.y || 0 };
+    const r = window.REMOTE_MEDIA && window.REMOTE_MEDIA[id];
+    if (!r) return null;
+    const ro = typeof r === "string" ? { u: r } : r;
+    return { u: ro.u, s: ro.s || 1, x: ro.x || 0, y: ro.y || 0 };
   }
   // collect every filled url under a prefix (e.g. "intro:" / "wall:" / "gallery:")
   function collect(map, prefix, max = 40) {
