@@ -194,3 +194,111 @@ window.PORTFOLIO_DATA.brands = (() => {
   });
   return [...map.entries()].map(([client, items]) => ({ client, items }));
 })();
+
+/* ------------------------------------------------------------------------
+   REMOTE_MEDIA — permanent Vercel Blob URLs for slots you've uploaded.
+   slots.js falls back to these when there's no locally-dropped (data:image)
+   override, so the deployed static site shows real photos with no local
+   editing step needed. Re-run this block whenever you add more Blob URLs.
+   ------------------------------------------------------------------------ */
+window.REMOTE_MEDIA = {
+  "still:esenes-campaign": {
+    "u": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/SNS%20GUAPDAD/The%20money%20already%20printed.%20So%20buckle%20up%20n%20get%20that%20%F0%9F%92%A9%20my%20beloveds.%20Who%20need%20a%20belt%20thoTo%20show%20ou%20%284%29.jpg",
+    "s": 1,
+    "x": 0,
+    "y": -6.3
+  },
+  "still:esenes-campaign:1": {
+    "u": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/SNS%20GUAPDAD/The%20money%20already%20printed.%20So%20buckle%20up%20n%20get%20that%20%F0%9F%92%A9%20my%20beloveds.%20Who%20need%20a%20belt%20thoTo%20show%20ou%20%285%29.jpg",
+    "s": 1,
+    "x": 0,
+    "y": 21.3
+  },
+  "still:esenes-campaign:2": {
+    "u": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/SNS%20GUAPDAD/The%20money%20already%20printed.%20So%20buckle%20up%20n%20get%20that%20%F0%9F%92%A9%20my%20beloveds.%20Who%20need%20a%20belt%20thoTo%20show%20ou%20%281%29.jpg",
+    "s": 1,
+    "x": 0,
+    "y": 15.2
+  },
+  "still:esenes-campaign:3": {
+    "u": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/SNS%20GUAPDAD/The%20money%201%20.jpg",
+    "s": 1,
+    "x": 0,
+    "y": -26
+  },
+  "still:esenes-campaign:4": {
+    "u": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/SNS%20GUAPDAD/The%20money%20already%20printed.%20So%20buckle%20up%20n%20get%20that%20%F0%9F%92%A9%20my%20beloveds.%20Who%20need%20a%20belt%20thoTo%20show%20ou.jpg",
+    "s": 1,
+    "x": 0,
+    "y": -26
+  },
+  "still:esenes-campaign-video": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/EYEBALL%20MULES/SnapInsta.to_438302740_18312275347195620_839705704249114929_n.jpg",
+  "still:esenes-viral": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/HOLIDAY%20PARTY/SNSBOGOPARTY4.jpg",
+  "still:esenes-event": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/HYPEBEAST%20FLEA/HYPEBEAST%20FLEA%201.jpg",
+  "still:esenes-event:1": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/HYPEBEAST%20FLEA/SnapInsta.to_440941534_18312275386195620_4417222009002327521_n.jpg",
+  "still:esenes-event:2": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/HYPEBEAST%20FLEA/HYPEBEAST%20FLEA%202.JPG",
+  "still:esenes-shoot": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/BRAINIAC%20MULES/ESENES%20X%20BRAVEST%20BRAIN%20MULES.jpg",
+  "still:hyphy-doc": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/GIRBOGO/GIRBOGO.jpg",
+  "still:noise-complaints": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/RNB%20EXPERIENCE%20NC/NOISE%20COMPLAINTS.jpg",
+  "still:noise-complaints:1": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/RNB%20EXPERIENCE%20NC/SACRAMENTO%20TONIGHT%21%20See%20you%20soon%E2%80%A6come%20ready%20%F0%9F%97%A3%EF%B8%8F%20Get%20your%20ticket%20in%20bio%20%F0%9F%92%9BDoors%207-30pm%40reecaps%208p.jpg",
+  "still:justin-park-mv": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/JUSTIN%205A/JUSTIN%20PARK%20ICSTSFH.jpeg",
+  "still:caosmote": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/COMPLEXCON/403097098_18289466236195620_2842022214363690_n.png",
+  "still:caosmote:1": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/COMPLEXCON/402986968_18289466200195620_5719385799644348403_n%202.png",
+  "still:caosmote:2": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/COMPLEXCON/SNSMOTE%20COMPLEXCON.png",
+  "intro:0": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/COMPLEXCON/402986968_18289466200195620_5719385799644348403_n%202.png",
+  "intro:1": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/BRAINIAC%20MULES/ESENES%20X%20BRAVEST%20BRAIN%20MULES.jpg",
+  "intro:2": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/HYPEBEAST%20FLEA/HYPEBEAST%20FLEA%20MAIN.png",
+  "intro:3": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/RNB%20EXPERIENCE%20NC/NOISE%20COMPLAINTS.jpg",
+  "intro:4": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/GIRBOGO/GIRBOGO.jpg",
+  "intro:5": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/HOLIDAY%20PARTY/SNSBOGOPARTY4.jpg",
+  "intro:6": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/SNS%20GUAPDAD/The%20money%20already%20printed.%20So%20buckle%20up%20n%20get%20that%20%F0%9F%92%A9%20my%20beloveds.%20Who%20need%20a%20belt%20thoTo%20show%20ou%20%285%29.jpg",
+  "intro:7": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/JUSTIN%205A/SHADY%20MV.png",
+  "intro:8": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/COMPLEXCON/403097098_18289466236195620_2842022214363690_n.png",
+  "intro:9": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/SNS%20GUAPDAD/The%20money%20already%20printed.%20So%20buckle%20up%20n%20get%20that%20%F0%9F%92%A9%20my%20beloveds.%20Who%20need%20a%20belt%20thoTo%20show%20ou%20%281%29.jpg",
+  "intro:10": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/COMPLEXCON/SNSMOTE%20COMPLEXCON.png",
+  "intro:11": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/COMPLEXCON/403097098_18289466236195620_2842022214363690_n.png",
+  "wall:0": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/COMPUTER%20BG%20PICS/WALLPAPER%201.JPG",
+  "wall:1": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/COMPUTER%20BG%20PICS/WALLPAPER%202.JPG",
+  "wall:2": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/COMPUTER%20BG%20PICS/WALLPAPER%203.JPG",
+  "wall:3": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/VIETNAM/VIETNAM%202.JPG",
+  "wall:4": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/COMPUTER%20BG%20PICS/WALLPAPER%205.JPG",
+  "wall:5": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/BERLIN/BERLIN5.JPG",
+  "alb:0:cover": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/BERLIN/BERLIN%20COVER.JPG",
+  "alb:0:0": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/BERLIN/BERLIN%201.JPG",
+  "alb:0:1": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/BERLIN/BERLIN%202.JPG",
+  "alb:0:2": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/BERLIN/BERLIN%203.JPG",
+  "alb:0:3": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/BERLIN/BERLIN%204.JPG",
+  "alb:0:4": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/BERLIN/BERLIN5.JPG",
+  "alb:1:cover": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/VIETNAM/VIETNAM%20COVER.JPG",
+  "alb:1:0": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/VIETNAM/VIETNAM%201.JPG",
+  "alb:1:1": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/VIETNAM/VIETNAM%202.JPG",
+  "alb:1:2": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/VIETNAM/VIETNAM%203.JPG",
+  "alb:1:3": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/VIETNAM/VIETNAM%204.JPG",
+  "alb:1:4": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/VIETNAM/VIETNAM%205.JPG",
+  "alb:2:cover": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/FOOD/FOOD%20COVER.JPG",
+  "alb:2:0": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/FOOD/FOOD%201.JPG",
+  "alb:2:1": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/FOOD/IMG_4464.JPG",
+  "alb:2:2": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/FOOD/FOOD%203.JPG",
+  "alb:2:3": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/FOOD/FOOD%204.JPG",
+  "alb:2:4": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/FOOD/FOOD%205.JPG",
+  "alb:3:cover": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/WEDDING/WEDDING%20COVER.JPG",
+  "alb:3:0": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/WEDDING/WEDDING%202.JPG",
+  "alb:3:1": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/WEDDING/EDP_Olivia%26Kevin-1207.png",
+  "alb:3:2": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/WEDDING/WEDDING%203.JPG",
+  "alb:3:3": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/WEDDING/WEDDING%204.JPG",
+  "alb:3:4": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/POLAROIDS/WEDDING/EDP_Olivia%26Kevin-1318.HEIC",
+  "font:cover": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/DAD%20FONT/DAD%20FONT%20COVER.png",
+  "font:scan": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/DAD%20FONT/DAD%20FONT%202.JPG",
+  "gallery:esenes-campaign:0": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/SNS%20GUAPDAD/The%20money%20already%20printed.%20So%20buckle%20up%20n%20get%20that%20%F0%9F%92%A9%20my%20beloveds.%20Who%20need%20a%20belt%20thoTo%20show%20ou%20%285%29.jpg",
+  "gallery:esenes-campaign:1": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/SNS%20GUAPDAD/The%20money%20already%20printed.%20So%20buckle%20up%20n%20get%20that%20%F0%9F%92%A9%20my%20beloveds.%20Who%20need%20a%20belt%20thoTo%20show%20ou%20%284%29.jpg",
+  "gallery:esenes-campaign:2": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/SNS%20GUAPDAD/The%20money%20already%20printed.%20So%20buckle%20up%20n%20get%20that%20%F0%9F%92%A9%20my%20beloveds.%20Who%20need%20a%20belt%20thoTo%20show%20ou.jpg",
+  "gallery:esenes-campaign:3": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/SNS%20GUAPDAD/The%20money%201%20.jpg",
+  "gallery:esenes-campaign:4": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/SNS%20GUAPDAD/The%20money%20already%20printed.%20So%20buckle%20up%20n%20get%20that%20%F0%9F%92%A9%20my%20beloveds.%20Who%20need%20a%20belt%20thoTo%20show%20ou%20%281%29.jpg",
+  "gallery:esenes-campaign-video:0": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/HOLIDAY%20PARTY/SNSBOGOPARTY4.jpg",
+  "gallery:esenes-campaign-video:1": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/HOLIDAY%20PARTY/SNSBOGOPARTY2.jpg",
+  "gallery:esenes-event:0": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/HYPEBEAST%20FLEA/HYPEBEAST%20FLEA%201.jpg",
+  "gallery:esenes-event:1": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/HYPEBEAST%20FLEA/HYPEBEAST%20FLEA%202.JPG",
+  "gallery:esenes-event:2": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/HYPEBEAST%20FLEA/HYPEBEAST%20FLEA%20MAIN.png",
+  "gallery:caosmote:0": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/COMPLEXCON/403097098_18289466236195620_2842022214363690_n.png",
+  "gallery:caosmote:1": "https://j9jjnlvirhb1j0tp.public.blob.vercel-storage.com/assets/COMPLEXCON/402986968_18289466200195620_5719385799644348403_n%202.png"
+};
