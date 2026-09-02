@@ -204,7 +204,13 @@
   function videoUrlFor(id, v) {
     if (!v) return null;
     if (v.type === "drop") return vids[id + "::" + v.vid] || null;
-    return v.src || null;
+    // Same PATH + MEDIA_BASE scheme as the image slots (see data.js): a bare
+    // path is joined to the media host, anything already absolute passes
+    // through, so YouTube/Instagram embeds are untouched.
+    const u = v.src || null;
+    if (!u || /^(https?:\/\/|data:|blob:)/.test(u)) return u;
+    const base = (window.MEDIA_BASE || "").replace(/\/$/, "");
+    return base ? base + "/" + u.replace(/^\//, "") : u;
   }
   // legacy: resolve the COVER video's url.
   function videoUrl(id) { return videoUrlFor(id, coverVid(id)); }

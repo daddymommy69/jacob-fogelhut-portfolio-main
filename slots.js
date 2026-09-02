@@ -48,13 +48,23 @@ window.MediaSlots = (function () {
     catch(() => {cache = {};return cache;});
     return p;
   }
+  // REMOTE_MEDIA holds PATHS; MEDIA_BASE holds the host. Anything already
+  // absolute (http/https/data:) is passed through untouched so a half-migrated
+  // map still works.
+  function resolve(u) {
+    if (!u) return null;
+    if (/^(https?:\/\/|data:|blob:)/.test(u)) return u;
+    const base = (window.MEDIA_BASE || "").replace(/\/$/, "");
+    return base ? base + "/" + u.replace(/^\//, "") : u;
+  }
+
   function url(map, id) {
     const v = map && map[id];
     const u = v && (typeof v === "string" ? v : v.u);
     if (u && /^(data:image\/|https?:\/\/)/.test(u)) return u;
     const r = window.REMOTE_MEDIA && window.REMOTE_MEDIA[id];
     if (!r) return null;
-    return typeof r === "string" ? r : r.u;
+    return resolve(typeof r === "string" ? r : r.u);
   }
   // full reframe record {u,s,x,y} for a slot (s=scale, x/y=pan in frame-%).
   // Pre-reframe sidecars stored a bare data-URL string; normalize either shape.
@@ -65,7 +75,7 @@ window.MediaSlots = (function () {
     const r = window.REMOTE_MEDIA && window.REMOTE_MEDIA[id];
     if (!r) return null;
     const ro = typeof r === "string" ? { u: r } : r;
-    return { u: ro.u, s: ro.s || 1, x: ro.x || 0, y: ro.y || 0 };
+    return { u: resolve(ro.u), s: ro.s || 1, x: ro.x || 0, y: ro.y || 0 };
   }
   // collect every filled url under a prefix (e.g. "intro:" / "wall:" / "gallery:")
   function collect(map, prefix, max = 40) {

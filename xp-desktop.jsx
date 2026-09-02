@@ -34,25 +34,70 @@
   );
 
   /* ---------- draggable window ---------- */
-  function XWin({ id, title, icon, z, minimized, onFocus, onClose, onMin, children, init }) {
+  /* Window-control marks drawn on the same 16px grid / 1.6px weight as the
+     desk's icon set, so the XP chrome matches the rest of the playground
+     instead of borrowing Unicode glyphs from three different typefaces. */
+  const XIco = {
+    min: <svg className="xwico" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4.4 11.2 H11.6" /></svg>,
+    close: <svg className="xwico" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4.8 4.8 L11.2 11.2 M11.2 4.8 L4.8 11.2" /></svg>,
+    tidy: <svg className="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true"><rect x="2.4" y="3" width="5.6" height="4.6" rx="1" /><rect x="8.6" y="8.4" width="5" height="4.6" rx="1" /></svg>
+  };
+
+  function XWin({ id, title, icon, z, minimized, onFocus, onClose, onMin, onGeom, children, init }) {
     const ref = useRef(null);
+    /* Every measurement here is against the parent .xp-desk — the computer's
+       SCREEN — not window.innerWidth/innerHeight. The viewport-based version
+       spawned windows off-centre whenever the computer was windowed, and its
+       drag clamp let you pull a window clean out of the computer, where
+       overflow:hidden erased it with no way to get it back. */
+    const host = () => ref.current && ref.current.parentElement;
     useEffect(() => {
-      const el = ref.current;
+      const el = ref.current, p = host();
+      if (!el || !p) return;
+      const W = p.clientWidth, H = p.clientHeight;
+      el.style.maxHeight = Math.max(140, H - 12) + "px";
       const w = el.offsetWidth, h = el.offsetHeight;
-      el.style.left = (init?.x ?? Math.max(20, (window.innerWidth - w) / 2 + (Math.random() * 60 - 30))) + "px";
-      el.style.top = (init?.y ?? Math.max(20, (window.innerHeight - h) / 2 - 30)) + "px";
+      const x = init?.x ?? Math.round((W - w) / 2 + (Math.random() * 44 - 22));
+      const y = init?.y ?? Math.round((H - h) / 2 - 16);
+      el.style.left = Math.max(4, Math.min(Math.max(4, W - w - 4), x)) + "px";
+      el.style.top = Math.max(4, Math.min(Math.max(4, H - h - 4), y)) + "px";
+      onGeom && onGeom();
     }, []);
     const onDown = (e) => {
       if (e.target.closest(".xw-btns")) return;
       onFocus(id);
-      const el = ref.current, bar = e.currentTarget; bar.classList.add("grab");
-      const r = el.getBoundingClientRect();
-      const sx = e.clientX, sy = e.clientY, ox = r.left, oy = r.top;
+      const el = ref.current, p = host(), bar = e.currentTarget; bar.classList.add("grab");
+      const W = p.clientWidth, H = p.clientHeight;
+      const sx = e.clientX, sy = e.clientY, ox = el.offsetLeft, oy = el.offsetTop;
       const move = (ev) => {
-        el.style.left = Math.max(0, Math.min(window.innerWidth - 80, ox + ev.clientX - sx)) + "px";
-        el.style.top = Math.max(0, Math.min(window.innerHeight - 60, oy + ev.clientY - sy)) + "px";
+        const w = el.offsetWidth, h = el.offsetHeight;
+        el.style.left = Math.max(0, Math.min(Math.max(0, W - w), ox + ev.clientX - sx)) + "px";
+        el.style.top = Math.max(0, Math.min(Math.max(0, H - h), oy + ev.clientY - sy)) + "px";
       };
-      const up = () => { bar.classList.remove("grab"); window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
+      const up = () => {
+        bar.classList.remove("grab");
+        window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up);
+        onGeom && onGeom();
+      };
+      window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
+    };
+    /* One bottom-right grip, the way XP did it. The CSS max-width has to be
+       released first or an explicit width past 640px silently does nothing. */
+    const onRz = (e) => {
+      e.preventDefault(); e.stopPropagation(); onFocus(id);
+      const el = ref.current, p = host();
+      const W = p.clientWidth, H = p.clientHeight;
+      const l = el.offsetLeft, t = el.offsetTop;
+      const sx = e.clientX, sy = e.clientY, w0 = el.offsetWidth, h0 = el.offsetHeight;
+      el.style.maxWidth = "none"; el.style.maxHeight = "none";
+      const move = (ev) => {
+        el.style.width = Math.max(240, Math.min(W - l - 4, w0 + ev.clientX - sx)) + "px";
+        el.style.height = Math.max(120, Math.min(H - t - 4, h0 + ev.clientY - sy)) + "px";
+      };
+      const up = () => {
+        window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up);
+        onGeom && onGeom();
+      };
       window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
     };
     return (
@@ -61,11 +106,12 @@
           <span className="xw-ic">{icon}</span>
           <b>{title}</b>
           <span className="xw-btns">
-            <button className="mn" onClick={() => onMin(id)} aria-label="Minimize">_</button>
-            <button className="cl" onClick={() => onClose(id)} aria-label="Close">✕</button>
+            <button className="mn" onClick={() => onMin(id)} title="Minimize" aria-label="Minimize">{XIco.min}</button>
+            <button className="cl" onClick={() => onClose(id)} title="Close" aria-label="Close">{XIco.close}</button>
           </span>
         </div>
         <div className="xw-body">{children}</div>
+        <span className="xw-rz" onPointerDown={onRz} title="Drag to resize" />
       </div>
     );
   }
@@ -171,12 +217,20 @@
 
   function XPDesktop({ onExit, marker, wallpaper, wallpaperCrop, windowed, onRestore }) {
     const [wins, setWins] = useState([]);   // {key, app}
-    const [zTop, setZTop] = useState(10);
     const [clock, setClock] = useState(() => new Date());
+    const [stray, setStray] = useState(false);
+    const deskRef = useRef(null);
+    /* z lives in a ref, not state. The old code called setZTop inside a setWins
+       updater (and read a stale zTop from its closure), so opening several
+       windows in the same tick handed them all the SAME z-index and clicking
+       one no longer reliably brought it to the front. */
+    const zRef = useRef(10);
+    const nextZ = () => ++zRef.current;
     useEffect(() => { const id = setInterval(() => setClock(new Date()), 30000); return () => clearInterval(id); }, []);
 
     const focus = useCallback((key) => {
-      setZTop((z) => { const nz = z + 1; setWins((w) => w.map((x) => x.key === key ? { ...x, z: nz, minimized: false } : x)); return nz; });
+      const nz = nextZ();
+      setWins((w) => w.map((x) => x.key === key ? { ...x, z: nz, minimized: false } : x));
     }, []);
     const open = useCallback((id) => {
       let key = id, app;
@@ -184,12 +238,47 @@
       else if (id.startsWith("img:")) { const p = PG.projects.find((x) => x.id === id.slice(4)); app = imgApp(p); }
       else app = APPS[id];
       if (!app) return;
-      setWins((w) => { const ex = w.find((x) => x.key === key); const nz = zTop + 1; setZTop(nz);
+      const nz = nextZ();
+      setWins((w) => {
+        const ex = w.find((x) => x.key === key);
         if (ex) return w.map((x) => x.key === key ? { ...x, z: nz, minimized: false } : x);
-        return [...w, { key, app, z: nz, minimized: false }]; });
-    }, [zTop]);
+        return [...w, { key, app, z: nz, minimized: false }];
+      });
+    }, []);
     const close = (key) => setWins((w) => w.filter((x) => x.key !== key));
     const min = (key) => setWins((w) => w.map((x) => x.key === key ? { ...x, minimized: true } : x));
+
+    /* Containment keeps windows in, but a window can still end up out of
+       reach if the computer is resized smaller around it — so the tidy button
+       appears only once something is actually stranded. */
+    const checkStray = useCallback(() => {
+      const d = deskRef.current; if (!d) return;
+      const W = d.clientWidth, H = d.clientHeight;
+      const bad = Array.from(d.querySelectorAll(".xwin")).some((w) => {
+        if (w.style.display === "none") return false;
+        return w.offsetLeft < -2 || w.offsetTop < -2 ||
+          w.offsetLeft + w.offsetWidth > W + 2 || w.offsetTop + w.offsetHeight > H + 2;
+      });
+      setStray(bad);
+    }, []);
+    useEffect(() => {
+      const on = () => checkStray();
+      window.addEventListener("resize", on);
+      const id = setInterval(on, 1200);
+      return () => { window.removeEventListener("resize", on); clearInterval(id); };
+    }, [checkStray]);
+    const tidy = () => {
+      const d = deskRef.current; if (!d) return;
+      const W = d.clientWidth, H = d.clientHeight;
+      Array.from(d.querySelectorAll(".xwin")).forEach((w, i) => {
+        w.style.maxWidth = "none";
+        w.style.width = Math.min(w.offsetWidth, Math.max(240, W - 32)) + "px";
+        w.style.height = Math.min(w.offsetHeight, Math.max(120, H - 32)) + "px";
+        w.style.left = Math.min(Math.max(0, W - w.offsetWidth), 16 + i * 24) + "px";
+        w.style.top = Math.min(Math.max(0, H - w.offsetHeight), 16 + i * 24) + "px";
+      });
+      setStray(false);
+    };
 
     const ctx = { open, marker };
     const showPhoto = wallpaper === "cycle" && wallpaperCrop && wallpaperCrop.u;
@@ -199,7 +288,7 @@
         {onRestore && <button className="xp-restore-sq" onClick={onRestore} title="Restore down">▢</button>}
         <div className="xp-wall"></div>
         {showPhoto && <div className="xp-wall-photo"><CroppedImg value={wallpaperCrop} /></div>}
-        <div className="xp-desk">
+        <div className="xp-desk" ref={deskRef}>
           <div className="xp-icons">
             {DESK_ICONS.map((ic) => (
               <button key={ic.id} className="xp-ic" onClick={() => open(ic.id)}>
@@ -210,10 +299,11 @@
           </div>
           {wins.map((w) => (
             <XWin key={w.key} id={w.key} title={w.app.title} icon={w.app.icon} z={w.z} minimized={w.minimized}
-                  onFocus={focus} onClose={close} onMin={min}>
+                  onFocus={focus} onClose={close} onMin={min} onGeom={checkStray}>
               {w.app.body(ctx)}
             </XWin>
           ))}
+          {stray && <button className="xp-tidy" onClick={tidy} title="Bring stranded windows back">{XIco.tidy}tidy windows</button>}
         </div>
         <div className="xp-task">
           <button className="xp-start"><span className="orb"></span>start</button>

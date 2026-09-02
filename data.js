@@ -168,10 +168,10 @@ window.PORTFOLIO_DATA = {
        `tracks:[{title,src}]` array to any mix for in-mix song skipping.
        ---------------------------------------------------------------------- */
     mixes: [
-      { id: "mix-1", title: "103.5 ITS ON THE FLOOR RADIO", src: "media/mixes/mix-1.mp3" },
+      { id: "mix-1", title: "103.5 ITS ON THE FLOOR RADIO", src: "assets/RADIO%20MIXES/103.5%20ITS%20ON%20THE%20FLOOR%201.2.mp3" },
       { id: "mix-2", title: "KWP 730 AM — DHALEED X DJ FUCKER MORNING INSPIRATION", src: "media/mixes/mix-2.mp3" },
-      { id: "mix-4", title: "DJ FUCKER X DHALEED RADIO FRIENDLY", src: "media/mixes/mix-4.mp3" },
-      { id: "mix-3", title: "Mix 03", src: null, pending: true }
+      { id: "mix-4", title: "DJ FUCKER X DHALEED RADIO FRIENDLY", src: "assets/RADIO%20MIXES/DJ%20FUCKER%20X%20DHALEED%20RADIO%20FRIENDLY.mp3" },
+      { id: "mix-3", title: "Mix 03", src: "assets/RADIO%20MIXES/FIRST%20MIX.mp3" }
     ],
 
     // Recycle Bin easter-egg — scrapped ideas, for the lol.
@@ -315,14 +315,6 @@ window.REMOTE_MEDIA = {
   "gallery:esenes-event:2": "assets/HYPEBEAST%20FLEA/HYPEBEAST%20FLEA%20MAIN.png",
   "gallery:caosmote:0": "assets/COMPLEXCON/403097098_18289466236195620_2842022214363690_n.png",
   "gallery:caosmote:1": "assets/COMPLEXCON/402986968_18289466200195620_5719385799644348403_n%202.png",
-  "(hover video) esenes-campaign": "assets/SNS%20GUAPDAD/GUAPDAD%20VIDEO%20COMPRESSED.mp4",
-  "(hover video) esenes-shoot": "assets/BRAINIAC%20MULES/BRAIN%20MULES%20COVER.mov",
-  "(hover video) hyphy-doc": "assets/GIRBOGO/GIRBOGOS%20COVER.mov",
-  "(hover video) noise-complaints": "assets/RNB%20EXPERIENCE%20NC/Karri%2C%20LA%20Show%20Compilation.mov",
-  "(hover video) justin-park-mv": "assets/JUSTIN%205A/JUSTIN%20COVER%20VIDEO.mov",
-  "(audio) mix-1": "assets/RADIO%20MIXES/103.5%20ITS%20ON%20THE%20FLOOR%201.2.mp3",
-  "(audio) mix-2": "assets/RADIO%20MIXES/DJ%20FUCKER%20X%20DHALEED%20RADIO%20FRIENDLY.mp3",
-  "(audio) mix-3": "assets/RADIO%20MIXES/FIRST%20MIX.mp3",
   "gallery:esenes-viral:0": "assets/HOLIDAY%20PARTY/SNSBOGOPARTY4.jpg",
   "gallery:esenes-viral:1": "assets/HOLIDAY%20PARTY/SNSBOGOPARTY2.jpg",
   "gallery:esenes-viral:2": "assets/HOLIDAY%20PARTY/SNSBOGOPARTY3.jpg",

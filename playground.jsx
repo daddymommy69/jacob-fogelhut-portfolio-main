@@ -51,45 +51,151 @@ function MarkerFilter() {
 }
 
 /* ----------------------------------------------------------------------
+   Ico — the window-control icon set. Drawn on ONE 16px grid at ONE stroke
+   weight (1.6px) so every mark matches the 1.5px ring of the button it sits
+   in. Replaces the old Unicode glyphs (\u2715 \u2699 \u25a2 \u21ba), which came from four
+   different typefaces at four different weights and optical sizes — and
+   which sat left-of-centre because the button was centring on one axis only.
+   ---------------------------------------------------------------------- */
+const Ico = {
+  close:
+  <svg className="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+      <path d="M4.6 4.6 L11.4 11.4 M11.4 4.6 L4.6 11.4" />
+    </svg>,
+  min:
+  <svg className="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+      <path d="M4.2 11.2 H11.8" />
+    </svg>,
+  max:
+  <svg className="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true">
+      <rect x="4.2" y="4.6" width="7.6" height="6.8" rx="1.2" />
+    </svg>,
+  gear:
+  <svg className="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+      <circle cx="8" cy="8" r="2.5" />
+      <path d="M8 1.9 V3.4 M8 12.6 V14.1 M1.9 8 H3.4 M12.6 8 H14.1 M3.7 3.7 L4.8 4.8 M11.2 11.2 L12.3 12.3 M12.3 3.7 L11.2 4.8 M4.8 11.2 L3.7 12.3" />
+    </svg>,
+  reset:
+  <svg className="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M4 7.4 A4.3 4.3 0 1 1 4.9 10.9" />
+      <path d="M1.7 4.9 L4 7.4 L6.6 6.5" />
+    </svg>,
+  tidy:
+  <svg className="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true">
+      <rect x="2.4" y="3" width="5.6" height="4.6" rx="1" />
+      <rect x="8.6" y="8.4" width="5" height="4.6" rx="1" />
+    </svg>,
+  pencil:
+  <svg className="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M10.4 2.9 L13.1 5.6 L5.9 12.8 L2.8 13.2 L3.2 10.1 Z" />
+      <path d="M9.1 4.2 L11.8 6.9" />
+    </svg>,
+  copy:
+  <svg className="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden="true">
+      <rect x="5.6" y="2.6" width="7.8" height="7.8" rx="1.4" />
+      <path d="M10.4 13.4 H4.2 a1.6 1.6 0 0 1 -1.6 -1.6 V5.6" />
+    </svg>,
+  tick:
+  <svg className="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3.4 8.6 L6.4 11.6 L12.6 4.8" />
+    </svg>
+};
+
+/* ----------------------------------------------------------------------
+   Font-story copy: editable in place.
+   Edits save to this browser (localStorage) so Jacob can write and reread
+   them live — but the DEPLOYED site reads data.js, so the editor also hands
+   back a paste-ready data.js block. Write here, copy, paste into data.js,
+   push. Nothing here can change what a visitor sees on its own.
+   ---------------------------------------------------------------------- */
+const FS_KEY = "jf-fontstory-edits";
+function fsLoad() {
+  try {return JSON.parse(localStorage.getItem(FS_KEY) || "{}");} catch (e) {return {};}
+}
+function fsSave(o) {
+  try {localStorage.setItem(FS_KEY, JSON.stringify(o));} catch (e) {}
+}
+const FS_FIELDS = [
+  { k: "title", label: "Title", rows: 1 },
+  { k: "maker", label: "Handwriting by", rows: 1 },
+  { k: "story", label: "The story", rows: 12 },
+  { k: "sample", label: "Alphabet sample", rows: 2 },
+  { k: "previewPlaceholder", label: "\"Try it\" placeholder", rows: 1 }];
+
+function FontCopyEditor({ base, edits, setField, onClose, onRevert }) {
+  const [copied, setCopied] = useState(false);
+  const merged = { ...base, ...edits };
+  const snippet = "fontStory: {\n" + FS_FIELDS.map((f) =>
+  "  " + f.k + ": " + JSON.stringify(merged[f.k] || "") + ",").join("\n") + "\n}";
+  const copy = async () => {
+    try {await navigator.clipboard.writeText(snippet);} catch (e) {
+      const ta = document.createElement("textarea");ta.value = snippet;document.body.appendChild(ta);
+      ta.select();try {document.execCommand("copy");} catch (e2) {}document.body.removeChild(ta);
+    }
+    setCopied(true);setTimeout(() => setCopied(false), 1800);
+  };
+  const stop = (e) => e.stopPropagation();
+  return (
+    <div className="fc-copyeditor" onPointerDown={stop}>
+      <div className="fc-ce-head">
+        <b>edit the words</b>
+        <button className="dc-min" onClick={onClose} title="Close" aria-label="Close">{Ico.close}</button>
+      </div>
+      <div className="fc-ce-fields">
+        {FS_FIELDS.map((f) =>
+        <label key={f.k} className="fc-ce-field">
+            <span>{f.label}</span>
+            <textarea rows={f.rows} value={merged[f.k] || ""} spellCheck={true}
+            onPointerDown={stop} onChange={(e) => setField(f.k, e.target.value)} />
+          </label>
+        )}
+      </div>
+      <div className="fc-ce-foot">
+        <button className="fc-ce-btn" onClick={copy}>{copied ? Ico.tick : Ico.copy}<span>{copied ? "copied" : "copy for data.js"}</span></button>
+        <button className="fc-ce-btn ghost" onClick={onRevert} title="Discard local edits">{Ico.reset}<span>revert</span></button>
+      </div>
+      <div className="fc-ce-note">saved to this browser · paste into data.js to publish</div>
+    </div>);
+
+}
+
+/* ----------------------------------------------------------------------
    Object art (line-art SVGs; CSS recolors per art style)
    ---------------------------------------------------------------------- */
 const Art = {
+  /* Winamp-style radio, REDRAWN simpler: the EQ display is the recognizable
+     element so it stays; the old build also packed a title bar with dots, a
+     seek bar, five transport knobs and two slider rails into 140px, which is
+     what made it read as clunky. Now: frame, title bar, EQ, three buttons.
+     Still marked no-theme — it's a period piece, not a hand-drawn object, so
+     the marker art style must not stamp its uniform stroke over it. */
   radio:
-  <svg viewBox="0 0 140 96" className="no-theme" style={{ filter: "none" }}>
-      {/* independent Winamp-style icon — deliberately NOT themed by the desk art style */}
-      <rect x="4" y="4" width="132" height="88" rx="3" style={{ fill: "#aab3c2", stroke: "#3a3f4d", strokeWidth: 2 }} />
-      <rect x="4" y="4" width="132" height="10" rx="3" style={{ fill: "#5b6b8c", stroke: "#3a3f4d", strokeWidth: 2 }} />
-      <circle cx="11" cy="9" r="1.6" style={{ fill: "#e2e6ee" }} /><circle cx="17" cy="9" r="1.6" style={{ fill: "#e2e6ee" }} />
-      <rect x="118" y="5.5" width="7" height="7" rx="1" style={{ fill: "#e2e6ee", stroke: "#3a3f4d", strokeWidth: 1.2 }} />
-      <rect x="127" y="5.5" width="7" height="7" rx="1" style={{ fill: "#e2e6ee", stroke: "#3a3f4d", strokeWidth: 1.2 }} />
-      <rect x="10" y="18" width="120" height="32" rx="1" style={{ fill: "#0c1f13", stroke: "#08130c", strokeWidth: 1.5 }} />
-      <g style={{ fill: "#39d353" }}>
-        <rect x="15" y="38" width="3.4" height="8" /><rect x="20" y="28" width="3.4" height="18" />
-        <rect x="25" y="33" width="3.4" height="13" /><rect x="30" y="22" width="3.4" height="24" />
-        <rect x="35" y="30" width="3.4" height="16" /><rect x="40" y="40" width="3.4" height="6" />
-        <rect x="45" y="25" width="3.4" height="21" /><rect x="50" y="35" width="3.4" height="11" />
-        <rect x="55" y="20" width="3.4" height="26" /><rect x="60" y="32" width="3.4" height="14" />
-        <rect x="65" y="38" width="3.4" height="8" /><rect x="70" y="24" width="3.4" height="22" />
-        <rect x="75" y="30" width="3.4" height="16" /><rect x="80" y="42" width="3.4" height="4" />
-        <rect x="85" y="27" width="3.4" height="19" /><rect x="90" y="36" width="3.4" height="10" />
-        <rect x="95" y="22" width="3.4" height="24" /><rect x="100" y="33" width="3.4" height="13" />
-        <rect x="105" y="40" width="3.4" height="6" /><rect x="110" y="28" width="3.4" height="18" />
-        <rect x="115" y="35" width="3.4" height="11" /><rect x="120" y="24" width="3.4" height="22" />
+  <svg viewBox="0 0 140 84" className="no-theme" style={{ filter: "none" }}>
+      <rect x="4" y="4" width="132" height="76" rx="3" style={{ fill: "#aab3c2", stroke: "#3a3f4d", strokeWidth: 2 }} />
+      <rect x="4" y="4" width="132" height="11" rx="3" style={{ fill: "#5b6b8c", stroke: "#3a3f4d", strokeWidth: 2 }} />
+      <rect x="11" y="21" width="118" height="30" rx="1" style={{ fill: "#0c1f13", stroke: "#08130c", strokeWidth: 1.5 }} />
+      <g style={{ fill: "#39d353", stroke: "none" }}>
+        <rect x="16.0" y="35.0" width="5.5" height="12" />
+        <rect x="25.5" y="25.0" width="5.5" height="22" />
+        <rect x="35.0" y="30.0" width="5.5" height="17" />
+        <rect x="44.5" y="21.0" width="5.5" height="26" />
+        <rect x="54.0" y="38.0" width="5.5" height="9" />
+        <rect x="63.5" y="27.0" width="5.5" height="20" />
+        <rect x="73.0" y="19.0" width="5.5" height="28" />
+        <rect x="82.5" y="33.0" width="5.5" height="14" />
+        <rect x="92.0" y="23.0" width="5.5" height="24" />
+        <rect x="101.5" y="36.0" width="5.5" height="11" />
+        <rect x="111.0" y="28.0" width="5.5" height="19" />
+        <rect x="120.5" y="22.0" width="5.5" height="25" />
       </g>
-      <rect x="10" y="52" width="120" height="3" rx="1.5" style={{ fill: "#3a3f4d" }} />
-      <circle cx="46" cy="53.5" r="4" style={{ fill: "#e2e6ee", stroke: "#3a3f4d", strokeWidth: 1.5 }} />
-      <g style={{ stroke: "#3a3f4d", strokeWidth: 2, fill: "none" }}>
-        <circle cx="26" cy="66" r="8" /><circle cx="48" cy="66" r="8" /><circle cx="70" cy="66" r="8" /><circle cx="92" cy="66" r="8" /><circle cx="114" cy="66" r="8" />
+      <g style={{ stroke: "#3a3f4d", strokeWidth: 1.8, fill: "none" }}>
+        <circle cx="46" cy="66" r="9" /><circle cx="70" cy="66" r="9" /><circle cx="94" cy="66" r="9" />
       </g>
-      <g style={{ fill: "#3a3f4d" }}>
-        <path d="M22 62 L31 66 L22 70 Z" /><rect x="45" y="62" width="2.6" height="8" /><rect x="50.4" y="62" width="2.6" height="8" />
-        <path d="M74 62 L65 66 L74 70 Z" /><rect x="90" y="62" width="8" height="8" />
-        <path d="M110 62 L119 66 L110 70 Z" />
+      <g style={{ fill: "#3a3f4d", stroke: "none" }}>
+        <path d="M42.6 61.6 L51 66 L42.6 70.4 Z" />
+        <rect x="66.6" y="61.8" width="2.6" height="8.4" /><rect x="71.2" y="61.8" width="2.6" height="8.4" />
+        <path d="M90.2 61.6 L97.6 66 L90.2 70.4 Z" /><rect x="98.4" y="61.6" width="2.4" height="8.8" />
       </g>
-      <rect x="10" y="80" width="46" height="4" rx="2" style={{ fill: "#3a3f4d" }} />
-      <circle cx="30" cy="82" r="3.4" style={{ fill: "#e2e6ee", stroke: "#3a3f4d", strokeWidth: 1.5 }} />
-      <rect x="64" y="80" width="30" height="4" rx="2" style={{ fill: "#3a3f4d" }} />
-      <circle cx="78" cy="82" r="3.4" style={{ fill: "#e2e6ee", stroke: "#3a3f4d", strokeWidth: 1.5 }} />
     </svg>,
 
   headphones:
@@ -196,7 +302,7 @@ function HeadphonesArt({ style, photo, size = 124 }) {
   <img className="hpc-photo" src={photo.u} alt="headphones" draggable={false} /> :
   <span className="hpc-draw">{Art.headphones}</span>;
   return (
-    <div className={`hpc hpc-${style}`} style={{ width: size }}>
+    <div className={`hpc hpv-${style}`} style={{ width: size }}>
       <span className="hpc-paper" />
       <span className="hpc-tape hpc-tape-l" />
       <span className="hpc-tape hpc-tape-r" />
@@ -222,7 +328,7 @@ function HeadphonesArt({ style, photo, size = 124 }) {
    - bumpZ(): classic window behavior — whatever you touch comes to the very
      front. Fixes the font/guestbook panels hiding under dragged icons.
    ---------------------------------------------------------------------- */
-const POSKEY = "jf-pg-pos";
+const POSKEY = "jf-pg-pos-v2";
 let POS_CACHE = null;
 function posAll() {
   if (POS_CACHE) return POS_CACHE;
@@ -232,6 +338,17 @@ function posAll() {
 function getPos(pkey, fallback) {
   const p = pkey && posAll()[pkey];
   return p && typeof p.x === "number" ? p : fallback;
+}
+// true once the visitor has DRAGGED this object themselves — after that, an
+// automatic re-layout must leave it alone. A pin saved on a larger window is
+// ignored rather than clamped: clamping used to drop a stranded object straight
+// on top of whatever now occupies that edge.
+function isPinned(pkey, w = 0, h = 0) {
+  const p = pkey && posAll()[pkey];
+  if (!p || typeof p.x !== "number") return false;
+  const fitsX = p.x >= 0 && p.x + w <= window.innerWidth;
+  const fitsY = p.y >= 54 && p.y + h <= window.innerHeight;
+  return fitsX && fitsY;
 }
 function savePos(pkey, x, y) {
   if (!pkey) return;
@@ -325,12 +442,15 @@ function ScaleGrip({ pkey, min = 0.6, max = 2.5 }) {
     el.style.setProperty("--obj-scale", 1);
   };
   const dirs = ["n", "s", "e", "w", "ne", "nw", "se", "sw"];
+  // Reset is its OWN button, never a double-click on a corner: resizing the
+  // same corner twice in a row reads to the browser as a double-click at that
+  // spot, which silently snapped the object back to default mid-adjustment.
   return (
     <div className="objrz" ref={ref}>
       {dirs.map((d) =>
-      <span key={d} className={`objrzh objrzh-${d}`} onPointerDown={start(d)}
-        onDoubleClick={d.length === 2 ? reset : undefined}
-        title={d.length === 2 ? "Drag to resize \u00b7 double-click to reset" : "Drag to resize"} />)}
+      <span key={d} className={`objrzh objrzh-${d}`} onPointerDown={start(d)} title="Drag to resize" />)}
+      <button type="button" className="objrz-reset" onPointerDown={(e) => e.stopPropagation()}
+        onClick={reset} title="Reset size" aria-label="Reset size">{Ico.reset}</button>
     </div>);
 }
 
@@ -427,7 +547,7 @@ function ResizeHandles({ pkey, min = { w: 300, h: 220 }, aspect = false, def, sc
       <span key={d} className={`rzh rzh-${d}`} onPointerDown={start(d)} title="Drag to resize" />)}
       {!hideReset &&
       <button type="button" className="rz-reset" onPointerDown={(e) => e.stopPropagation()}
-        onClick={reset} title="Reset size">↺ reset size</button>}
+        onClick={reset} title="Reset size" aria-label="Reset size">{Ico.reset}</button>}
     </div>);
 }
 let TOPZ = 30;
@@ -440,11 +560,12 @@ function Obj({ kind, label, hint, size, init, onClick, z, cutout, render, pkey, 
   const ref = useRef(null);
   useEffect(() => {
     const el = ref.current;
+    if (!el) return;
     const p = getPos(pkey, init);
     const x = Math.max(0, Math.min(window.innerWidth - size, p.x));
     const y = Math.max(54, Math.min(window.innerHeight - size - 40, p.y));
     el.style.left = x + "px";el.style.top = y + "px";
-  }, []);
+  }, [init.x, init.y]);
   const onDown = (e) => {
     e.preventDefault();
     const el = ref.current;el.classList.add("grab");bumpZ(el);
@@ -458,8 +579,9 @@ function Obj({ kind, label, hint, size, init, onClick, z, cutout, render, pkey, 
     const up = () => {
       el.classList.remove("grab");
       window.removeEventListener("pointermove", move);window.removeEventListener("pointerup", up);
-      savePos(pkey, parseInt(el.style.left, 10) || 0, parseInt(el.style.top, 10) || 0);
-      if (moved < 6) onClick();
+      // pin ONLY on a real drag; a click just opens the thing
+      if (moved >= 6) savePos(pkey, parseInt(el.style.left, 10) || 0, parseInt(el.style.top, 10) || 0);
+      else onClick();
     };
     window.addEventListener("pointermove", move);window.addEventListener("pointerup", up);
   };
@@ -506,65 +628,6 @@ function RadioBar({ list, idx, onCycle, onShuffle, onClose }) {
 }
 
 /* ----------------------------------------------------------------------
-   Notebook
-   ---------------------------------------------------------------------- */
-function Notebook({ marker, onClose }) {
-  const [text, setText] = useState(() => localStorage.getItem("jf-notebook") || "");
-  useEffect(() => {localStorage.setItem("jf-notebook", text);}, [text]);
-  return (
-    <div className="scrim" onPointerDown={(e) => e.target.classList.contains("scrim") && onClose()}>
-      <div className="panel notebook">
-        <ResizeHandles pkey="sz-notebook" min={{ w: 320, h: 300 }} />
-        <button className="p-x" onClick={onClose}>✕</button>
-        <div className="nb-head"><b>notebook</b></div>
-        <textarea className={marker ? "" : "plain"} value={text} placeholder="write something…" autoFocus
-        onChange={(e) => setText(e.target.value)} />
-        <div className="nb-foot">saves to your device</div>
-      </div>
-    </div>);
-
-}
-
-/* ----------------------------------------------------------------------
-   Guestbook (sticky-note wall)
-   ---------------------------------------------------------------------- */
-function Guestbook({ onClose }) {
-  const [notes, setNotes] = useState([]);
-  const [name, setName] = useState("");
-  const [msg, setMsg] = useState("");
-  const [busy, setBusy] = useState(true);
-  useEffect(() => {gbLoad().then((n) => {setNotes(n);setBusy(false);});}, []);
-  const add = async () => {
-    if (!msg.trim()) return;
-    const next = [{ msg: msg.trim(), by: name.trim() || "a visitor", at: Date.now() }, ...notes].slice(0, 80);
-    setNotes(next);setMsg("");setName("");
-    await gbSave(next);
-  };
-  return (
-    <div className="scrim" onPointerDown={(e) => e.target.classList.contains("scrim") && onClose()}>
-      <div className="panel gboard">
-        <ResizeHandles pkey="sz-guestbook" min={{ w: 340, h: 320 }} />
-        <button className="p-x" onClick={onClose}>✕</button>
-        <div className="gb-head"><b>guestbook</b><span className="gb-status">{gbShared ? "● shared wall" : "● this device"}</span></div>
-        <div className="gb-form">
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="name" style={{ maxWidth: 110 }} />
-          <input value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="leave a note…"
-          onKeyDown={(e) => e.key === "Enter" && add()} />
-          <button onClick={add}>pin</button>
-        </div>
-        <div className="gb-wall">
-          {busy && <div className="gb-empty">loading…</div>}
-          {!busy && notes.length === 0 && <div className="gb-empty">be the first to sign ✶</div>}
-          {notes.map((n, i) =>
-          <div className="gnote" key={n.at + "-" + i}><span className="pin"></span>{n.msg}<span className="by">— {n.by || "a visitor"}</span></div>
-          )}
-        </div>
-      </div>
-    </div>);
-
-}
-
-/* ----------------------------------------------------------------------
    Live desk panels (#9) — notebook + guestbook sit OPEN on the desk,
    draggable by their title bar, with an ✕ to minimize back to an object.
    ---------------------------------------------------------------------- */
@@ -591,7 +654,7 @@ function DeskCard({ className, init, z, title, status, onMin, children, pkey, re
       <div className="dc-bar" onPointerDown={onDown}>
         <b>{title}</b>
         {status && <span className="dc-status">{status}</span>}
-        <button className="dc-min" onPointerDown={(e) => e.stopPropagation()} onClick={onMin} title="Minimize">✕</button>
+        <button className="dc-min" onPointerDown={(e) => e.stopPropagation()} onClick={onMin} title="Close" aria-label="Close">{Ico.close}</button>
       </div>
       <div className="dc-body">{children}</div>
       {resize && <ResizeHandles {...resize} />}
@@ -623,7 +686,7 @@ function LiveGuest({ init, z, onMin, pkey }) {
     await gbSave(next);
   };
   return (
-    <DeskCard className="dc-guestbook" init={init} z={z} pkey="guest" title="guestbook" status={gbShared ? "● shared wall" : "● this device"} onMin={onMin}>
+    <DeskCard className="dc-guestbook" init={init} z={z} pkey="guest" title="guestbook" status={gbShared ? "● shared wall" : "● this device"} onMin={onMin} resize={{ pkey: "sz-guestpanel", min: { w: 300, h: 200 }, def: { w: 340 } }}>
       <div className="gb-form">
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="name" style={{ maxWidth: 92 }} onPointerDown={(e) => e.stopPropagation()} />
         <input value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="leave a note…"
@@ -655,7 +718,7 @@ function FontBgEditor({ t, setTweak, onClose }) {
     <div className="fc-bgeditor" onPointerDown={stop}>
       <div className="fc-bgeditor-head">
         <b>background look</b>
-        <button className="dc-min" onClick={onClose} title="Close">✕</button>
+        <button className="dc-min" onClick={onClose} title="Close" aria-label="Close">{Ico.close}</button>
       </div>
       <window.TweakSlider label="Blur near top" value={t.fcBlurTop} min={0} max={10} step={1} unit="px"
         onChange={(v) => setTweak("fcBlurTop", v)} />
@@ -677,6 +740,11 @@ function FontStory({ cover, scan, init, z, onMin, pkey, t, setTweak }) {
   const [typed, setTyped] = useState("");
   const [editing, setEditing] = useState(false);
   const [bgEditor, setBgEditor] = useState(false);
+  const [copyEditor, setCopyEditor] = useState(false);
+  const [fsEdits, setFsEdits] = useState(fsLoad);
+  const fsx = { ...fs, ...fsEdits };
+  const setFsField = (k, v) => setFsEdits((p) => {const n = { ...p, [k]: v };fsSave(n);return n;});
+  const revertFs = () => {setFsEdits({});fsSave({});};
   const inputRef = useRef(null);
   useEffect(() => {const el = ref.current;const p = getPos(pkey, init);el.style.left = p.x + "px";el.style.top = p.y + "px";bumpZ(el);}, []);
   useEffect(() => {if (editing && inputRef.current) inputRef.current.focus();}, [editing]);
@@ -704,13 +772,16 @@ function FontStory({ cover, scan, init, z, onMin, pkey, t, setTweak }) {
   };
   return (
     <div className="desk-card fontcard" ref={ref} style={{ zIndex: z }} data-text-style={t.fcTextStyle || "soft"}>
-      <ResizeHandles pkey={"sz-" + (pkey || "font")} min={{ w: 320, h: 380 }} def={{ w: 660, h: 620 }} hideReset />
+      <ResizeHandles pkey={"sz-" + (pkey || "font")} min={{ w: 320, h: 320 }} def={{ w: 660, h: Math.min(620, Math.round(window.innerHeight - 130)) }} hideReset />
       <div className="fc-bar" onPointerDown={onDown}>
         <b>the font</b>
-        <button className="dc-min" onPointerDown={noStop} onClick={() => setBgEditor((v) => !v)} title="Background look">⚙</button>
-        <button className="dc-min" onPointerDown={noStop} onClick={onMin} title="Minimize">✕</button>
+        <button className="dc-min" onPointerDown={noStop} onClick={() => setCopyEditor((v) => !v)} title="Edit the words" aria-label="Edit the words">{Ico.pencil}</button>
+        <button className="dc-min" onPointerDown={noStop} onClick={() => setBgEditor((v) => !v)} title="Background look" aria-label="Background look">{Ico.gear}</button>
+        <button className="dc-min" onPointerDown={noStop} onClick={onMin} title="Close" aria-label="Close">{Ico.close}</button>
       </div>
       {bgEditor && <FontBgEditor t={t} setTweak={setTweak} onClose={() => setBgEditor(false)} />}
+      {copyEditor && <FontCopyEditor base={fs} edits={fsEdits} setField={setFsField}
+        onClose={() => setCopyEditor(false)} onRevert={revertFs} />}
       <div className="fc-body">
         <div className="fc-bg" style={bgVars}>
           {cover ? <>
@@ -720,14 +791,14 @@ function FontStory({ cover, scan, init, z, onMin, pkey, t, setTweak }) {
           <div className="fc-bg-scrim" />
         </div>
         <button type="button" className="fc-reset" onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => { e.stopPropagation(); clearSize("sz-" + (pkey || "font")); const el = ref.current; if (el) { el.style.width = "660px"; el.style.height = "620px"; } }}
-          title="Reset size">↺</button>
+          onClick={(e) => { e.stopPropagation(); clearSize("sz-" + (pkey || "font")); const el = ref.current; if (el) { el.style.width = "660px"; el.style.height = Math.min(620, window.innerHeight - 130) + "px"; } }}
+          title="Reset size" aria-label="Reset size">{Ico.reset}</button>
         <div className="fc-scroll" onPointerDown={noStop}>
-          <div className="fc-title">{fs.title || "the font"}</div>
-          <div className="fc-maker">handwriting by {fs.maker || "my dad"}</div>
-          <p className="fc-story" style={{ fontFamily: "JacobMarker", fontSize: "19px" }}>{fs.story}</p>
+          <div className="fc-title">{fsx.title || "the font"}</div>
+          <div className="fc-maker">handwriting by {fsx.maker || "my dad"}</div>
+          <p className="fc-story" style={{ fontFamily: "JacobMarker", fontSize: "19px" }}>{fsx.story}</p>
 
-          <div className="fc-sample">{fs.sample}</div>
+          <div className="fc-sample">{fsx.sample}</div>
 
           <div className="fc-preview">
             <div className="fc-label">try it</div>
@@ -735,14 +806,14 @@ function FontStory({ cover, scan, init, z, onMin, pkey, t, setTweak }) {
             <textarea ref={inputRef} className="fc-type" value={typed} placeholder=""
             onChange={(e) => setTyped(e.target.value)} onBlur={() => typed.trim() === "" && setEditing(false)} /> :
             <button className="fc-type fc-type-ghost" onClick={() => setEditing(true)} style={{ height: "50px", fontSize: "20px" }}>
-                {typed.trim() ? typed : fs.previewPlaceholder || "type here"}
+                {typed.trim() ? typed : fsx.previewPlaceholder || "type here"}
               </button>}
           </div>
 
           {scan &&
           <div className="fc-compare">
               <figure><div className="fc-scan"><CroppedImg value={scan} /></div><figcaption>original</figcaption></figure>
-              <figure><div className="fc-digi">{fs.maker || "Lloyd Fogelhut"}</div><figcaption>digitized</figcaption></figure>
+              <figure><div className="fc-digi">{fsx.maker || "Lloyd Fogelhut"}</div><figcaption>digitized</figcaption></figure>
             </div>}
 
           <a className="fc-download" href={fs.fontFile || "fonts/jacob-custom.otf"} download={fs.downloadAs || "Lloyd Fogelhut.otf"}>
@@ -755,36 +826,6 @@ function FontStory({ cover, scan, init, z, onMin, pkey, t, setTweak }) {
 }
 
 /* ----------------------------------------------------------------------
-   Photo pile viewer
-   ---------------------------------------------------------------------- */
-function Photos({ onClose, gallery = [] }) {
-  const total = gallery.length || PG.galleryCount || 6;
-  const [i, setI] = useState(0);
-  const url = gallery[i] || null;
-  return (
-    <div className="scrim" onPointerDown={(e) => e.target.classList.contains("scrim") && onClose()}>
-      <div className="panel photos">
-        <div className="photo-card">
-          <div className="pc-img" style={url ? { backgroundImage: `url(${url})`, backgroundSize: "cover", backgroundPosition: "center", color: "transparent" } : null}>
-            {url ? "" : `PHOTO ${i + 1} — COMING SOON`}
-          </div>
-          <div className="pc-cap">moments</div>
-        </div>
-        <div className="photo-nav">
-          <button onClick={() => setI((i - 1 + total) % total)}>‹</button>
-          <span className="pn-count">{i + 1} / {total}</span>
-          <button onClick={() => setI((i + 1) % total)}>›</button>
-        </div>
-      </div>
-    </div>);
-
-}
-
-/* ----------------------------------------------------------------------
-   Album cover — a draggable polaroid on the desk. Click opens its viewer.
-   (Drag vs click distinguished like Obj.)
-   ---------------------------------------------------------------------- */
-/* ----------------------------------------------------------------------
    PhotoFrame — the single merged desk object (replaces the 4 album
    polaroids). Shuffle-cycles through every uploaded photo across every
    album/category, cross-fading every 4s. Hover shows the CURRENT photo's
@@ -794,15 +835,16 @@ function PhotoFrame({ categories, init, z, onOpen, pkey }) {
   const ref = useRef(null);
   useEffect(() => {
     const el = ref.current;
+    if (!el) return;
     const p = getPos(pkey, init);
     // re-clamp the resolved (possibly stale-cached, from before the frame's
     // real ~460px-tall footprint was accounted for) position against the
     // CURRENT viewport every mount — a cached position from an older/buggier
     // layout must never be trusted blindly.
-    const x = Math.max(0, Math.min(window.innerWidth - 360, p.x));
-    const y = Math.max(54, Math.min(window.innerHeight - 470, p.y));
+    const x = Math.max(0, Math.min(window.innerWidth - 280, p.x));
+    const y = Math.max(54, Math.min(window.innerHeight - 370, p.y));
     el.style.left = x + "px";el.style.top = y + "px";
-  }, []);
+  }, [init.x, init.y]);
   const flat = useMemo(() => {
     const list = [];
     categories.forEach((c, ci) => c.photos.forEach((p) => list.push({ src: p, cat: ci })));
@@ -828,15 +870,16 @@ function PhotoFrame({ categories, init, z, onOpen, pkey }) {
     const up = () => {
       el.classList.remove("grab");
       window.removeEventListener("pointermove", move);window.removeEventListener("pointerup", up);
-      savePos(pkey, parseInt(el.style.left, 10) || 0, parseInt(el.style.top, 10) || 0);
-      if (moved < 6) onOpen({ rect: el.getBoundingClientRect(), photo: cur ? { src: cur.src, cat: cur.cat } : null });
+      // pin ONLY on a real drag; a click opens the gallery
+      if (moved >= 6) savePos(pkey, parseInt(el.style.left, 10) || 0, parseInt(el.style.top, 10) || 0);
+      else onOpen({ rect: el.getBoundingClientRect(), photo: cur ? { src: cur.src, cat: cur.cat } : null });
     };
     window.addEventListener("pointermove", move);window.addEventListener("pointerup", up);
   };
   const cur = flat[idx];
   const catName = cur ? categories[cur.cat].name : null;
   return (
-    <div className="obj photoframe-obj" ref={ref} style={{ width: 340, zIndex: z, "--rot": (init.rot || -3) + "deg" }} onPointerDown={onDown}>
+    <div className="obj photoframe-obj" ref={ref} style={{ width: 260, zIndex: z, "--rot": (init.rot || -3) + "deg" }} onPointerDown={onDown}>
       <span className="hint">click to open</span>
       <div className="pf-frame">
         <div className="pf-mat">
@@ -978,10 +1021,33 @@ function GalleryViewer({ categories, fromPhoto, fromRect, onClose }) {
   })();
   const curPhotos = categories[cat].photos;
   const curEnlarged = enlarge ? flat[enlarge.idx] : null;
+  // The panel is allowed to scroll on short screens; this just makes the fact
+  // visible (bottom fade + a real scrollbar) instead of leaving content hidden.
+  const panelRef = useRef(null);
+  const [more, setMore] = useState(false);
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el) return;
+    const upd = () => setMore(el.scrollHeight - el.clientHeight - el.scrollTop > 12);
+    upd();
+    el.addEventListener("scroll", upd);
+    // Observe the CONTENT, not just the panel: photos land after first paint,
+    // so the panel's own box never changes size and an observer watching only
+    // the panel reports "fits" forever. A short poll covers late image loads.
+    const ro = new ResizeObserver(upd);
+    ro.observe(el);
+    Array.from(el.children).forEach((c) => ro.observe(c));
+    const poll = setInterval(upd, 400);
+    const stop = setTimeout(() => clearInterval(poll), 4000);
+    return () => {
+      el.removeEventListener("scroll", upd);ro.disconnect();
+      clearInterval(poll);clearTimeout(stop);
+    };
+  }, [cat, categories]);
 
   return (
     <div className={`gv-scrim ${closing ? "closing" : ""}`} onPointerDown={(e) => e.target.classList.contains("gv-scrim") && requestClose()}>
-      <div className={`gv-panel ${closing ? "closing" : ""}`} style={panelStyle}>
+      <div className={`gv-panel ${closing ? "closing" : ""}`} style={panelStyle} ref={panelRef} data-more={more ? "1" : "0"}>
         <button className="gv-x" onClick={requestClose} aria-label="Close">✕</button>
 
         <button className="gv-main" ref={mainRef} style={{ "--asp": mainAspect }}
@@ -1029,25 +1095,84 @@ function GalleryViewer({ categories, fromPhoto, fromRect, onClose }) {
 /* ----------------------------------------------------------------------
    Scene layout — positions computed once on mount (reset on reload)
    ---------------------------------------------------------------------- */
+/* Loose-but-balanced desk layout.
+   Each object declares an ANCHOR (fx,fy as a fraction of the viewport) plus its
+   real footprint w/h - footprint includes the label and hint, not just the art.
+   Anchors then go through a collision pass, heaviest object first, and anything
+   that would overlap an already-placed object is moved to whichever free side
+   costs the least movement.
+
+   The pass is best-effort rather than pass/fail: on a short viewport a late
+   object can have no side that both clears the collision AND fits on screen
+   (the guestbook, boxed in by the 260x350 frame, hit exactly this). Rather than
+   give up and leave the overlap - which is what the first version did - it now
+   scores every candidate by how much overlap actually remains after clamping
+   and takes the best one. Objects the visitor has dragged are reserved first,
+   so automatic ones route around them instead of landing underneath. */
 function layout() {
-  const W = window.innerWidth,H = window.innerHeight;
-  const clampX = (x) => Math.max(20, Math.min(W - 180, x));
-  const clampY = (y) => Math.max(96, Math.min(H - 210, y));
-  // taller 4:5 portrait frame (~460px incl. border/mat/caption) needs a bigger budget than the old square album footprint
-  const clampAX = (x) => Math.max(20, Math.min(W - 360, x));
-  const clampAY = (y) => Math.max(96, Math.min(H - 470, y));
-  return {
-    monitor: { x: clampX(W * 0.5 - 75), y: clampY(H * 0.30) },
-    radio: { x: clampX(W * 0.16), y: clampY(H * 0.58) },
-    notebook: { x: clampX(W * 0.74), y: clampY(H * 0.30) },
-    guestbook: { x: clampX(W * 0.78), y: clampY(H * 0.62) },
-    star: { x: clampX(W * 0.40), y: clampY(H * 0.20) },
-    smiley: { x: clampX(W * 0.64), y: clampY(H * 0.72) },
-    squiggle: { x: clampX(W * 0.24), y: clampY(H * 0.28) },
-    liveNote: { x: Math.max(16, W * 0.04), y: 88 },
-    liveGuest: { x: Math.max(16, Math.min(W - 360, W * 0.63)), y: 88 },
-    frame: { x: clampAX(W * 0.40), y: clampAY(H * 0.34), rot: -3 }
-  };
+  const W = window.innerWidth, H = window.innerHeight;
+  const GAP = 18, PAD = 24, TOP = 96, BOT = 72;
+  // name, anchor x, anchor y, footprint w, footprint h - heaviest first.
+  // The frame owns the right column, so nothing else anchors into it.
+  const spec = [
+    ["frame", 0.63, 0.17, 260, 350],
+    ["monitor", 0.38, 0.26, 132, 190],
+    ["radio", 0.06, 0.56, 150, 200],
+    ["headphones", 0.21, 0.72, 112, 150],
+    ["notebook", 0.09, 0.19, 120, 180],
+    ["guestbook", 0.45, 0.64, 140, 200],
+    ["squiggle", 0.29, 0.12, 90, 70],
+    ["smiley", 0.52, 0.12, 70, 90],
+    ["star", 0.34, 0.86, 70, 90]];
+
+  const pinKey = { frame: "frame", monitor: "monitor", radio: "radio", headphones: "headphones",
+    notebook: "font", guestbook: "guest", squiggle: "squiggle", star: "star", smiley: "smiley" };
+  const clampX = (x, w) => Math.max(PAD, Math.min(Math.max(PAD, W - w - PAD), x));
+  const clampY = (y, h) => Math.max(TOP, Math.min(Math.max(TOP, H - h - BOT), y));
+  const overlapArea = (r, list) => list.reduce((sum, p) => {
+    const ox = Math.min(r.x + r.w + GAP, p.x + p.w + GAP) - Math.max(r.x, p.x);
+    const oy = Math.min(r.y + r.h + GAP, p.y + p.h + GAP) - Math.max(r.y, p.y);
+    return sum + (ox > 0 && oy > 0 ? ox * oy : 0);
+  }, 0);
+
+  const placed = [], out = {};
+  for (const [name, , , w, h] of spec) {
+    if (!isPinned(pinKey[name], w, h)) continue;
+    const p = posAll()[pinKey[name]];
+    placed.push({ x: p.x, y: p.y, w, h });
+  }
+  for (const [name, fx, fy, w, h] of spec) {
+    if (isPinned(pinKey[name], w, h)) {
+      const p = posAll()[pinKey[name]];
+      out[name] = name === "frame" ? { x: p.x, y: p.y, rot: -3 } : { x: p.x, y: p.y };
+      continue;
+    }
+    let x = clampX(W * fx, w), y = clampY(H * fy, h);
+    for (let i = 0; i < 12; i++) {
+      if (!overlapArea({ x, y, w, h }, placed)) break;
+      const hit = placed.find((p) =>
+      x < p.x + p.w + GAP && x + w + GAP > p.x && y < p.y + p.h + GAP && y + h + GAP > p.y);
+      if (!hit) break;
+      // every way out of this collision, clamped on screen, scored by the
+      // overlap that survives - the winner is whatever leaves the least
+      const cands = [
+      [hit.x + hit.w + GAP, y], [hit.x - w - GAP, y],
+      [x, hit.y + hit.h + GAP], [x, hit.y - h - GAP]].
+      map(([cx, cy]) => {
+        const nx = clampX(cx, w), ny = clampY(cy, h);
+        return { x: nx, y: ny, cost: overlapArea({ x: nx, y: ny, w, h }, placed), moved: Math.abs(nx - x) + Math.abs(ny - y) };
+      }).sort((p, q) => p.cost - q.cost || p.moved - q.moved);
+      if (cands[0].x === x && cands[0].y === y) break;
+      x = cands[0].x;y = cands[0].y;
+      if (!cands[0].cost) break;
+    }
+    placed.push({ x, y, w, h });
+    out[name] = name === "frame" ? { x, y, rot: -3 } : { x, y };
+  }
+  // open-panel spawn points (only used once a panel is actually opened)
+  out.liveNote = { x: Math.max(16, W * 0.06), y: 96 };
+  out.liveGuest = { x: Math.max(16, Math.min(W - 360, W * 0.58)), y: 96 };
+  return out;
 }
 
 const PG_DEFAULTS = /*EDITMODE-BEGIN*/{
@@ -1075,7 +1200,7 @@ function MixPanel() {
   if (!p || !p.mixPanel) return null;
   const stop = (e) => e.stopPropagation();
   return (
-    <DeskCard className="dc-mix" init={{ x: 90, y: 96 }} z={32} pkey="mixpanel" title="radio" status="my mixes" onMin={() => p.setMixPanel(false)}>
+    <DeskCard className="dc-mix" init={{ x: 90, y: 96 }} z={32} pkey="mixpanel" title="radio" status="my mixes" onMin={() => p.setMixPanel(false)} resize={{ pkey: "sz-mixpanel", min: { w: 300, h: 260 }, def: { w: 420 } }}>
       <div className="mp-now mono">{p.playing && p.isMix ? "● now playing" : "paused"}</div>
       <div className="mp-viz"><window.Visualizer style={vizStyle} real={p.isMix && p.playing} analyser={p.analyser} color={p.accent} /></div>
       <div className="mp-title">{p.mix ? p.mix.title : "—"}</div>
@@ -1126,7 +1251,7 @@ function PlaylistPanel() {
    closing the browser, not just a refresh) since it's meant to always be
    there rather than a one-off session thing.
    ---------------------------------------------------------------------- */
-const COMPPOSKEY = "jf-pg-computer-pos";
+const COMPPOSKEY = "jf-pg-computer-pos-v2";
 function getCompPos(fallback) {
   try { const p = JSON.parse(localStorage.getItem(COMPPOSKEY) || "null"); if (p && typeof p.x === "number") return p; } catch (e) {}
   return fallback;
@@ -1141,12 +1266,20 @@ function ComputerWindow({ onExit, marker, wallpaper, wallpaperCrop }) {
     if (max) return;
     const el = ref.current; if (!el) return;
     bumpZ(el);
+    // A persisted size from a BIGGER screen must be re-clamped here, and the
+    // centring math must never produce a negative top: (innerHeight - h) / 2
+    // went negative whenever the saved height exceeded the viewport, putting
+    // the title bar — and with it the only close and maximize buttons — above
+    // the top of the window where it could not be grabbed.
     const dw = Math.round(window.innerWidth * 0.5), dh = Math.round(window.innerHeight * 0.5);
     const s = getSize("sz-computer");
-    const w = (s && s.w) || dw, h = (s && s.h) || dh;
+    const maxW = Math.max(320, window.innerWidth - 24), maxH = Math.max(240, window.innerHeight - 96);
+    const w = Math.min(Math.max((s && s.w) || dw, 320), maxW);
+    const h = Math.min(Math.max((s && s.h) || dh, 240), maxH);
     el.style.width = w + "px"; el.style.height = h + "px";
     const p = getCompPos({ x: Math.round((window.innerWidth - w) / 2), y: Math.round((window.innerHeight - h) / 2) });
-    el.style.left = p.x + "px"; el.style.top = p.y + "px";
+    el.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, p.x)) + "px";
+    el.style.top = Math.max(56, Math.min(Math.max(56, window.innerHeight - h - 16), p.y)) + "px";
     // eslint-disable-next-line
   }, [max]);
   const onDown = (e) => {
@@ -1171,8 +1304,8 @@ function ComputerWindow({ onExit, marker, wallpaper, wallpaperCrop }) {
     <div className="comp-win" ref={ref} style={{ zIndex: 95 }}>
       <div className="comp-bar" onPointerDown={onDown}>
         <div className="comp-btns">
-          <button onClick={() => setMax(true)} title="Maximize">▢</button>
-          <button onClick={onExit} title="Close">✕</button>
+          <button onClick={() => setMax(true)} title="Maximize" aria-label="Maximize">{Ico.max}</button>
+          <button onClick={onExit} title="Close" aria-label="Close">{Ico.close}</button>
         </div>
       </div>
       <div className="comp-body">
@@ -1184,12 +1317,20 @@ function ComputerWindow({ onExit, marker, wallpaper, wallpaperCrop }) {
 
 function Playground() {
   const [t, setTweak] = useTweaks(PG_DEFAULTS, "jf-tweaks-pg");
-  const [pos] = useState(layout); // computed once
-  const [overlay, setOverlay] = useState(null); // (unused legacy modals)
+  const [pos, setPos] = useState(layout);
+  // Re-anchor on resize (debounced). isPinned() keeps anything the visitor has
+  // dragged exactly where they put it.
+  useEffect(() => {
+    let t = null;
+    const on = () => { clearTimeout(t); t = setTimeout(() => setPos(layout()), 220); };
+    window.addEventListener("resize", on);
+    return () => { window.removeEventListener("resize", on); clearTimeout(t); };
+  }, []);
   const [galleryOpen, setGalleryOpen] = useState(null); // fromRect (or true) or null
-  const [fontOpen, setFontOpen] = useState(true); // font story panel open (#4)
-  const [liveGuest, setLiveGuest] = useState(true); // guestbook open on the desk (#9)
-  const [xp, setXp] = useState(true); // computer window is always open by default now
+  // Everything starts CLOSED — a clean desk of icons the visitor opens themselves.
+  const [fontOpen, setFontOpen] = useState(false);
+  const [liveGuest, setLiveGuest] = useState(false);
+  const [xp, setXp] = useState(false);
   const player = window.usePlayer();
   const slots = useMediaSlots();
   const categories = useMemo(() => {
@@ -1229,18 +1370,20 @@ function Playground() {
         <Obj kind="star" label="" size={62} init={pos.star} z={3} pkey="star" onClick={() => {}} />
         <Obj kind="smiley" label="" size={60} init={pos.smiley} z={3} pkey="smiley" onClick={() => {}} />
 
-        {!xp && <Obj kind="mycomputer" label="computer" hint="open" size={96} init={pos.monitor} z={8} pkey="monitor" onClick={() => setXp(true)} plainTag />}
+        {!xp && <Obj kind="mycomputer" label="computer" hint="open" size={116} init={pos.monitor} z={8} pkey="monitor" onClick={() => setXp(true)} plainTag />}
         {/* computer window is a floating panel (see ComputerWindow) rather than an overlay, so it can stay open alongside this icon */}
-        <Obj kind="radio" label="radio" hint="my mixes" size={168} init={pos.radio} z={8} pkey="radio" onClick={clickRadio} cutout={cutRadio} plainTag />
-        <Obj kind="headphones" label="headphones" hint="playlists" size={118} init={{ x: Math.max(20, (pos.radio.x || 120) + 168), y: (pos.radio.y || 320) + 8 }} z={8} pkey="headphones" onClick={clickHeadphones} render={<HeadphonesArt style={t.hpArt} photo={cutHeadphones} size={118} />} />
+        <Obj kind="radio" label="radio" hint="my mixes" size={140} init={pos.radio} z={8} pkey="radio" onClick={clickRadio} cutout={cutRadio} plainTag />
+        {/* the two collage variants letter "playlists" INTO the art, so they carry
+            no tag/hint of their own — three labels for one object was the mess. */}
+        <Obj kind="headphones" label={t.hpArt === "drawing" ? "headphones" : ""} hint={t.hpArt === "drawing" ? "playlists" : ""} size={104} init={pos.headphones} z={8} pkey="headphones" onClick={clickHeadphones} render={<HeadphonesArt style={t.hpArt} photo={cutHeadphones} size={104} />} plainTag />
         <MixPanel />
         <PlaylistPanel />
         {fontOpen ?
         <FontStory cover={fontCover} scan={fontScan} init={pos.liveNote} z={11} pkey="font" onMin={() => setFontOpen(false)} t={t} setTweak={setTweak} /> :
-        <Obj kind="notebook" label="the font" hint="open" size={104} init={pos.liveNote} z={8} pkey="font" onClick={() => setFontOpen(true)} cutout={fontCover} plainTag />}
+        <Obj kind="notebook" label="the font" hint="open" size={100} init={pos.notebook} z={8} pkey="font" onClick={() => setFontOpen(true)} cutout={fontCover} plainTag />}
         {liveGuest ?
         <LiveGuest init={pos.liveGuest} z={11} pkey="guest" onMin={() => setLiveGuest(false)} /> :
-        <Obj kind="guestbook" label="guestbook" hint="open" size={128} init={pos.liveGuest} z={8} pkey="guest" onClick={() => setLiveGuest(true)} plainTag />}
+        <Obj kind="guestbook" label="guestbook" hint="open" size={118} init={pos.guestbook} z={8} pkey="guest" onClick={() => setLiveGuest(true)} plainTag />}
         <PhotoFrame categories={categories} init={pos.frame} z={9} pkey="frame" onOpen={(r) => setGalleryOpen(r || true)} />
       </div>
 
@@ -1252,8 +1395,6 @@ function Playground() {
         </div>
       </div>
 
-      {overlay === "notebook" && <Notebook marker={t.markerNotes} onClose={() => setOverlay(null)} />}
-      {overlay === "guestbook" && <Guestbook onClose={() => setOverlay(null)} />}
       {galleryOpen && <GalleryViewer categories={categories} fromPhoto={galleryOpen && galleryOpen.photo} fromRect={galleryOpen && galleryOpen.rect} onClose={() => setGalleryOpen(null)} />}
       {xp && <ComputerWindow onExit={() => setXp(false)} marker={t.markerNotes} wallpaper={t.wallpaper} wallpaperCrop={wallPick} />}
 
