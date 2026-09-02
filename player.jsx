@@ -92,6 +92,9 @@
     useEffect(() => {
       if (audioRef.current) return;
       const a = new Audio();
+      // must be set before any src assignment: Web Audio outputs silence for a
+      // cross-origin media source that wasn't fetched in CORS mode
+      a.crossOrigin = "anonymous";
       a.preload = "metadata";
       a.volume = volume;
       // VBR / stream MP3s (DJ sets) report duration=Infinity until buffered;
