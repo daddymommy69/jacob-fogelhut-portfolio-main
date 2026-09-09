@@ -553,6 +553,60 @@ button { font-family: inherit; cursor: pointer; }
 .reveal-up { opacity: 0; transform: translateY(calc(20px * var(--motion, .45) + 6px)); transition: opacity .7s var(--ease), transform .7s var(--ease); }
 .reveal-up.in { opacity: 1; transform: none; }
 
+/* =====================================================================
+   INSTAGRAM — real embed inline, live mini-embed as the rail tile
+   ===================================================================== */
+.ig-embed { border-radius: 6px; overflow: hidden; background: #fff; }
+.ig-embed iframe { display: block; width: 100%; border: 0; }
+[data-theme="dark"] .ig-embed { filter: brightness(.9) saturate(.96); }
+
+/* rail tile: the embed is scaled up and clipped so the post's media fills the
+   4/5 tile; .igtile-hit sits on top because an iframe swallows clicks. */
+.igtile { position: absolute; inset: 0; overflow: hidden; background: #fff; }
+.igtile iframe { position: absolute; top: 50%; left: 50%; width: 340px; height: 620px; border: 0; transform: translate(-50%, -50%) scale(.62); transform-origin: center; pointer-events: none; }
+.igtile-hit { position: absolute; inset: 0; z-index: 2; cursor: pointer; }
+.igtile-fallback { position: absolute; inset: 0; }
+.igtile-fallback .cropwrap, .igtile-fallback img { width: 100%; height: 100%; }
+.igtile-badge { position: absolute; bottom: 7px; right: 7px; z-index: 3; width: 22px; height: 22px; border-radius: 5px; background: rgba(0,0,0,.6); display: grid; place-items: center; color: #fff; }
+.igtile-badge svg { width: 13px; height: 13px; }
+.pp-vidthumb-fallback svg { width: 26px; height: 26px; color: rgba(255,255,255,.6); }
+
+/* fullscreen affordance on the main player */
+.pp-expand { position: absolute; top: 10px; right: 10px; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px 9px; border-radius: 5px; background: rgba(0,0,0,.5); backdrop-filter: blur(6px); color: #fff; opacity: 0; transition: opacity .2s var(--ease); pointer-events: none; }
+.pp-expand em { font-style: normal; font-family: var(--font-mono, monospace); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; max-width: 0; overflow: hidden; white-space: nowrap; transition: max-width .28s var(--ease); }
+.pp-mainplayer:hover .pp-expand { opacity: 1; }
+.pp-mainplayer:hover .pp-expand em { max-width: 80px; }
+.pp-mainplayer-video, .pp-mainplayer-photo { cursor: zoom-in; }
+.lb-hint { position: absolute; bottom: 22px; left: 0; right: 0; text-align: center; font-size: 11px; letter-spacing: .1em; color: rgba(255,255,255,.42); pointer-events: none; }
+
+/* BOOT — first-visit loading gate
+   ===================================================================== */
+.boot { position: fixed; inset: 0; z-index: 400; background: #0a0a0a; display: grid; place-items: center; transition: opacity .5s var(--ease); }
+.boot.out { opacity: 0; pointer-events: none; }
+.boot-inner { text-align: center; padding: 0 5vw; }
+.boot-name {
+  font-family: var(--font-marker); font-weight: 400; color: #fff;
+  font-size: clamp(40px, 9vw, 120px); line-height: .98; letter-spacing: .01em;
+  animation: bootFade .8s var(--ease) both;
+}
+.boot-pct {
+  margin-top: clamp(14px, 2.5vw, 26px); font-family: var(--font-marker);
+  color: rgba(255,255,255,.62); font-size: clamp(20px, 3vw, 34px); letter-spacing: .04em;
+  font-variant-numeric: tabular-nums; animation: bootFade 1s .15s var(--ease) both;
+}
+@keyframes bootFade { from { opacity: 0; transform: translateY(8px); } }
+.no-anim .boot-name, .no-anim .boot-pct { animation: none !important; opacity: 1 !important; transform: none !important; }
+
+/* --- hover video catching up: the photo just dims and holds --- */
+.vws-still { transition: opacity .32s var(--ease), filter .3s var(--ease); }
+.vws-still.is-waiting { filter: brightness(.82); }
+.thumb-video.is-waiting { filter: brightness(.82); }
+
+/* --- cover-cropped photos: blur-up as each file arrives --- */
+.cropfade { opacity: 0; filter: blur(14px); transition: opacity .45s var(--ease), filter .7s var(--ease); }
+.cropfade.is-on { opacity: 1; filter: none; }
+.no-anim .cropfade { opacity: 1 !important; filter: none !important; }
+
 /* --- blur-up images --- */
 .blurup { filter: blur(16px); transform: scale(1.05); transition: filter .8s var(--ease), transform .8s var(--ease); }
 .blurup.loaded { filter: none; transform: none; }

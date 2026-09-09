@@ -17,6 +17,7 @@ function CroppedImg({ value, alt = "", className = "", onClick }) {
   const wrapRef = useRef(null);
   const imgRef = useRef(null);
   const [box, setBox] = useState(null); // {fw,fh,iw,ih} of the CURRENT frame
+  const [shown, setShown] = useState(false); // blur-up: sharpen once decoded
   const url = v && v.u;
   useLayoutEffect(() => {
     const wrap = wrapRef.current, img = imgRef.current;
@@ -26,7 +27,7 @@ function CroppedImg({ value, alt = "", className = "", onClick }) {
       const iw = img.naturalWidth, ih = img.naturalHeight;
       if (fw && fh && iw && ih) setBox({ fw, fh, iw, ih });
     };
-    if (img.complete) measure();
+    if (img.complete) { measure(); setShown(true); }
     img.addEventListener("load", measure);
     let ro;
     if (window.ResizeObserver) { ro = new ResizeObserver(measure); ro.observe(wrap); }
@@ -49,7 +50,9 @@ function CroppedImg({ value, alt = "", className = "", onClick }) {
   return (
     <span ref={wrapRef} className={`cropbox ${className}`} onClick={onClick}
       style={{ position: "relative", display: "block", width: "100%", height: "100%", overflow: "hidden" }}>
-      <img ref={imgRef} src={url} alt={alt} draggable={false} className="cropimg" style={imgStyle} />
+      <img ref={imgRef} src={url} alt={alt} draggable={false} decoding="async"
+        className={`cropimg cropfade ${shown ? "is-on" : ""}`} style={imgStyle}
+        onLoad={() => setShown(true)} />
     </span>);
 }
 

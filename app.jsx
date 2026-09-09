@@ -13,6 +13,8 @@ const useSlot = (id) => window.MediaSlots.url(React.useContext(SlotsCtx), id);
 // full reframe record {u,s,x,y} for a slot, honoring Media-Manager pan/zoom.
 const useCrop = (id) => window.MediaSlots.crop(React.useContext(SlotsCtx), id);
 
+const IcInstagram = () => <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.2" cy="6.8" r="1.15" fill="currentColor" stroke="none" /></svg>;
+const IcExpand = () => <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>;
 const IcArrow = () => <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.6" style={{ width: "14px", height: "14px" }}><path d="M4 10h12M11 5l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
 const IcX = () => <svg viewBox="0 0 14 14" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.7"><path d="M2 2 L12 12 M12 2 L2 12" /></svg>;
 const IcChevron = ({ dir }) => <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7"><path d={dir === "left" ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"} strokeLinecap="round" strokeLinejoin="round" /></svg>;
@@ -65,31 +67,13 @@ const CAME_FROM_INTERNAL = (() => {
 /* ---------------------------------------------------------------------
    shared media renderer (instagram / spotify / video / placeholder)
    --------------------------------------------------------------------- */
-function useInstagram(active) {
-  useEffect(() => {
-    if (!active) return;
-    const run = () => {if (window.instgrm) window.instgrm.Embeds.process();};
-    if (window.instgrm) {run();return;}
-    let s = document.getElementById("ig-embed");
-    if (!s) {
-      s = document.createElement("script");
-      s.id = "ig-embed";s.async = true;s.src = "https://www.instagram.com/embed.js";
-      s.onload = run;document.body.appendChild(s);
-    } else {s.addEventListener("load", run);}
-  }, [active]);
-}
 
 function WorkMedia({ item, onImageClick }) {
   const m = item.media;
   const poster = useSlot("poster:" + item.id) || m.poster;
   const stillCrop = useCrop("still:" + item.id);
   const still = stillCrop || item.still;
-  useInstagram(m.kind === "instagram");
-  if (m.kind === "instagram") {
-    return (
-      <blockquote className="instagram-media" data-instgrm-permalink={m.src} data-instgrm-version="14"
-      style={{ background: "#fff", border: 0, margin: 0, width: "100%" }} key={m.src}></blockquote>);
-  }
+  if (m.kind === "instagram") return <IgEmbed url={m.src} title={item.title} />;
   if (m.kind === "spotify") {
     return <iframe src={m.src} height="360" allow="encrypted-media" loading="lazy" title={item.title}></iframe>;
   }
@@ -112,11 +96,53 @@ function MediaBlock({ item }) {
 /* one embed (instagram / spotify / video / youtube) — used when a project
    carries more than one piece via item.embeds (e.g. the Justin Park / 5A
    campaign) or a hover/project video set in the editor. */
+/* Instagram post code out of any post/reel/tv URL */
+function igCode(url) {
+  const m = String(url || "").match(/instagram\.com\/(?:[^/]+\/)?(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
+  return m ? m[1] : null;
+}
+window.igCode = igCode;
+
+/* Instagram's own embed, in a plain iframe. The old approach mounted a
+   <blockquote> and let embed.js swap it for an iframe — React never knew the
+   node changed, and the processor skips anything inside a display:none
+   wrapper, so live it rendered an empty white box. Pointing an iframe
+   straight at /embed/captioned/ needs no script and no DOM surgery. */
+function IgEmbed({ url, title }) {
+  const code = igCode(url);
+  const [h, setH] = useState(720);
+  if (!code) return null;
+  return (
+    <div className="ig-embed">
+      <iframe src={`https://www.instagram.com/p/${code}/embed/captioned/`} title={title || "Instagram post"}
+        style={{ height: h }} loading="lazy" scrolling="no" allowTransparency="true"
+        allow="encrypted-media; picture-in-picture" frameBorder="0"></iframe>
+    </div>);
+}
+
+/* rail tile for an Instagram item: a live mini-embed, scaled up and clipped
+   to the 4/5 tile so the post's media fills it. The iframe swallows clicks,
+   so a transparent layer sits on top to keep the tile a working button.
+   Falls back to the project's title picture if the embed can't load. */
+function IgTile({ url, fallback, alt }) {
+  const code = igCode(url);
+  const [failed, setFailed] = useState(!code);
+  if (failed) {
+    return fallback ?
+    <div className="igtile-fallback"><CroppedImg value={fallback} alt={alt || ""} /><span className="igtile-badge"><IcInstagram /></span></div> :
+    <div className="pp-vidthumb-fallback"><IcInstagram /></div>;
+  }
+  return (
+    <div className="igtile">
+      <iframe src={`https://www.instagram.com/p/${code}/embed/`} title="" tabIndex="-1" aria-hidden="true"
+        scrolling="no" frameBorder="0" loading="lazy" onError={() => setFailed(true)}></iframe>
+      <span className="igtile-hit" />
+      <span className="igtile-badge"><IcInstagram /></span>
+    </div>);
+}
+
 function EmbedBlock({ embed, title }) {
-  useInstagram(embed.kind === "instagram");
-  if (embed.kind === "instagram")
-  return <blockquote className="instagram-media" data-instgrm-permalink={embed.src} data-instgrm-version="14"
-  style={{ background: "#fff", border: 0, margin: 0, width: "100%" }} key={embed.src}></blockquote>;
+  if (embed.kind === "instagram") return <IgEmbed url={embed.src} title={title} />;
   if (embed.kind === "spotify")
   return <iframe src={embed.src} height="360" allow="encrypted-media" loading="lazy" title={title}></iframe>;
   if (embed.kind === "youtube")
@@ -130,14 +156,17 @@ function EmbedBlock({ embed, title }) {
    the ✎ editor. Shows the first (in-point) frame at rest. */
 function HoverVideo({ url, vin, vout, crop }) {
   const clip = vout > vin;
+  const [waiting, setWaiting] = useState(false);
   const seekIn = (v) => { try { v.currentTime = vin || 0; } catch (e) {} };
+  useEffect(() => { if (url && window.MediaWarm) window.MediaWarm.add(url); }, [url]);
   return (
-    <CroppedVideo url={url} crop={crop} className="thumb-video"
+    <CroppedVideo url={url} crop={crop} className={`thumb-video ${waiting ? "is-waiting" : ""}`}
       videoProps={{
         muted: true, playsInline: true, preload: "metadata", loop: !clip,
         onLoadedMetadata: (e) => seekIn(e.currentTarget),
-        onMouseEnter: (e) => { const v = e.currentTarget; if (clip && (v.currentTime < vin || v.currentTime >= vout)) seekIn(v); v.play().catch(() => {}); },
-        onMouseLeave: (e) => { const v = e.currentTarget; v.pause(); seekIn(v); },
+        onCanPlay: () => setWaiting(false),
+        onMouseEnter: (e) => { const v = e.currentTarget; v.preload = "auto"; if (v.readyState < 3) setWaiting(true); if (clip && (v.currentTime < vin || v.currentTime >= vout)) seekIn(v); v.play().catch(() => {}); },
+        onMouseLeave: (e) => { const v = e.currentTarget; setWaiting(false); v.pause(); seekIn(v); },
         onTimeUpdate: (e) => { const v = e.currentTarget; if (clip && v.currentTime >= vout) seekIn(v); }
       }} />);
 }
@@ -147,12 +176,18 @@ function HoverVideo({ url, vin, vout, crop }) {
    project has BOTH a hover video and at least one title picture. */
 function VideoWithStill({ url, vin, vout, still, alt, crop }) {
   const [hover, setHover] = useState(false);
+  const [ready, setReady] = useState(false); // video can actually play through
   const vref = useRef(null);
   const clip = vout > vin;
   const seekIn = (v) => { try { v.currentTime = vin || 0; } catch (e) {} };
+  // quietly buffer the first second or so once the intro is over, so hover
+  // rarely has to wait at all
+  useEffect(() => { if (url && window.MediaWarm) window.MediaWarm.add(url); }, [url]);
   const enter = () => {
     setHover(true);
     const v = vref.current; if (!v) return;
+    v.preload = "auto";
+    if (v.readyState >= 3) setReady(true);
     if (clip && (v.currentTime < vin || v.currentTime >= vout)) seekIn(v);
     v.play().catch(() => {});
   };
@@ -161,16 +196,19 @@ function VideoWithStill({ url, vin, vout, still, alt, crop }) {
     const v = vref.current; if (!v) return;
     v.pause(); seekIn(v);
   };
+  // hold the photo up until the video can play — no blank frame on slow wifi
+  const showVid = hover && ready;
   return (
     <div className="vws" onMouseEnter={enter} onMouseLeave={leave}>
-      <div className="vws-layer vws-still" style={{ opacity: hover ? 0 : 1 }}>
+      <div className={`vws-layer vws-still ${hover && !ready ? "is-waiting" : ""}`} style={{ opacity: showVid ? 0 : 1 }}>
         <CroppedImg value={still} alt={alt} />
       </div>
-      <div className="vws-layer vws-video-wrap" style={{ opacity: hover ? 1 : 0 }}>
+      <div className="vws-layer vws-video-wrap" style={{ opacity: showVid ? 1 : 0 }}>
         <CroppedVideo url={url} crop={crop} className="thumb-video" vref={vref}
           videoProps={{
             muted: true, playsInline: true, preload: "metadata", loop: !clip,
             onLoadedMetadata: (e) => seekIn(e.currentTarget),
+            onCanPlay: () => setReady(true),
             onTimeUpdate: (e) => { const v = e.currentTarget; if (clip && v.currentTime >= vout) seekIn(v); }
           }} />
       </div>
@@ -445,34 +483,33 @@ function Related({ item, onPiece }) {
    ===================================================================== */
 const REFRAME = (v) => !v ? null : typeof v === "string" ? { u: v, s: 1, x: 0, y: 0 } : v;
 
-/* full-screen dark lightbox for gallery photos + playable videos. Arrows/
-   keyboard navigate the set; click backdrop / Esc / ✕ closes. */
-function Lightbox({ items, index, onClose, onNav }) {
+/* full-screen dark lightbox for one photo or video. No arrows — it shows the
+   thing you clicked and you close to go back. Video picks up at the inline
+   player's timestamp with sound on, and reports its position back on close so
+   the inline player resumes from where you left off. Page scroll is locked. */
+function Lightbox({ item, startAt, onClose }) {
+  const vref = useRef(null);
+  const posRef = useRef(startAt || 0);
   useEffect(() => {
-    const onKey = (e) => {
-      if (e.key === "Escape") onClose();else
-      if (e.key === "ArrowRight") onNav(1);else
-      if (e.key === "ArrowLeft") onNav(-1);
-    };
+    const onKey = (e) => { if (e.key === "Escape") onClose(posRef.current); };
     window.addEventListener("keydown", onKey);
     const prev = document.body.style.overflow;
-    return () => {window.removeEventListener("keydown", onKey);document.body.style.overflow = prev;};
-  }, [onClose, onNav]);
-  const it = items[index];
-  if (!it) return null;
-  const multi = items.length > 1;
+    document.body.style.overflow = "hidden"; // was never actually set before
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+  }, [onClose]);
+  const bail = () => onClose(posRef.current);
+  if (!item) return null;
   return (
-    <div className="lb" onClick={onClose}>
-      <button className="lb-x" onClick={onClose} aria-label="Close"><IcX /></button>
-      {multi &&
-      <button className="lb-nav lb-prev" onClick={(e) => {e.stopPropagation();onNav(-1);}} aria-label="Previous"><IcChevron dir="left" /></button>}
+    <div className="lb" onClick={bail}>
+      <button className="lb-x" onClick={bail} aria-label="Close"><IcX /></button>
       <div className="lb-stage" onClick={(e) => e.stopPropagation()}>
-        {it.type === "video" ?
-        <video className="lb-media" src={it.src} poster={it.poster} controls autoPlay playsInline /> :
-        <img className="lb-media" src={it.url} alt="" />}
+        {item.type === "video" ?
+        <video ref={vref} className="lb-media" src={item.src} poster={item.poster} controls autoPlay playsInline
+          onLoadedMetadata={(e) => { const v = e.currentTarget; try { v.currentTime = startAt || 0; } catch (err) {} v.muted = false; v.volume = 1; v.play().catch(() => {}); }}
+          onTimeUpdate={(e) => { posRef.current = e.currentTarget.currentTime; }} /> :
+        <img className="lb-media" src={item.url} alt="" />}
       </div>
-      {multi &&
-      <button className="lb-nav lb-next" onClick={(e) => {e.stopPropagation();onNav(1);}} aria-label="Next"><IcChevron dir="right" /></button>}
+      <div className="lb-hint mono">Esc to close</div>
     </div>);
 }
 
@@ -481,7 +518,7 @@ function Lightbox({ items, index, onClose, onNav }) {
    looping once unmuted so a full sound-on watch doesn't repeat). Clicking
    the player area opens the shared fullscreen viewer — except for IG/Spotify,
    which have no fullscreen state and just live inline. */
-function MainPlayer({ item, onFullscreen }) {
+function MainPlayer({ item, onFullscreen, paused, resumeAt }) {
   const vref = useRef(null);
   const [muted, setMuted] = useState(true);
   useEffect(() => {
@@ -491,6 +528,16 @@ function MainPlayer({ item, onFullscreen }) {
     v.muted = true; setMuted(true);
     v.play().catch(() => {});
   }, [item.src, item.type]);
+  // fullscreen takes over: pause here so two copies never play at once, and
+  // pick up at fullscreen's timestamp when it closes
+  useEffect(() => {
+    const v = vref.current; if (!v || item.type !== "video") return;
+    if (paused) { v.pause(); return; }
+    if (resumeAt != null) { try { v.currentTime = resumeAt; } catch (e) {} }
+    v.play().catch(() => {});
+  }, [paused]); // eslint-disable-line
+  const currentTime = () => { const v = vref.current; return v ? v.currentTime : 0; };
+  const goFull = () => onFullscreen && onFullscreen(currentTime(), vref.current ? vref.current.muted : true);
   const toggleMute = (e) => { e.stopPropagation(); const v = vref.current; if (!v) return; v.muted = !v.muted; setMuted(v.muted); };
   const togglePlay = (e) => { e.stopPropagation(); const v = vref.current; if (!v) return; if (v.paused) v.play().catch(() => {}); else v.pause(); };
   const Pause = () => <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>;
@@ -499,17 +546,19 @@ function MainPlayer({ item, onFullscreen }) {
 
   if (item.type === "photo") {
     return (
-      <button className="pp-mainplayer pp-mainplayer-photo" onClick={onFullscreen} aria-label="Enlarge">
+      <button className="pp-mainplayer pp-mainplayer-photo" onClick={goFull} aria-label="Enlarge">
         <CroppedImg value={item.raw} alt="" />
+        <span className="pp-expand"><IcExpand /><em>Fullscreen</em></span>
       </button>);
   }
   if (item.type === "video") {
     return (
-      <div className="pp-mainplayer pp-mainplayer-video" onClick={onFullscreen}>
+      <div className="pp-mainplayer pp-mainplayer-video" onClick={goFull}>
         {item.drop ?
         <CroppedVideo url={item.src} crop={item.crop} vref={vref}
           videoProps={{ autoPlay: true, muted: true, loop: true, playsInline: true, preload: "metadata" }} /> :
         <video ref={vref} src={item.src} poster={item.poster} autoPlay muted loop playsInline preload="metadata" />}
+        <span className="pp-expand"><IcExpand /><em>Fullscreen</em></span>
         <div className="pp-mainplayer-ctl" onClick={(e) => e.stopPropagation()}>
           <button onClick={togglePlay} aria-label="Play/Pause"><Pause /></button>
           <button onClick={toggleMute} aria-label={muted ? "Unmute" : "Mute"}>{muted ? <Muted /> : <Loud />}</button>
@@ -688,28 +737,31 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, onRequ
   const mainRef = useRef(null);
   const goTo = (idx) => {
     setActiveIdx(idx);
-    if (mainRef.current) mainRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+    const el = mainRef.current;
+    if (!el) return;
+    const sc = scrollRef.current;
+    if (!sc) return;
+    const top = el.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop;
+    sc.scrollTo({ top: Math.max(0, top - sc.clientHeight * 0.18), behavior: "smooth" });
   };
 
   const fsList = useMemo(() => combined.filter((it) => it.type === "video" || it.type === "photo"), [combined]);
-  const [fsPos, setFsPos] = useState(-1); // position within fsList, or -1 = closed
-  const openFullscreen = () => {
+  // fullscreen shows ONE thing — no arrows. It carries the inline player's
+  // timestamp in, and hands its own position back out on close.
+  const [fs, setFs] = useState(null); // {item, at} or null
+  const [resumeAt, setResumeAt] = useState(null);
+  const openFullscreen = (at) => {
     const cur = combined[Math.min(activeIdx, combined.length - 1)];
-    if (!cur || (cur.type !== "video" && cur.type !== "photo")) return;
-    const p = fsList.findIndex((it) => it.idx === cur.idx);
-    if (p >= 0) setFsPos(p);
+    if (!cur || cur.type !== "video" && cur.type !== "photo") return;
+    setFs({
+      at: at || 0,
+      item: cur.type === "video" ? { type: "video", src: cur.src, poster: cur.poster } : { type: "image", url: cur.src }
+    });
   };
-  const navFs = (d) => setFsPos((p) => {
-    const n = (p + d + fsList.length) % fsList.length;
-    setActiveIdx(fsList[n].idx);
-    return n;
-  });
-  const fsItems = fsList.map((it) => it.type === "video" ? { type: "video", src: it.src, poster: it.poster } : { type: "image", url: it.src });
-  // Instagram/Spotify embeds mutate their own DOM (the IG script replaces the
-  // blockquote with an iframe) — unmounting one mid-session throws a
-  // removeChild error and blanks the page. So embed items stay PERSISTENTLY
-  // mounted for the life of the page and are just shown/hidden via CSS,
-  // instead of being conditionally rendered by the active-item swap.
+  const closeFullscreen = (pos) => { setResumeAt(pos != null ? pos : null); setFs(null); };
+  // Instagram/Spotify/YouTube embeds stay PERSISTENTLY mounted for the life of
+  // the page and are shown/hidden via CSS rather than conditionally rendered,
+  // so a swap never unmounts a live third-party iframe mid-session.
   const embedItems = combined.filter((it) => it.type === "instagram" || it.type === "spotify" || it.type === "youtube");
   const activeItem = combined[Math.min(activeIdx, combined.length - 1)];
   const activeIsEmbed = activeItem && (activeItem.type === "instagram" || activeItem.type === "spotify" || activeItem.type === "youtube");
@@ -755,7 +807,7 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, onRequ
                   </a>
                 </div>
               )}
-              {!activeIsEmbed && <MainPlayer item={activeItem} onFullscreen={openFullscreen} />}
+              {!activeIsEmbed && <MainPlayer item={activeItem} onFullscreen={openFullscreen} paused={!!fs} resumeAt={resumeAt} />}
             </div>}
 
           {mainMapped.length > 1 &&
@@ -766,7 +818,7 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, onRequ
                   onClick={() => goTo(it.idx)} aria-label={`Show ${it.label || "media"} ${it.idx + 1}`}>
                     {it.type === "video" && it.vout > it.vin ?
                     <HoverVideo url={it.src} vin={it.vin} vout={it.vout} crop={it.crop} /> :
-                    it.poster ? <img src={it.poster} alt="" /> : it.type === "video" ? <video src={it.src} muted preload="metadata" /> : <div className="pp-vidthumb-fallback">{it.type === "instagram" ? "IG" : it.type === "youtube" ? "▶" : it.type === "spotify" ? "♫" : ""}</div>}
+                    it.type === "instagram" ? <IgTile url={it.src} fallback={still} alt={item.title} /> : it.poster ? <img src={it.poster} alt="" /> : it.type === "video" ? <video src={it.src} muted preload="metadata" /> : <div className="pp-vidthumb-fallback">{it.type === "youtube" ? "▶" : it.type === "spotify" ? "♫" : ""}</div>}
                     {(it.type === "video" || it.type === "youtube") && <span className="pp-play-sm"><IcPlay /></span>}
                   </button>
                 )}
@@ -782,8 +834,8 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, onRequ
                   onClick={() => goTo(it.idx)} aria-label={`Play ${it.label || g.label} ${it.idx + 1}`}>
                     {it.type === "video" && it.vout > it.vin ?
                     <HoverVideo url={it.src} vin={it.vin} vout={it.vout} crop={it.crop} /> :
-                    it.poster ? <img src={it.poster} alt="" /> : it.type === "video" ? <video src={it.src} muted preload="metadata" /> : <div className="pp-vidthumb-fallback">{it.type === "instagram" ? "IG" : it.type === "youtube" ? "▶" : it.type === "spotify" ? "♫" : ""}</div>}
-                    <span className="pp-play-sm"><IcPlay /></span>
+                    it.type === "instagram" ? <IgTile url={it.src} fallback={still} alt={item.title} /> : it.poster ? <img src={it.poster} alt="" /> : it.type === "video" ? <video src={it.src} muted preload="metadata" /> : <div className="pp-vidthumb-fallback">{it.type === "youtube" ? "▶" : it.type === "spotify" ? "♫" : ""}</div>}
+                    {it.type !== "instagram" && it.type !== "spotify" && <span className="pp-play-sm"><IcPlay /></span>}
                   </button>
                 )}
               </div>
@@ -798,11 +850,10 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, onRequ
               </div>
             </div>}
 
-          <div className="pp-foot mono">Click anywhere outside · Esc · ✕ to close</div>
+          <div className="pp-foot mono">Esc to close</div>
         </article>
       </div>
-      {fsPos >= 0 && fsItems[fsPos] &&
-      <Lightbox items={fsItems} index={fsPos} onClose={() => setFsPos(-1)} onNav={navFs} />}
+      {fs && <Lightbox item={fs.item} startAt={fs.at} onClose={closeFullscreen} />}
     </div>);
 }
 
@@ -1049,6 +1100,9 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS, "jf-tweaks-main");
+  // first-visit loading gate (skipped on return visits and on internal nav)
+  const [bootDone, setBootDone] = useState(() =>
+    CAME_FROM_INTERNAL || window.__booted === true || window.bootAlreadySeen());
   const [introDone, setIntroDone] = useState(false);
   const [forceIntro, setForceIntro] = useState(false);
   const [slotsReady, setSlotsReady] = useState(false);
@@ -1144,8 +1198,13 @@ function App() {
   };
 
   const introOn = t.intro !== "off";
-  const showIntro = !introDone && (forceIntro || introOn && !CAME_FROM_INTERNAL && !window.__introShown);
+  const showBoot = !bootDone;
+  const showIntro = !introDone && !showBoot && (forceIntro || introOn && !CAME_FROM_INTERNAL && !window.__introShown);
   const replayIntro = () => {setForceIntro(true);setIntroDone(false);};
+  // once nothing is covering the page, quietly buffer the hover videos
+  useEffect(() => {
+    if (!showBoot && !showIntro && window.MediaWarm) window.MediaWarm.start();
+  }, [showBoot, showIntro]);
   const showCursor = t.cursorFollow && t.rowHover === "thumb" && !sysReduced;
   const introFrames = useMemo(() => {
     const introSlots = window.MediaSlots.collect(slots, "intro:", 14);
@@ -1172,7 +1231,11 @@ function App() {
   return (
     <SlotsCtx.Provider value={slots}>
      <TagCtx.Provider value={setTagView}>
-      {showIntro && (
+      {showBoot &&
+      <Boot frames={introFrames} ready={slotsReady} name={DATA.name} maxWait={4000}
+      onDone={() => {window.__booted = true;setBootDone(true);}} />}
+
+      {!showBoot && showIntro && (
       slotsReady ?
       <Intro concept={t.intro} frames={introFrames} name={DATA.name}
       seconds={2} onDone={() => {window.__introShown = true;setIntroDone(true);}} /> :
@@ -1182,7 +1245,7 @@ function App() {
 
       {showCursor && <CursorThumb />}
 
-      <div className={`site ${showIntro ? "pre" : "go"} ${openFull ? "site-behind" : ""}`}>
+      <div className={`site ${showBoot || showIntro ? "pre" : "go"} ${openFull ? "site-behind" : ""}`}>
         <Header theme={t.theme} cycleTheme={cycleTheme} />
         <Hero roleLine={t.roleLine} />
         <Work listMode={t.listMode} openMode={t.openMode} feel={t.inlineFeel} cursorFollow={showCursor} rowHover={t.rowHover} multiOpen={t.inlineMulti} onOpenFull={openProject} onEditMedia={setEditMedia} />
