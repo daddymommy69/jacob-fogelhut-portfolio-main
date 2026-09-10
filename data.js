@@ -40,7 +40,9 @@ window.PORTFOLIO_DATA = {
   work: [
     { id: "esenes-campaign", client: "ESENES", title: "S/S Collection 2025", brands: ["ESENES"],
       role: "Creative direction & production support", tag: "ESENES", tags: ["ESENES", "Campaign", "Fashion"], featured: true, titleAlign: "left",
-      still: null, media: { kind: "instagram", src: "https://www.instagram.com/p/DI1q4AKzqeU/" } },
+      still: null, media: { kind: "instagram", src: "https://www.instagram.com/p/DI1q4AKzqeU/",
+        more: ["https://www.instagram.com/reel/DH6cmk1p0HA/"],
+        moreLabels: [""] } },
 
     { id: "esenes-campaign-video", client: "ESENES", title: "Eyeball Mules", brands: ["ESENES"],
       role: "Video content for the campaign", tag: "ESENES", tags: ["ESENES", "Campaign", "Film"], featured: true,
@@ -56,7 +58,7 @@ window.PORTFOLIO_DATA = {
 
     { id: "esenes-shoot", client: "ESENES X BRAVEST STUDIOS", title: "Brainiac Mules", brands: ["ESENES", "BRAVEST"],
       role: "On-set production & shoot assisting", tag: "ESENES X BRAVEST STUDIOS", tags: ["ESENES", "BRAVEST", "Campaign", "Production"],
-      still: null, media: { kind: "instagram", src: "https://www.instagram.com/p/DH6cmk1p0HA/" } },
+      still: null, media: { kind: "instagram", src: "https://www.instagram.com/reel/C33NswCJ6F4/" } },
 
     { id: "hyphy-doc", client: "TOMBGOGO", title: "Girbogos Campaign", brands: ["TOMBOGO"],
       role: "Micro-documentary on Bay Area hyphy culture", tag: "TOMBOGO", tags: ["TOMBOGO", "Film", "Documentary"], featured: true,
@@ -64,9 +66,7 @@ window.PORTFOLIO_DATA = {
 
     { id: "noise-complaints", client: "Noise Complaints", title: "RNB Experience Tour", brands: ["Noise Complaints"],
       role: "Content creation & social media management", tag: "NOISE COMPLAINTS", tags: ["Noise Complaints", "Tour", "Social"],
-      still: null, media: { kind: "instagram", src: "https://www.instagram.com/p/DX0IZb5j_ul/",
-        more: ["https://www.instagram.com/reel/DX07vUZJizh/", "https://www.instagram.com/reel/DX43DXbvgQD/"],
-        moreLabels: ["Tour video", "Show montage"] } },
+      still: null, media: { kind: "instagram", src: "https://www.instagram.com/p/DX0IZb5j_ul/" } },
 
     /* JUSTIN PARK / 5A — one campaign entry. The two pieces (the MV + the
        Shady single/album) live together. `embeds` stacks below a gallery of
@@ -308,8 +308,6 @@ window.REMOTE_MEDIA = {
   "gallery:esenes-campaign:2": "assets/SNS%20GUAPDAD/The%20money%20already%20printed.%20So%20buckle%20up%20n%20get%20that%20%F0%9F%92%A9%20my%20beloveds.%20Who%20need%20a%20belt%20thoTo%20show%20ou.jpg",
   "gallery:esenes-campaign:3": "assets/SNS%20GUAPDAD/The%20money%201%20.jpg",
   "gallery:esenes-campaign:4": "assets/SNS%20GUAPDAD/The%20money%20already%20printed.%20So%20buckle%20up%20n%20get%20that%20%F0%9F%92%A9%20my%20beloveds.%20Who%20need%20a%20belt%20thoTo%20show%20ou%20(1).jpg",
-  "gallery:esenes-campaign-video:0": "assets/HOLIDAY%20PARTY/SNSBOGOPARTY4.jpg",
-  "gallery:esenes-campaign-video:1": "assets/HOLIDAY%20PARTY/SNSBOGOPARTY2.jpg",
   "gallery:esenes-event:0": "assets/HYPEBEAST%20FLEA/HYPEBEAST%20FLEA%201.jpg",
   "gallery:esenes-event:1": "assets/HYPEBEAST%20FLEA/HYPEBEAST%20FLEA%202.JPG",
   "gallery:esenes-event:2": "assets/HYPEBEAST%20FLEA/HYPEBEAST%20FLEA%20MAIN.png",

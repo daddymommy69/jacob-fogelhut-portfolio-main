@@ -96,10 +96,12 @@ function MediaBlock({ item }) {
 /* one embed (instagram / spotify / video / youtube) — used when a project
    carries more than one piece via item.embeds (e.g. the Justin Park / 5A
    campaign) or a hover/project video set in the editor. */
-/* Instagram post code + the URL's own type segment. Instagram's embed is
-   served per-segment: a reel shared as /reel/CODE/ can 404 the embed at
-   /p/CODE/embed/ while /reel/CODE/embed/ serves. So keep what we were given
-   instead of forcing everything to /p/. */
+/* Instagram post code + the URL's own type segment.
+   NOTE: embeds always request /p/CODE/embed/, whatever the source URL said.
+   /p/ is Instagram's canonical post path and serves reels too; /reel/CODE/embed/
+   does not reliably serve at all. Briefly honoured the source segment here and
+   it broke every reel-shaped URL in the editor state, so `seg` is parsed and
+   kept for reference only. */
 function igRef(url) {
   const m = String(url || "").match(/instagram\.com\/(?:[^/]+\/)?(p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
   if (!m) return null;
@@ -126,7 +128,7 @@ function IgEmbed({ url, title }) {
   if (!ref) return null;
   return (
     <div className="ig-embed">
-      <iframe src={`https://www.instagram.com/${ref.seg}/${ref.code}/embed/`} title={title || "Instagram post"}
+      <iframe src={`https://www.instagram.com/p/${ref.code}/embed/`} title={title || "Instagram post"}
         style={{ height: h }} loading="lazy" scrolling="no" allowTransparency="true"
         allow="encrypted-media; picture-in-picture" frameBorder="0"></iframe>
     </div>);
@@ -146,7 +148,7 @@ function IgTile({ url, fallback, alt }) {
   }
   return (
     <div className="igtile">
-      <iframe src={`https://www.instagram.com/${ref.seg}/${ref.code}/embed/`} title="" tabIndex="-1" aria-hidden="true"
+      <iframe src={`https://www.instagram.com/p/${ref.code}/embed/`} title="" tabIndex="-1" aria-hidden="true"
         scrolling="no" frameBorder="0" loading="lazy" onError={() => setFailed(true)}></iframe>
       <span className="igtile-hit" />
       <span className="igtile-badge"><IcInstagram /></span>
@@ -703,7 +705,12 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, onRequ
   const baseEmbeds = item.embeds && item.embeds.length ?
   item.embeds :
   hasEmbed ?
-  [{ kind: m.kind, src: m.src, poster: m.poster, label: m.label }, ...(m.more || []).map((u, i) => ({ kind: "instagram", src: u, label: (m.moreLabels && m.moreLabels[i]) || `Instagram post ${i + 2}` }))] :
+  [{ kind: m.kind, src: m.src, poster: m.poster, label: m.label }, ...(m.more || []).map((u, i) => {
+    // an explicit "" in moreLabels means "no caption" — only a missing entry
+    // falls back to the generic numbering.
+    const ml = m.moreLabels && m.moreLabels[i];
+    return { kind: "instagram", src: u, label: ml == null ? `Instagram post ${i + 2}` : ml };
+  })] :
   [];
   const embeds = [...editorEmbeds, ...baseEmbeds];
   const mainEmbeds = embeds.filter((e) => !e.group);
