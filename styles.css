@@ -964,3 +964,8 @@ textarea.medit-input { resize: vertical; line-height: 1.5; }
 .trim-h::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%); width: 2px; height: 14px; background: rgba(255,255,255,.7); border-radius: 2px; }
 .trim-row { display: flex; align-items: center; gap: 12px; }
 .trim-row .mono { font-size: 10.5px; color: var(--muted); letter-spacing: .04em; }
+
+/* Spotify rail tile — mirrors .igtile: natural-size player scaled to fill
+   the 4/5 tile, click layer on top because the iframe swallows clicks. */
+.sptile { position: absolute; inset: 0; overflow: hidden; background: #121212; }
+.sptile iframe { position: absolute; top: 50%; left: 50%; width: 300px; height: 380px; border: 0; transform: translate(-50%, -50%) scale(.72); transform-origin: center; pointer-events: none; }

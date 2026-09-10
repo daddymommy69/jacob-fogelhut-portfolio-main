@@ -155,6 +155,18 @@ function IgTile({ url, fallback, alt }) {
     </div>);
 }
 
+/* rail tile for a Spotify embed: the player is rendered at its natural
+   size and scaled down behind a click layer, so the tile shows real cover
+   art instead of a generic note glyph. */
+function SpotifyTile({ url }) {
+  if (!url) return <div className="pp-vidthumb-fallback">♫</div>;
+  return (
+    <div className="sptile">
+      <iframe src={url} title="" tabIndex="-1" aria-hidden="true" scrolling="no" frameBorder="0" loading="lazy"></iframe>
+      <span className="igtile-hit" />
+    </div>);
+}
+
 function EmbedBlock({ embed, title }) {
   if (embed.kind === "instagram") return <IgEmbed url={embed.src} title={title} />;
   if (embed.kind === "spotify")
@@ -837,7 +849,7 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, onRequ
                   onClick={() => goTo(it.idx)} aria-label={`Show ${it.label || "media"} ${it.idx + 1}`}>
                     {it.type === "video" && it.vout > it.vin ?
                     <HoverVideo url={it.src} vin={it.vin} vout={it.vout} crop={it.crop} /> :
-                    it.type === "instagram" ? <IgTile url={it.src} fallback={still} alt={item.title} /> : it.poster ? <img src={it.poster} alt="" /> : it.type === "video" ? <video src={it.src} muted preload="metadata" /> : <div className="pp-vidthumb-fallback">{it.type === "youtube" ? "▶" : it.type === "spotify" ? "♫" : ""}</div>}
+                    it.type === "instagram" ? <IgTile url={it.src} fallback={still} alt={item.title} /> : it.type === "spotify" ? <SpotifyTile url={it.src} /> : it.poster ? <img src={it.poster} alt="" /> : it.type === "video" ? <video src={it.src} muted preload="metadata" /> : <div className="pp-vidthumb-fallback">{it.type === "youtube" ? "▶" : ""}</div>}
                     {(it.type === "video" || it.type === "youtube") && <span className="pp-play-sm"><IcPlay /></span>}
                   </button>
                 )}
@@ -853,7 +865,7 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, onRequ
                   onClick={() => goTo(it.idx)} aria-label={`Play ${it.label || g.label} ${it.idx + 1}`}>
                     {it.type === "video" && it.vout > it.vin ?
                     <HoverVideo url={it.src} vin={it.vin} vout={it.vout} crop={it.crop} /> :
-                    it.type === "instagram" ? <IgTile url={it.src} fallback={still} alt={item.title} /> : it.poster ? <img src={it.poster} alt="" /> : it.type === "video" ? <video src={it.src} muted preload="metadata" /> : <div className="pp-vidthumb-fallback">{it.type === "youtube" ? "▶" : it.type === "spotify" ? "♫" : ""}</div>}
+                    it.type === "instagram" ? <IgTile url={it.src} fallback={still} alt={item.title} /> : it.type === "spotify" ? <SpotifyTile url={it.src} /> : it.poster ? <img src={it.poster} alt="" /> : it.type === "video" ? <video src={it.src} muted preload="metadata" /> : <div className="pp-vidthumb-fallback">{it.type === "youtube" ? "▶" : ""}</div>}
                     {it.type !== "instagram" && it.type !== "spotify" && <span className="pp-play-sm"><IcPlay /></span>}
                   </button>
                 )}
