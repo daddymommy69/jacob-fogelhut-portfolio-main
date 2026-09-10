@@ -13,6 +13,8 @@ const useSlot = (id) => window.MediaSlots.url(React.useContext(SlotsCtx), id);
 // full reframe record {u,s,x,y} for a slot, honoring Media-Manager pan/zoom.
 const useCrop = (id) => window.MediaSlots.crop(React.useContext(SlotsCtx), id);
 
+const IcSpotify = () => <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm4.586 14.424a.623.623 0 01-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.623.623 0 01-.277-1.215c3.809-.87 7.077-.496 9.713 1.115.293.18.386.563.206.857zm1.223-2.722a.78.78 0 01-1.072.257c-2.687-1.652-6.785-2.131-9.965-1.166a.78.78 0 11-.452-1.492c3.632-1.102 8.147-.568 11.232 1.329a.78.78 0 01.257 1.072zm.105-2.835c-3.223-1.914-8.54-2.09-11.617-1.156a.935.935 0 11-.542-1.79c3.532-1.072 9.404-.865 13.115 1.338a.935.935 0 11-.956 1.608z"/></svg>;
+
 const IcInstagram = () => <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.2" cy="6.8" r="1.15" fill="currentColor" stroke="none" /></svg>;
 const IcExpand = () => <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" /></svg>;
 const IcArrow = () => <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.6" style={{ width: "14px", height: "14px" }}><path d="M4 10h12M11 5l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
@@ -155,15 +157,15 @@ function IgTile({ url, fallback, alt }) {
     </div>);
 }
 
-/* rail tile for a Spotify embed: the player is rendered at its natural
-   size and scaled down behind a click layer, so the tile shows real cover
-   art instead of a generic note glyph. */
-function SpotifyTile({ url }) {
-  if (!url) return <div className="pp-vidthumb-fallback">♫</div>;
+/* rail tile for a Spotify embed: the album cover with a Spotify badge.
+   Scaling Spotify's live player down into the tile was unreliable, and a
+   cover image costs no third-party request. */
+function SpotifyTile({ fallback, alt }) {
+  if (!fallback) return <div className="pp-vidthumb-fallback"><IcSpotify /></div>;
   return (
-    <div className="sptile">
-      <iframe src={url} title="" tabIndex="-1" aria-hidden="true" scrolling="no" frameBorder="0" loading="lazy"></iframe>
-      <span className="igtile-hit" />
+    <div className="igtile-fallback">
+      <CroppedImg value={fallback} alt={alt || ""} />
+      <span className="igtile-badge"><IcSpotify /></span>
     </div>);
 }
 
@@ -849,7 +851,7 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, onRequ
                   onClick={() => goTo(it.idx)} aria-label={`Show ${it.label || "media"} ${it.idx + 1}`}>
                     {it.type === "video" && it.vout > it.vin ?
                     <HoverVideo url={it.src} vin={it.vin} vout={it.vout} crop={it.crop} /> :
-                    it.type === "instagram" ? <IgTile url={it.src} fallback={still} alt={item.title} /> : it.type === "spotify" ? <SpotifyTile url={it.src} /> : it.poster ? <img src={it.poster} alt="" /> : it.type === "video" ? <video src={it.src} muted preload="metadata" /> : <div className="pp-vidthumb-fallback">{it.type === "youtube" ? "▶" : ""}</div>}
+                    it.type === "instagram" ? <IgTile url={it.src} fallback={still} alt={item.title} /> : it.type === "spotify" ? <SpotifyTile fallback={still} alt={item.title} /> : it.poster ? <img src={it.poster} alt="" /> : it.type === "video" ? <video src={it.src} muted preload="metadata" /> : <div className="pp-vidthumb-fallback">{it.type === "youtube" ? "▶" : ""}</div>}
                     {(it.type === "video" || it.type === "youtube") && <span className="pp-play-sm"><IcPlay /></span>}
                   </button>
                 )}
@@ -865,7 +867,7 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, onRequ
                   onClick={() => goTo(it.idx)} aria-label={`Play ${it.label || g.label} ${it.idx + 1}`}>
                     {it.type === "video" && it.vout > it.vin ?
                     <HoverVideo url={it.src} vin={it.vin} vout={it.vout} crop={it.crop} /> :
-                    it.type === "instagram" ? <IgTile url={it.src} fallback={still} alt={item.title} /> : it.type === "spotify" ? <SpotifyTile url={it.src} /> : it.poster ? <img src={it.poster} alt="" /> : it.type === "video" ? <video src={it.src} muted preload="metadata" /> : <div className="pp-vidthumb-fallback">{it.type === "youtube" ? "▶" : ""}</div>}
+                    it.type === "instagram" ? <IgTile url={it.src} fallback={still} alt={item.title} /> : it.type === "spotify" ? <SpotifyTile fallback={still} alt={item.title} /> : it.poster ? <img src={it.poster} alt="" /> : it.type === "video" ? <video src={it.src} muted preload="metadata" /> : <div className="pp-vidthumb-fallback">{it.type === "youtube" ? "▶" : ""}</div>}
                     {it.type !== "instagram" && it.type !== "spotify" && <span className="pp-play-sm"><IcPlay /></span>}
                   </button>
                 )}
