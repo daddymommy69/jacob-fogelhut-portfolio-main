@@ -651,8 +651,13 @@ button { font-family: inherit; cursor: pointer; }
   transition: opacity .5s var(--ease); pointer-events: none;
 }
 .intro.out { opacity: 0; }
-/* site is always visible; the intro overlay fades out to reveal it */
+/* The site stays hidden until both the boot gate and the intro are done.
+   It used to be permanently visible with the overlays fading over it, which
+   left one unpainted frame between Boot unmounting and Intro mounting — long
+   enough to flash the top of the page. */
 .site { opacity: 1; }
+.site.pre { opacity: 0; }
+.site.go { opacity: 1; transition: opacity .45s var(--ease); }
 .intro-stage { position: relative; width: 100%; height: 100%; display: grid; place-items: center; }
 .intro-frames, .intro-hero { position: absolute; inset: 0; }
 .intro-frame, .intro-hero > * , .if-img, .if-block { position: absolute; inset: 0; width: 100%; height: 100%; }
