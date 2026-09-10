@@ -64,9 +64,9 @@ window.PORTFOLIO_DATA = {
 
     { id: "noise-complaints", client: "Noise Complaints", title: "RNB Experience Tour", brands: ["Noise Complaints"],
       role: "Content creation & social media management", tag: "NOISE COMPLAINTS", tags: ["Noise Complaints", "Tour", "Social"],
-      still: null, media: { kind: "instagram", src: "https://www.instagram.com/p/DX43DXbvgQD/",
-        more: ["https://www.instagram.com/p/DX0IZb5j_ul/", "https://www.instagram.com/p/DX07vUZJizh/"],
-        moreLabels: ["Instagram post 2", "Instagram post 3"] } },
+      still: null, media: { kind: "instagram", src: "https://www.instagram.com/p/DX0IZb5j_ul/",
+        more: ["https://www.instagram.com/reel/DX07vUZJizh/"],
+        moreLabels: ["Show montage"] } },
 
     /* JUSTIN PARK / 5A — one campaign entry. The two pieces (the MV + the
        Shady single/album) live together. `embeds` stacks below a gallery of

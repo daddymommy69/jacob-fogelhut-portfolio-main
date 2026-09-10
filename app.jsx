@@ -96,25 +96,37 @@ function MediaBlock({ item }) {
 /* one embed (instagram / spotify / video / youtube) — used when a project
    carries more than one piece via item.embeds (e.g. the Justin Park / 5A
    campaign) or a hover/project video set in the editor. */
-/* Instagram post code out of any post/reel/tv URL */
+/* Instagram post code + the URL's own type segment. Instagram's embed is
+   served per-segment: a reel shared as /reel/CODE/ can 404 the embed at
+   /p/CODE/embed/ while /reel/CODE/embed/ serves. So keep what we were given
+   instead of forcing everything to /p/. */
+function igRef(url) {
+  const m = String(url || "").match(/instagram\.com\/(?:[^/]+\/)?(p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
+  if (!m) return null;
+  return { seg: m[1] === "reels" ? "reel" : m[1], code: m[2] };
+}
 function igCode(url) {
-  const m = String(url || "").match(/instagram\.com\/(?:[^/]+\/)?(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
-  return m ? m[1] : null;
+  const r = igRef(url);
+  return r ? r.code : null;
 }
 window.igCode = igCode;
+window.igRef = igRef;
 
 /* Instagram's own embed, in a plain iframe. The old approach mounted a
    <blockquote> and let embed.js swap it for an iframe — React never knew the
    node changed, and the processor skips anything inside a display:none
    wrapper, so live it rendered an empty white box. Pointing an iframe
-   straight at /embed/captioned/ needs no script and no DOM surgery. */
+   straight at /embed/ needs no script and no DOM surgery.
+   Not /embed/captioned/: the iframe height is fixed and set from out here,
+   but a caption's height is only known inside the iframe, so a long one
+   (the Justin Park post) overflows into a clipped, off-looking box. */
 function IgEmbed({ url, title }) {
-  const code = igCode(url);
+  const ref = igRef(url);
   const [h, setH] = useState(720);
-  if (!code) return null;
+  if (!ref) return null;
   return (
     <div className="ig-embed">
-      <iframe src={`https://www.instagram.com/p/${code}/embed/captioned/`} title={title || "Instagram post"}
+      <iframe src={`https://www.instagram.com/${ref.seg}/${ref.code}/embed/`} title={title || "Instagram post"}
         style={{ height: h }} loading="lazy" scrolling="no" allowTransparency="true"
         allow="encrypted-media; picture-in-picture" frameBorder="0"></iframe>
     </div>);
@@ -125,8 +137,8 @@ function IgEmbed({ url, title }) {
    so a transparent layer sits on top to keep the tile a working button.
    Falls back to the project's title picture if the embed can't load. */
 function IgTile({ url, fallback, alt }) {
-  const code = igCode(url);
-  const [failed, setFailed] = useState(!code);
+  const ref = igRef(url);
+  const [failed, setFailed] = useState(!ref);
   if (failed) {
     return fallback ?
     <div className="igtile-fallback"><CroppedImg value={fallback} alt={alt || ""} /><span className="igtile-badge"><IcInstagram /></span></div> :
@@ -134,7 +146,7 @@ function IgTile({ url, fallback, alt }) {
   }
   return (
     <div className="igtile">
-      <iframe src={`https://www.instagram.com/p/${code}/embed/`} title="" tabIndex="-1" aria-hidden="true"
+      <iframe src={`https://www.instagram.com/${ref.seg}/${ref.code}/embed/`} title="" tabIndex="-1" aria-hidden="true"
         scrolling="no" frameBorder="0" loading="lazy" onError={() => setFailed(true)}></iframe>
       <span className="igtile-hit" />
       <span className="igtile-badge"><IcInstagram /></span>
