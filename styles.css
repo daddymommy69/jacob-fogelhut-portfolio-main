@@ -128,7 +128,7 @@ button { font-family: inherit; cursor: pointer; }
   position: absolute; inset: 0; z-index: 2; display: grid; place-items: center;
   pointer-events: none; /* let hover reach the cycling images beneath so they cycle */
   background: linear-gradient(0deg, color-mix(in srgb, var(--accent) 30%, transparent), color-mix(in srgb, #000 18%, transparent));
-  color: #fff; opacity: 0; transition: opacity .45s var(--ease);
+  color: var(--accent); opacity: 0; transition: opacity .45s var(--ease);
 }
 .item-row:hover .thumb .reveal { opacity: 1; }
 .thumb .reveal .b-name {
