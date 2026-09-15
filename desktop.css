@@ -1,0 +1,115 @@
+/* =========================================================================
+   desktop.css — the Playground is now a full-screen early-2000s desktop.
+   Original artwork in that era's idiom (banded gradients, hard 1px bevels,
+   no soft shadows) rather than a copy of any shipped OS theme.
+   Chrome type is Jacob's marker face throughout, per his call.
+   ========================================================================= */
+.dk{position:fixed;inset:0;z-index:120;overflow:hidden;background:#0b1a2b;--tbh:38px;font-family:var(--font-body)}
+.dk img,.dk svg{image-rendering:pixelated}
+.dk-screen{position:absolute;inset:0 0 var(--tbh) 0;overflow:hidden}
+.dk-wall{position:absolute;inset:0}
+.dk-wall .cropwrap,.dk-wall img{width:100%;height:100%;object-fit:cover}
+.dk-wall.fade{transition:opacity 1.6s linear}
+.dk-screen::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(8,22,40,.34),rgba(8,22,40,.5))}
+
+/* ---- desktop icons ---- */
+.dk-ic{position:absolute;width:92px;display:grid;justify-items:center;gap:3px;padding:6px 3px 7px;background:none;border:0;cursor:pointer;z-index:3}
+.dk-ic svg{filter:drop-shadow(1px 1px 0 rgba(0,0,0,.55))}
+.dk-ic span{font-family:var(--font-marker);font-size:14px;line-height:1.2;color:#fff;text-align:center;text-shadow:1px 1px 0 rgba(0,0,0,.9);word-break:break-word}
+.dk-ic:hover{background:rgba(90,150,230,.3);outline:1px dotted rgba(255,255,255,.5)}
+.dk-ic.sel{background:#3a6ea5;outline:1px dotted rgba(255,255,255,.75)}
+.dk-ic.drag{opacity:.75}
+
+/* ---- windows ---- */
+.dkw{position:absolute;display:flex;flex-direction:column;min-width:240px;border-radius:6px 6px 0 0;padding:3px;background:linear-gradient(180deg,#4a95ea 0 3px,#2f7ad8 3px 9px,#1f63c2 9px 19px,#1550a4 19px 26px,#12408c 26px);box-shadow:1px 1px 0 #0b2f66,2px 2px 0 rgba(0,0,0,.35),inset 1px 1px 0 rgba(255,255,255,.5)}
+.dkw-bar{height:29px;display:flex;align-items:center;gap:7px;padding:0 5px 0 8px;color:#fff;cursor:grab;user-select:none}
+.dkw-bar.grab{cursor:grabbing}
+.dkw-bar b{flex:1;min-width:0;font-family:var(--font-marker);font-weight:400;font-size:18px;line-height:1;text-shadow:1px 1px 0 rgba(0,0,0,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dkw-ic{width:16px;height:16px;flex:none;display:block}
+.dkw-btns{display:flex;gap:3px}
+.dkw-btns button{width:21px;height:20px;border-radius:2px;border:1px solid #fff;box-shadow:inset -1px -1px 0 rgba(0,0,0,.35);background:linear-gradient(180deg,#7fb4f0 0 50%,#3d7fd0 50%);color:#fff;display:grid;place-items:center;cursor:pointer;padding:0}
+.dkw-btns .cl{background:linear-gradient(180deg,#f28d72 0 50%,#c33a17 50%);border-color:#ffd0c2}
+.dkw-btns svg{width:11px;height:11px}
+.dkw-body{flex:1;min-height:0;overflow:auto;background:#ece9e1;box-shadow:inset 1px 1px 0 #fff,inset -1px -1px 0 #a9a599;padding:12px;font-size:13.5px;line-height:1.6;color:#3a372f}
+.dkw-body h4{font-family:var(--font-display);font-weight:400;font-size:19px;margin-bottom:8px}
+.dkw-body p{max-width:52ch;text-wrap:pretty}
+.dkw-rz{position:absolute;right:0;bottom:0;width:15px;height:15px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 45%,rgba(255,255,255,.7) 45% 55%,transparent 55%)}
+
+/* ---- taskbar ---- */
+.dk-bar{position:absolute;left:0;right:0;bottom:0;height:var(--tbh);z-index:40;display:flex;align-items:center;gap:8px;padding-right:6px;background:linear-gradient(180deg,#4a95ea 0 2px,#2f7ad8 2px 6px,#1f63c2 6px 26px,#1550a4 26px 33px,#0f3c85 33px);box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+.dk-start{height:100%;padding:0 20px 0 12px;border:0;border-radius:0 10px 10px 0;background:linear-gradient(180deg,#8ec95c 0 3px,#66ae37 3px 12px,#4b9327 12px 26px,#357518 26px);box-shadow:inset 1px 1px 0 rgba(255,255,255,.55);color:#fff;font-family:var(--font-marker);font-size:19px;text-shadow:1px 1px 0 rgba(0,0,0,.45);display:flex;align-items:center;gap:7px;cursor:pointer}
+.dk-start em{width:15px;height:15px;display:block;background:conic-gradient(#e8503a 0 25%,#7bbf46 0 50%,#2f7fd1 0 75%,#f0c31e 0)}
+.dk-tasks{display:flex;gap:5px;flex:1;min-width:0;padding-left:4px;overflow:hidden}
+.dk-task,.dk-back{display:flex;align-items:center;gap:6px;height:25px;padding:0 11px;border:0;border-radius:2px;color:#fff;font-family:var(--font-marker);font-size:15px;cursor:pointer;white-space:nowrap;max-width:180px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.04));box-shadow:inset 1px 1px 0 rgba(255,255,255,.3),inset -1px -1px 0 rgba(0,0,0,.25)}
+.dk-task.on{background:#0f4592;box-shadow:inset 1px 1px 0 rgba(0,0,0,.4)}
+.dk-task svg,.dk-back svg{width:15px;height:15px;flex:none}
+.dk-back{background:linear-gradient(180deg,rgba(255,255,255,.42),rgba(255,255,255,.12))}
+.dk-tray{display:flex;align-items:center;gap:9px;height:26px;padding:0 10px;border-radius:2px;color:#fff;font-family:var(--font-marker);font-size:15px;background:linear-gradient(180deg,#3f8ede 0 3px,#1f63c2 3px);box-shadow:inset 1px 1px 0 rgba(255,255,255,.3),inset -1px -1px 0 rgba(0,0,0,.25)}
+.dk-tray button{background:none;border:0;color:inherit;font:inherit;cursor:pointer;padding:0}
+.dk-tray .np{max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.92}
+
+/* ---- start menu ---- */
+.dk-menu{position:absolute;left:0;bottom:var(--tbh);z-index:45;width:max-content;min-width:300px;max-width:min(94vw,460px);border-radius:6px 6px 0 0;padding:2px;background:linear-gradient(180deg,#4a95ea 0 3px,#2f7ad8 3px 9px,#1f63c2 9px);box-shadow:1px 1px 0 #0b2f66,2px 2px 0 rgba(0,0,0,.35)}
+.dk-menu-head{display:flex;align-items:center;gap:9px;padding:8px 10px;color:#fff}
+.dk-menu-head b{font-family:var(--font-marker);font-size:20px;font-weight:400;text-shadow:1px 1px 0 rgba(0,0,0,.5)}
+.dk-menu-head i{width:30px;height:30px;display:grid;place-items:center;background:#0f4592;box-shadow:inset 1px 1px 0 rgba(255,255,255,.35);font-family:var(--font-marker);font-style:normal;font-size:16px}
+/* Columns size to their widest label: the marker face is wide and varies,
+   so any fixed fraction clipped something ("Back to portfolio" first). */
+.dk-menu-cols{display:grid;grid-template-columns:max-content max-content;background:#ece9e1;box-shadow:inset 1px 1px 0 #fff}
+.dk-menu-cols>div{padding:6px;min-width:0}
+.dk-mi:hover{background:#2f6fb5;color:#fff}
+.dk-menu-cols>div+div{background:#dfe6f2}
+.dk-mi{display:flex;align-items:center;gap:8px;width:100%;min-width:0;padding:6px 7px;border:0;background:none;cursor:pointer;font-family:var(--font-marker);font-size:15px;color:#22303c;text-align:left;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dk-mi svg{width:18px;height:18px;flex:none}
+.dk-menu-sep{height:1px;margin:4px 2px;background:#b9bfc9}
+.dk-menu-foot{display:flex;justify-content:flex-end;gap:6px;padding:6px 8px}
+.dk-menu-foot button{display:flex;align-items:center;gap:6px;border:0;background:none;color:#fff;font-family:var(--font-marker);font-size:15px;cursor:pointer}
+
+/* ---- boot ---- */
+.dk-boot{position:fixed;inset:0;z-index:500;background:#000;display:grid;place-items:center;transition:opacity .5s linear}
+.dk-boot.out{opacity:0;pointer-events:none}
+.dk-boot-in{text-align:center;color:#fff}
+.dk-boot-name{font-family:var(--font-marker);font-size:clamp(34px,7vw,78px);line-height:1}
+.dk-boot-sub{margin-top:10px;font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7fb4f0}
+.dk-boot-bar{margin:26px auto 0;width:210px;height:14px;padding:2px;border:1px solid #4a6c93;background:#0b1a2b}
+.dk-boot-bar i{display:block;height:100%;width:0;background:repeating-linear-gradient(90deg,#3f8ede 0 12px,transparent 12px 16px);animation:dkboot 2.2s steps(14) forwards}
+@keyframes dkboot{to{width:100%}}
+
+/* ---- app internals ---- */
+.dk-files{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:12px}
+.dk-file{display:grid;justify-items:center;gap:4px;padding:6px 3px;border:0;background:none;cursor:pointer;font-family:var(--font-marker);font-size:13px;color:#22303c;text-align:center}
+.dk-file:hover{background:#2f6fb5;color:#fff}
+.dk-url{display:flex;align-items:center;gap:6px;padding:4px;background:#dfe6f2;box-shadow:inset 1px 1px 0 #fff}
+.dk-url input{flex:1;min-width:0;font:12px var(--font-mono);padding:4px 6px;border:1px solid #9aa4b2;background:#fff}
+.dk-url a{font-family:var(--font-marker);font-size:15px;padding:2px 10px;background:#e6e2d8;border:1px solid #9aa4b2;text-decoration:none;color:#22303c}
+.dk-frame{flex:1;min-height:0;border:0;width:100%;background:#fff}
+.dk-webnote{padding:10px 12px;font-size:12px;color:#6b6452;background:#f7f4ec;border-top:1px solid #cfc9bb}
+.dk-pane{display:flex;flex-direction:column;height:100%;margin:-12px;}
+.dk-shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.dk-shots button{aspect-ratio:4/5;padding:0;border:1px solid #a9a599;background:#cfc9bb;cursor:zoom-in;overflow:hidden}
+.dk-shots .cropwrap,.dk-shots img{width:100%;height:100%;object-fit:cover;display:block}
+.dk-tabs{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
+.dk-tab{font-family:var(--font-marker);font-size:14px;padding:3px 10px;border:1px solid #a9a599;background:#e6e2d8;cursor:pointer}
+.dk-tab.on{background:#2f6fb5;color:#fff;border-color:#1550a4}
+.dk-btn{font-family:var(--font-marker);font-size:15px;padding:4px 12px;border:1px solid #9aa4b2;background:linear-gradient(180deg,#fff 0 50%,#dfe0e2 50%);cursor:pointer;color:#22303c}
+.dk-btn:hover{background:linear-gradient(180deg,#fff 0 50%,#cfe0f5 50%)}
+.dk-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.dk-paper{background:#efe2c4;padding:14px;font-family:var(--font-marker);font-size:20px;line-height:1.5;min-height:120px;white-space:pre-wrap;box-shadow:inset 1px 1px 0 rgba(0,0,0,.12)}
+.dk-ta{width:100%;margin-top:10px;min-height:90px;padding:8px;font:13px/1.6 var(--font-body);border:1px solid #9aa4b2;background:#fff;resize:vertical}
+.dk-note{background:#fdf3a8;padding:10px;box-shadow:1px 1px 0 rgba(0,0,0,.22);font-size:13px}
+.dk-notes{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
+.dk-note b{display:block;font-family:var(--font-marker);font-size:15px;font-weight:400;margin-bottom:4px}
+.dk-paint-tools{display:flex;gap:6px;align-items:center;padding:6px;background:#dfe6f2;box-shadow:inset 1px 1px 0 #fff;flex-wrap:wrap}
+.dk-sw{width:18px;height:18px;border:1px solid #6b7280;cursor:pointer;padding:0}
+.dk-sw.on{outline:2px solid #12408c;outline-offset:1px}
+.dk-canvas{flex:1;min-height:0;background:#fff;display:block;cursor:crosshair;touch-action:none;width:100%}
+.dk-trash button{display:flex;gap:8px;align-items:center;width:100%;text-align:left;background:none;border:0;padding:4px 2px;font:13px var(--font-body);color:#3a372f;cursor:pointer}
+.dk-trash button:hover{background:#2f6fb5;color:#fff}
+.dk-trash-msg{margin-top:10px;font-family:var(--font-marker);font-size:17px;color:#6b6452;min-height:1.4em}
+.dk-deck{display:flex;gap:10px;align-items:center;padding:8px 6px;border-bottom:1px solid #cfc9bb;text-decoration:none;color:#3a372f}
+.dk-deck:hover{background:#2f6fb5;color:#fff}
+.dk-deck b{display:block;font-family:var(--font-marker);font-size:16px;font-weight:400}
+.dk-deck small{font-size:11.5px;opacity:.8}
+.dk-lb{position:absolute;inset:0;z-index:60;background:rgba(6,14,26,.86);display:grid;place-items:center;padding:24px}
+.dk-lb .cropwrap,.dk-lb img{max-width:100%;max-height:100%;object-fit:contain}
+@media (max-width:720px){.dk{--tbh:34px}.dk-ic{width:74px}.dk-ic span{font-size:12.5px}.dk-tray .np,.dk-tray .name{display:none}}

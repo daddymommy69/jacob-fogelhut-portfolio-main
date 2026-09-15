@@ -18,6 +18,11 @@
   const INFO_FILE = "proj-info.state.json";
   const ORDER_FILE = "proj-order.state.json";
   const vidFile = (id) => "projvid-" + String(id).replace(/[^a-z0-9]+/gi, "-").toLowerCase() + ".state.json";
+  // One fetch per id, shared. A project with three video slots was requesting
+  // the same sidecar three times and logging three identical 404s.
+  const vidFetches = {};
+  const fetchVidFile = (id) => vidFetches[id] || (vidFetches[id] =
+    fetch(vidFile(id)).then((r) => (r.ok ? r.json() : null)).catch(() => null));
   // Dropped clips are stored as Blobs in IndexedDB (below), NOT as base64 in a
   // .state.json file — a big clip's data URL would blow past the host write
   // ceiling and silently fail. 100MB cap; IDB + object URLs handle it and
@@ -85,7 +90,7 @@
               if (blob) { vids[key] = URL.createObjectURL(blob); return undefined; }
               return vidGet(id).then((b2) => {
                 if (b2) { vids[key] = URL.createObjectURL(b2); return undefined; }
-                return fetch(vidFile(id)).then((r) => (r.ok ? r.json() : null)).then((d) => {
+                return fetchVidFile(id).then((d) => {
                   if (d && d.u) vids[key] = d.u;
                 }).catch(() => {});
               });

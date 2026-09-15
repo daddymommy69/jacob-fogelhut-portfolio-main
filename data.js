@@ -8,6 +8,10 @@ window.PORTFOLIO_DATA = {
   name: "Jacob Fogelhut",
   email: "jacobfogelhut@gmail.com",
 
+  /* Links in the desktop's Start menu. Empty entries are simply not shown —
+     fill in the ones you want listed. */
+  social: { instagram: "", spotify: "", linkedin: "", phone: "" },
+
   /* INTRO — the load animation flips through these frames behind the marker
      name, then dissolves into the site. Drop a BATCH of stills into /media and
      list them here (paths or {src}). Any slot left null renders a warm color

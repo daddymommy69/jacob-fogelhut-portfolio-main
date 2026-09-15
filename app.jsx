@@ -121,16 +121,31 @@ window.igRef = igRef;
    node changed, and the processor skips anything inside a display:none
    wrapper, so live it rendered an empty white box. Pointing an iframe
    straight at /embed/ needs no script and no DOM surgery.
-   Not /embed/captioned/: the iframe height is fixed and set from out here,
-   but a caption's height is only known inside the iframe, so a long one
-   (the Justin Park post) overflows into a clipped, off-looking box. */
+   Height: the embed posts its measured height back on load (the same MEASURE
+   message Instagram's own embeds.js listens for), so the iframe is sized to
+   the real content instead of a fixed guess. Captions are back on now that
+   height adapts — a fixed box was what clipped long ones before, and what
+   left a slab of white under short ones. */
 function IgEmbed({ url, title }) {
   const ref = igRef(url);
-  const [h, setH] = useState(720);
+  const frameRef = useRef(null);
+  const [h, setH] = useState(560);
+  useEffect(() => {
+    const onMsg = (e) => {
+      if (!/(^|\.)instagram\.com$/.test((() => { try { return new URL(e.origin).hostname; } catch (x) { return ""; } })())) return;
+      if (!frameRef.current || e.source !== frameRef.current.contentWindow) return;
+      let d = e.data;
+      if (typeof d === "string") { try { d = JSON.parse(d); } catch (x) { return; } }
+      const px = d && d.type === "MEASURE" && d.details && Number(d.details.height);
+      if (px > 0) setH(Math.round(px));
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
   if (!ref) return null;
   return (
     <div className="ig-embed">
-      <iframe src={`https://www.instagram.com/p/${ref.code}/embed/`} title={title || "Instagram post"}
+      <iframe ref={frameRef} src={`https://www.instagram.com/p/${ref.code}/embed/captioned/`} title={title || "Instagram post"}
         style={{ height: h }} loading="lazy" scrolling="no" allowTransparency="true"
         allow="encrypted-media; picture-in-picture" frameBorder="0"></iframe>
     </div>);
