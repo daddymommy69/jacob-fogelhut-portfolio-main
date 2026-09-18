@@ -97,7 +97,10 @@
 @keyframes dkboot{to{width:100%}}
 
 /* ---- app internals ---- */
-.dk-files{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:12px}
+.dk-files{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:12px;align-content:start}
+/* apps whose content should fill the window and reflow as it resizes */
+.dk-fill{display:flex;flex-direction:column;height:100%;min-height:0}
+.dk-fill>.dk-shots{flex:1 1 auto;min-height:0;overflow:auto;align-content:start;grid-auto-rows:max-content;grid-template-columns:repeat(auto-fill,minmax(90px,1fr))}
 .dk-file{display:grid;justify-items:center;gap:4px;padding:6px 3px;border:0;background:none;cursor:pointer;font-family:var(--font-body);font-size:12px;color:#22303c;text-align:center}
 .dk-file:hover{background:#2f6fb5;color:#fff}
 .dk-url{display:flex;align-items:center;gap:6px;padding:4px;background:#dfe6f2;box-shadow:inset 1px 1px 0 #fff}
@@ -155,7 +158,11 @@
 .dk-mini.shade .dkm-body{display:none}
 /* the visualizer fills the panel; the controls float over it */
 .dkm-stage{position:relative;flex:1;min-width:0;background:#0d0c09;cursor:pointer}
-.dkm-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:auto}
+/* Promoted to its own compositing layer. Without this, every repaint of the
+   visualizer re-rasterized everything it overlaps — the fixed bottom bar and
+   its 50px shadow, the scrim, the wallpaper — and the page ran at ~7fps.
+   Measured 6.6fps → 105fps with this one line. */
+.dkm-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:auto;will-change:transform;transform:translateZ(0);contain:paint}
 .dkm-scrim{position:absolute;inset:0;pointer-events:none;background:radial-gradient(62% 62% at 50% 45%,transparent,rgba(13,12,9,.78))}
 .dkm-kind{position:absolute;top:9px;left:50%;transform:translateX(-50%);font:9px/1 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:#f4efe680;pointer-events:none}
 .dkm-ctl{position:absolute;left:12px;right:12px;bottom:12px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;cursor:default}
@@ -197,13 +204,14 @@
 .dk .fc-bg img,.dk .fc-scan img{image-rendering:auto}
 
 /* ---- playlists: each row links out, with its embed underneath ---- */
-.dk-pls{display:flex;flex-direction:column;gap:18px}
-.dk-pl{display:flex;flex-direction:column;gap:0;min-width:0}
-/* half width, and the embed itself scaled to 75% so its type and art shrink
-   with it rather than just being cropped — no frame, just the player */
+/* the embeds fill the pane and share its height, so both width and height
+   track the window; the player stays scaled to 75% so its type and art
+   shrink rather than being cropped — no frame, just the player */
+.dk-pls{display:flex;flex-direction:column;gap:18px;height:100%;min-height:0}
+.dk-pl{display:flex;flex-direction:column;gap:0;min-width:0;flex:1 0 auto}
 .dk-pl-name{font-family:var(--font-body);font-size:13.5px;font-weight:600;color:#2a2620}
-.dk-embed{margin-top:2px;width:50%;min-width:218px;height:150px;overflow:hidden;display:block}
-.dk-embed iframe{width:133.34%;height:200px;border:0;background:transparent;transform:scale(.75);transform-origin:top left}
+.dk-embed{position:relative;margin-top:2px;width:100%;flex:1 1 auto;min-height:205px;overflow:hidden;display:block}
+.dk-embed iframe{position:absolute;left:0;top:0;width:133.34%;height:133.34%;border:0;background:transparent;transform:scale(.75);transform-origin:top left}
 
 
 /* ---- the floating player bar has to clear the taskbar ---- */

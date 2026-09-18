@@ -359,7 +359,7 @@
       <div className={`pbar ${barStyle === "float" ? "is-float" : "is-full"}`} style={{ "--vc": accent }}>
         {/* radio stations have no album art: run the desk visualizer small */}
         <div className="pbar-cover">{window.DeskViz
-          ? <window.DeskViz kind={deskKind} grain={0.1} scan={0.18} real={isMix && playing} analyser={p.analyser} />
+          ? <window.DeskViz kind={deskKind} grain={0} scan={0} transparent real={isMix && playing} analyser={p.analyser} />
           : <span className="pbar-glyph">{isMix ? "♪" : "♬"}</span>}</div>
         <div className="pbar-info">
           <div className="pbar-title">{title}</div>

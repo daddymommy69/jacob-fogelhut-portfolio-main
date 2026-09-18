@@ -12,15 +12,47 @@
   const KINDS = ["radial", "bars", "wave", "grid", "dancer", "stars"];
   const ramp = (v) => "hsl(" + (140 - 140 * Math.min(1, Math.max(0, (v - 0.25) / 0.7))) + " 85% " + (45 + 25 * v) + "%)";
 
-  function DeskViz({ kind = "radial", grain = 0.2, scan = 0.2, analyser, real }) {
+  function DeskViz({ kind = "radial", grain = 0.2, scan = 0.2, analyser, real, bg = false, transparent = false }) {
     const ref = useRef(null);
-    const cfg = useRef({ kind, grain, scan, analyser, real });
-    cfg.current = { kind, grain, scan, analyser, real };
+    const cfg = useRef({ kind, grain, scan, analyser, real, bg, transparent });
+    cfg.current = { kind, grain, scan, analyser, real, bg, transparent };
 
     useEffect(() => {
       const canvas = ref.current; if (!canvas) return;
       const x = canvas.getContext("2d");
       const buf = document.createElement("canvas"), bx = buf.getContext("2d");
+      /* trails live on their own layer and fade by alpha, so whatever sits
+         behind them (the neon grid, or nothing at all in the bottom bar)
+         stays visible instead of being painted over */
+      const tr = document.createElement("canvas"), tx = tr.getContext("2d");
+      /* static neon horizon, redrawn only on resize */
+      const gridCv = document.createElement("canvas");
+      let gridW = 0, gridH = 0;
+      const buildGrid = (W, H) => {
+        gridCv.width = W; gridCv.height = H; gridW = W; gridH = H;
+        const g = gridCv.getContext("2d");
+        g.fillStyle = "#0d0c09"; g.fillRect(0, 0, W, H);
+        const hy = Math.round(H * 0.62), cx = W / 2;
+        const sky = g.createLinearGradient(0, 0, 0, hy);
+        sky.addColorStop(0, "rgba(255,47,214,0)"); sky.addColorStop(1, "rgba(255,47,214,.09)");
+        g.fillStyle = sky; g.fillRect(0, 0, W, hy);
+        const fl = g.createLinearGradient(0, hy, 0, H);
+        fl.addColorStop(0, "rgba(41,231,255,.08)"); fl.addColorStop(1, "rgba(41,231,255,0)");
+        g.fillStyle = fl; g.fillRect(0, hy, W, H - hy);
+        g.lineWidth = 1; g.strokeStyle = "rgba(41,231,255,.11)";
+        for (let i = -14; i <= 14; i++) { g.beginPath(); g.moveTo(cx, hy); g.lineTo(cx + i * (W / 8), H); g.stroke(); }
+        for (let i = 1; i <= 12; i++) {
+          const f = Math.pow(i / 12, 2.1), y = hy + f * (H - hy);
+          g.globalAlpha = 0.5 + 0.5 * f;
+          g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke();
+        }
+        g.globalAlpha = 1;
+        const gl = g.createLinearGradient(0, hy - 10, 0, hy + 10);
+        gl.addColorStop(0, "rgba(255,47,214,0)"); gl.addColorStop(.5, "rgba(255,120,235,.20)"); gl.addColorStop(1, "rgba(41,231,255,0)");
+        g.fillStyle = gl; g.fillRect(0, hy - 10, W, 20);
+        g.strokeStyle = "rgba(255,160,245,.20)";
+        g.beginPath(); g.moveTo(0, hy + .5); g.lineTo(W, hy + .5); g.stroke();
+      };
       const nz = document.createElement("canvas"); nz.width = nz.height = 128;
       (() => {
         const c = nz.getContext("2d"), d = c.createImageData(128, 128);
@@ -67,6 +99,7 @@
         if (now - last < (c.real && c.analyser && c.analyser.current ? 0 : 33)) return;
         last = now;
         if (buf.width !== W || buf.height !== H) { buf.width = W; buf.height = H; }
+        if (tr.width !== W || tr.height !== H) { tr.width = W; tr.height = H; }
         if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
         t += 0.045;
         const d = read();
@@ -108,14 +141,20 @@
             bx.fillRect(i * bw + bw * 0.15, H - h, bw * 0.7, h);
           }
         } else if (K === "wave") {
-          const n = Math.round(W / 2); bx.lineWidth = Math.max(1.6, W / 300);
-          let prev = null;
+          /* One path, one shadowed stroke. Stroking every segment separately
+             with shadowBlur on meant ~W/2 blurred draw calls a frame, which
+             is what made this mode drag the whole page down. */
+          const n = Math.min(180, Math.max(48, Math.round(W / 4)));
+          bx.lineWidth = Math.max(1.6, W / 300);
+          let peak = 0;
+          bx.beginPath();
           for (let i = 0; i <= n; i++) {
-            const xx = i / n * W, v = waveAt(i, n), yy = H / 2 + v * H, col = ramp(Math.abs(v) * 2.4);
-            bx.strokeStyle = col; bx.shadowColor = col;
-            bx.beginPath(); bx.moveTo(prev ? prev[0] : xx, prev ? prev[1] : yy); bx.lineTo(xx, yy); bx.stroke();
-            prev = [xx, yy];
+            const xx = i / n * W, v = waveAt(i, n), yy = H / 2 + v * H;
+            if (Math.abs(v) > peak) peak = Math.abs(v);
+            i ? bx.lineTo(xx, yy) : bx.moveTo(xx, yy);
           }
+          const col = ramp(Math.min(1, peak * 2.4));
+          bx.strokeStyle = col; bx.shadowColor = col; bx.stroke();
         } else if (K === "grid") {
           const cell = Math.max(7, W / 34), cols = Math.floor(W / cell), rows = Math.floor(H / cell);
           for (let cc = 0; cc < cols; cc++) {
@@ -151,10 +190,20 @@
         }
         bx.shadowBlur = 0;
 
-        /* trails: fade the previous frame instead of clearing it */
-        x.globalAlpha = 0.26; x.fillStyle = "#0d0c09"; x.fillRect(0, 0, W, H); x.globalAlpha = 1;
-        x.drawImage(buf, 0, 0);
+        /* trails: fade the previous frame's alpha instead of painting over it */
+        tx.globalCompositeOperation = "destination-out";
+        tx.fillStyle = "rgba(0,0,0,.26)"; tx.fillRect(0, 0, W, H);
+        tx.globalCompositeOperation = "source-over";
+        tx.drawImage(buf, 0, 0);
 
+        x.clearRect(0, 0, W, H);
+        if (!c.transparent) {
+          if (c.bg && c.kind === "dancer") { if (gridW !== W || gridH !== H) buildGrid(W, H); x.drawImage(gridCv, 0, 0); }
+          else { x.fillStyle = "#0d0c09"; x.fillRect(0, 0, W, H); }
+        }
+        x.drawImage(tr, 0, 0);
+
+        if (c.transparent) return;
         if (c.grain > 0) {
           x.save(); x.globalCompositeOperation = "overlay"; x.globalAlpha = c.grain;
           const ox = -Math.random() * 128, oy = -Math.random() * 128;

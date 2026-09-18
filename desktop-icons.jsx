@@ -5,6 +5,7 @@
    Babel scopes.
    ========================================================================= */
 (function () {
+  const { useState } = React;
   const S = ({ children, s = 44 }) => <svg viewBox="0 0 48 48" width={s} height={s} aria-hidden="true">{children}</svg>;
 
   const Folder = ({ s }) => <S s={s}>
@@ -53,8 +54,11 @@
     <path d="M34 33.5l3 3 5-6" stroke="#fff" strokeWidth="2" fill="none"/>
   </S>;
   /* The font icon is Jacob's own cover photograph, not a drawn glyph — it sits
-     in a thin white snapshot border so it reads as a picture next to them. */
-  const Font = ({ s = 44 }) => <span className="dk-photoic" style={{ width: s, height: s }}><img src="media/font-icon.png" alt="" /></span>;
+     in a thin white snapshot border so it reads as a picture next to them.
+     Hosted on R2, so it works locally and live without living in the repo. */
+  const FONT_ICON = "https://pub-0c4f005a66f14c8394bc1abf2fcf0d25.r2.dev/assets/DAD%20FONT/DAD%20FONT%20COVER.png";
+  const Font = ({ s = 44 }) => (
+    <span className="dk-photoic" style={{ width: s, height: s }}><img src={FONT_ICON} alt="" /></span>);
   const Headphones = ({ s }) => <S s={s}>
     <path d="M10 30v-5a14 14 0 0 1 28 0v5" fill="none" stroke="#5c3560" strokeWidth="3.4"/>
     <rect x="5" y="28" width="11" height="15" rx="2" fill="#7a4a80" stroke="#3d2242" strokeWidth="1.5"/>

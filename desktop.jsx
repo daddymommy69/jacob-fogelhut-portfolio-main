@@ -41,11 +41,14 @@
   /* ---------------- window ---------------- */
   function Win({ id, app, z, minimized, focus, close, min, children }) {
     const ref = useRef(null);
+    const mw = (app.min && app.min.w) || 240, mh = (app.min && app.min.h) || 150;
     useEffect(() => {
       const el = ref.current, host = el && el.parentElement; if (!host) return;
       const W = host.clientWidth, H = host.clientHeight;
-      const w = Math.min(app.size.w, Math.max(240, W - 24));
-      const h = Math.min(app.size.h, Math.max(160, H - 24));
+      /* each app carries its own floor; on a screen too small for it the
+         screen wins, so the window never hangs off the edge */
+      const w = Math.max(Math.min(mw, W - 24), Math.min(app.size.w, W - 24));
+      const h = Math.max(Math.min(mh, H - 24), Math.min(app.size.h, H - 24));
       el.style.width = w + "px"; el.style.height = h + "px";
       /* cascade: claim the lowest slot no other live window is sitting in,
          so two windows never land on the same pixel (even when several
@@ -77,8 +80,9 @@
       const W = host.clientWidth, H = host.clientHeight, l = el.offsetLeft, t = el.offsetTop;
       const sx = e.clientX, sy = e.clientY, w0 = el.offsetWidth, h0 = el.offsetHeight;
       const move = (ev) => {
-        el.style.width = Math.max(240, Math.min(W - l - 4, w0 + ev.clientX - sx)) + "px";
-        el.style.height = Math.max(150, Math.min(H - t - 4, h0 + ev.clientY - sy)) + "px";
+        const maxW = W - l - 4, maxH = H - t - 4;
+        el.style.width = Math.max(Math.min(mw, maxW), Math.min(maxW, w0 + ev.clientX - sx)) + "px";
+        el.style.height = Math.max(Math.min(mh, maxH), Math.min(maxH, h0 + ev.clientY - sy)) + "px";
       };
       const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
       window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
@@ -173,7 +177,7 @@
         </div>
         <div className="dkm-body">
           <div className="dkm-stage" onClick={cycle} title="Click to change the visualizer">
-            <window.DeskViz kind={kind} grain={grain} scan={scan} real={p.isMix && p.playing} analyser={p.analyser} />
+            <window.DeskViz kind={kind} grain={grain} scan={scan} bg real={p.isMix && p.playing} analyser={p.analyser} />
             <div className="dkm-scrim" />
             <div className="dkm-kind">{kind}</div>
             {gear &&
@@ -306,6 +310,20 @@
     const min = (key) => setWins((w) => w.map((x) => x.key === key ? { ...x, minimized: true } : x));
     const exit = () => { location.hash = ""; };
 
+    /* Clicking a desktop icon a second time puts the app away: front window
+       minimizes, a buried one comes forward first, the radio panel closes
+       (the mix keeps playing — the tray speaker brings it back). */
+    const iconActivate = (key) => {
+      if (key === "radio") { setMini((v) => !v); return; }
+      const cur = wins.find((x) => x.key === key);
+      if (cur && !cur.minimized) {
+        const top = wins.reduce((m, x) => (x.minimized ? m : Math.max(m, x.z)), -1);
+        if (cur.z === top) min(key); else focus(key);
+        return;
+      }
+      open(key);
+    };
+
     /* Icons are locked: the arrangement is the ORDER grid, same for Jacob and
        for visitors. Reordering is a code change now, on request. */
 
@@ -345,7 +363,7 @@
             return (
               <button key={key} data-app={key} className={`dk-ic ${sel === key ? "sel" : ""}`} style={iconPos(key, i)}
                 onPointerDown={(e) => { e.stopPropagation(); setSel(key); }}
-                onClick={() => open(key)} onDoubleClick={() => open(key)}>
+                onClick={() => iconActivate(key)}>
                 <Icon /><span>{a.title}</span>
               </button>);
           })}

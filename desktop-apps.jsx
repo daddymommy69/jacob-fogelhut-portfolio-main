@@ -45,15 +45,38 @@
     .replace("open.spotify.com/embed/", "open.spotify.com/");
   function ListeningApp() {
     const lists = (PG.radio || []);
+    const wrap = useRef(null);
+    /* Only one source of audio at a time. We can't reach inside the Spotify /
+       Apple players, but clicking into one steals focus from the page — that
+       blur is our signal. When it fires we bump every other embed's key, which
+       remounts it, which stops whatever it was playing. */
+    const [nonce, setNonce] = useState(() => lists.map(() => 0));
+    useEffect(() => {
+      let lastIdx = -1;
+      /* Focus is the only signal a sealed player gives us, and the blur event
+         alone missed cases, so we also poll it. */
+      const check = () => {
+        const el = document.activeElement;
+        if (!el || el.tagName !== "IFRAME" || !wrap.current || !wrap.current.contains(el)) return;
+        const i = +el.dataset.idx;
+        if (i === lastIdx) return;
+        lastIdx = i;
+        setNonce((n) => n.map((v, k) => (k === i ? v : v + 1)));
+      };
+      const onBlur = () => setTimeout(check, 0);
+      window.addEventListener("blur", onBlur);
+      const t = setInterval(check, 500);
+      return () => { window.removeEventListener("blur", onBlur); clearInterval(t); };
+    }, []);
     if (!lists.length) return <p>No playlists yet.</p>;
     return (
-      <div className="dk-pls">
+      <div className="dk-pls" ref={wrap}>
         {lists.map((pl, i) =>
           <div className="dk-pl" key={pl.name + i}>
             <div className="dk-pl-name">{pl.name}</div>
             {pl.embed &&
             <div className="dk-embed">
-              <iframe src={pl.embed} height={200} allow="autoplay *; encrypted-media *;" loading="lazy" title={pl.name}></iframe>
+              <iframe key={nonce[i]} data-idx={i} src={pl.embed} allow="autoplay *; encrypted-media *;" loading="lazy" title={pl.name}></iframe>
             </div>}
           </div>)}
       </div>);
@@ -72,7 +95,7 @@
     if (!live.length) return <p>No photos uploaded yet.</p>;
     const cur = live[Math.min(tab, live.length - 1)];
     return (
-      <div>
+      <div className="dk-fill">
         <div className="dk-tabs">{live.map((c, i) => <button key={c.a} className={`dk-tab ${cur === c ? "on" : ""}`} onClick={() => setTab(i)}>{c.name}</button>)}</div>
         <div className="dk-shots">{cur.photos.map((ph, i) => <button key={i} onClick={() => setBig(ph)}><CroppedImg value={ph} alt="" /></button>)}</div>
         {big && <div className="dk-lb" onClick={() => setBig(null)}><CroppedImg value={big} alt="" /></div>}
@@ -249,19 +272,19 @@
      the icon and the Start-menu row still have art and a title. */
   window.DeskApps = {
     registry: {
-      projects: { title: "My Projects", Icon: I.Folder, tint: "#41669a", body: (ctx) => <ProjectsApp open={ctx.open} />, size: { w: 460, h: 320 } },
+      projects: { title: "My Projects", Icon: I.Folder, tint: "#41669a", body: (ctx) => <ProjectsApp open={ctx.open} />, size: { w: 460, h: 320 }, min: { w: 320, h: 240 } },
       radio: { title: "Radio", Icon: I.Radio, tint: "#5b6b8c", mini: true },
-      listening: { title: "What I'm listening to", Icon: I.Headphones, tint: "#5c3560", body: () => <ListeningApp />, size: { w: 430, h: 500 } },
-      photos: { title: "Photos", Icon: I.Photos, tint: "#6b4a70", body: () => <PhotosApp />, size: { w: 520, h: 380 } },
-      paint: { title: "Paint", Icon: I.Paint, tint: "#9b5e39", body: () => <PaintApp />, size: { w: 520, h: 400 } },
-      decks: { title: "Pitch Decks", Icon: I.Deck, tint: "#3c6b68", body: () => <DecksApp />, size: { w: 460, h: 300 } },
-      guestbook: { title: "Guestbook", Icon: I.Book, tint: "#66743c", body: () => <GuestbookApp />, size: { w: 470, h: 400 } },
-      letter: { title: "Write me a letter", Icon: I.Letter, tint: "#8a6a2f", body: () => <LetterApp />, size: { w: 440, h: 400 } },
-      font: { title: "The font", Icon: I.Font, tint: "#7a4a5e", bleed: true, body: () => <FontApp />, size: { w: 660, h: 620 } },
-      trash: { title: "Recycle Bin", Icon: I.Bin, tint: "#555a61", body: () => <TrashApp />, size: { w: 400, h: 280 } },
-      readme: { title: "readme.txt", Icon: I.Note, tint: "#4c5b67", body: () => <ReadmeApp />, size: { w: 400, h: 260 } }
+      listening: { title: "What I'm listening to", Icon: I.Headphones, tint: "#5c3560", body: () => <ListeningApp />, size: { w: 720, h: 620 }, min: { w: 560, h: 420 } },
+      photos: { title: "Photos", Icon: I.Photos, tint: "#6b4a70", body: () => <PhotosApp />, size: { w: 520, h: 380 }, min: { w: 400, h: 320 } },
+      paint: { title: "Paint", Icon: I.Paint, tint: "#9b5e39", body: () => <PaintApp />, size: { w: 520, h: 400 }, min: { w: 420, h: 300 } },
+      decks: { title: "Pitch Decks", Icon: I.Deck, tint: "#3c6b68", body: () => <DecksApp />, size: { w: 460, h: 300 }, min: { w: 340, h: 220 } },
+      guestbook: { title: "Guestbook", Icon: I.Book, tint: "#66743c", body: () => <GuestbookApp />, size: { w: 470, h: 400 }, min: { w: 340, h: 300 } },
+      letter: { title: "Write me a letter", Icon: I.Letter, tint: "#8a6a2f", body: () => <LetterApp />, size: { w: 440, h: 400 }, min: { w: 360, h: 320 } },
+      font: { title: "The font", Icon: I.Font, tint: "#7a4a5e", bleed: true, body: () => <FontApp />, size: { w: 660, h: 620 }, min: { w: 400, h: 400 } },
+      trash: { title: "Recycle Bin", Icon: I.Bin, tint: "#555a61", body: () => <TrashApp />, size: { w: 400, h: 280 }, min: { w: 280, h: 200 } },
+      readme: { title: "readme.txt", Icon: I.Note, tint: "#4c5b67", body: () => <ReadmeApp />, size: { w: 400, h: 260 }, min: { w: 300, h: 220 } }
     },
-    webApp: (p) => ({ title: p.title + " — Internet", Icon: I.Web, tint: "#41669a", body: () => <WebApp project={p} />, size: { w: 640, h: 460 } }),
-    imageApp: (p) => ({ title: p.title, Icon: I.Img, tint: "#6b4a70", body: () => <ImageApp project={p} />, size: { w: 460, h: 380 } })
+    webApp: (p) => ({ title: p.title + " — Internet", Icon: I.Web, tint: "#41669a", body: () => <WebApp project={p} />, size: { w: 640, h: 460 }, min: { w: 420, h: 320 } }),
+    imageApp: (p) => ({ title: p.title, Icon: I.Img, tint: "#6b4a70", body: () => <ImageApp project={p} />, size: { w: 460, h: 380 }, min: { w: 320, h: 260 } })
   };
 })();
