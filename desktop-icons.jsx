@@ -52,10 +52,14 @@
     <rect x="31" y="27" width="13" height="13" fill="#3aa64a" stroke="#1d6b2c" strokeWidth="1.2"/>
     <path d="M34 33.5l3 3 5-6" stroke="#fff" strokeWidth="2" fill="none"/>
   </S>;
-  const Font = ({ s }) => <S s={s}>
-    <rect x="7" y="8" width="34" height="34" fill="#fff" stroke="#6f6a5b" strokeWidth="1.5"/>
-    <rect x="7" y="8" width="34" height="6" fill="#8fd0ff"/>
-    <text x="24" y="37" fontFamily="JacobMarker, Georgia, serif" fontSize="26" textAnchor="middle" fill="#22303c">A</text>
+  /* The font icon is Jacob's own cover photograph, not a drawn glyph — it sits
+     in a thin white snapshot border so it reads as a picture next to them. */
+  const Font = ({ s = 44 }) => <span className="dk-photoic" style={{ width: s, height: s }}><img src="media/font-icon.png" alt="" /></span>;
+  const Headphones = ({ s }) => <S s={s}>
+    <path d="M10 30v-5a14 14 0 0 1 28 0v5" fill="none" stroke="#5c3560" strokeWidth="3.4"/>
+    <rect x="5" y="28" width="11" height="15" rx="2" fill="#7a4a80" stroke="#3d2242" strokeWidth="1.5"/>
+    <rect x="32" y="28" width="11" height="15" rx="2" fill="#7a4a80" stroke="#3d2242" strokeWidth="1.5"/>
+    <rect x="7" y="31" width="7" height="9" fill="#d8bfe0"/><rect x="34" y="31" width="7" height="9" fill="#d8bfe0"/>
   </S>;
   const Bin = ({ s }) => <S s={s}>
     <ellipse cx="24" cy="15" rx="11" ry="3.4" fill="#dfe4e8" stroke="#5b6470" strokeWidth="1.4"/>
@@ -82,5 +86,5 @@
     close: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4.5 4.5 11.5 11.5M11.5 4.5 4.5 11.5"/></svg>
   };
 
-  window.DeskIcons = { Folder, Web, Radio, Photos, Paint, Deck, Book, Letter, Font, Bin, Note, Img, Mail, Link, Power, Home, Mark };
+  window.DeskIcons = { Folder, Web, Radio, Headphones, Photos, Paint, Deck, Book, Letter, Font, Bin, Note, Img, Mail, Link, Power, Home, Mark };
 })();

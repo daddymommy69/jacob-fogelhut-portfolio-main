@@ -173,9 +173,8 @@ window.PORTFOLIO_DATA = {
        ---------------------------------------------------------------------- */
     mixes: [
       { id: "mix-1", title: "103.5 ITS ON THE FLOOR RADIO", src: "assets/RADIO%20MIXES/103.5%20ITS%20ON%20THE%20FLOOR%201.2.mp3" },
-      { id: "mix-2", title: "KWP 730 AM — DHALEED X DJ FUCKER MORNING INSPIRATION", src: "media/mixes/mix-2.mp3" },
-      { id: "mix-4", title: "DJ FUCKER X DHALEED RADIO FRIENDLY", src: "assets/RADIO%20MIXES/DJ%20FUCKER%20X%20DHALEED%20RADIO%20FRIENDLY.mp3" },
-      { id: "mix-3", title: "Mix 03", src: "assets/RADIO%20MIXES/FIRST%20MIX.mp3" }
+      { id: "mix-4", title: "KWP 730 AM — DHALEED X DJ FUCKER MORNING INSPIRATION", src: "assets/RADIO%20MIXES/DJ%20FUCKER%20X%20DHALEED%20RADIO%20FRIENDLY.mp3" },
+      { id: "mix-3", title: "98.1 THE HEARTBEAT LOVERS HOUR", src: "assets/RADIO%20MIXES/FIRST%20MIX.mp3" }
     ],
 
     // Recycle Bin easter-egg — scrapped ideas, for the lol.

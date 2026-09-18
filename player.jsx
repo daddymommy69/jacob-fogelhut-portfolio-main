@@ -203,6 +203,9 @@
         setTimeout(playAudio, 900);
       } else setTimeout(playAudio, 60);
     }, [playAudio]);
+    /* bar-only: the radio window opening should show the bar without
+       starting playback (playlists no longer turn the radio on at all) */
+    const armRadio = useCallback(() => { setOn(true); setSrcType("mix"); }, []);
     const openPlaylists = useCallback(() => {
       const a = audioRef.current; if (a) a.pause();
       setOn(true); setPlPanel(true); setSrcType("playlist");
@@ -231,7 +234,7 @@
       mixPanel, plPanel, analyser: analyserRef,
       setMixPanel, setPlPanel,
       togglePlay, next, prev, shuffle, goMix, toMix, toPlaylist,
-      openMixes, openPlaylists, closeRadio, changeVolume, seek, expand
+      openMixes, openPlaylists, armRadio, closeRadio, changeVolume, seek, expand
     };
     return React.createElement(PlayerCtx.Provider, { value }, children);
   }
@@ -309,6 +312,20 @@
   }
   window.Visualizer = Visualizer;
 
+  /* which visualizer mode the desk player is showing. The bottom bar's
+     thumbnail follows it, so clicking the big visualizer changes both. */
+  let vizKind = "radial";
+  window.VizKind = { get: () => vizKind, set: (k) => { vizKind = k; window.dispatchEvent(new CustomEvent("jf-vizkind", { detail: k })); } };
+  function useVizKind() {
+    const [k, setK] = useState(vizKind);
+    useEffect(() => {
+      const f = (e) => setK(e.detail);
+      window.addEventListener("jf-vizkind", f);
+      return () => window.removeEventListener("jf-vizkind", f);
+    }, []);
+    return k;
+  }
+
   /* tiny live reader for the vizStyle / barStyle tweaks (mirrored to localStorage
      by the main app's Tweaks; player is a separate scope) */
   function useTweakVal(key, dflt) {
@@ -325,13 +342,17 @@
     const p = usePlayer();
     const vizStyle = useTweakVal("vizStyle", "radial");
     const barStyle = useTweakVal("barStyle", "full");
+    const deskKind = useVizKind();
     if (!p || !p.on) return null;
     const { isMix, mix, playlist, playing, volume, time, dur, cover, accent } = p;
     const title = isMix ? (mix ? mix.title : "My Mixes") : (playlist ? playlist.name : "Playlists");
     const sub = isMix ? `${fmt(time)} / ${fmt(dur)}` : (playlist && playlist.kind === "apple" ? "Apple Music" : "Spotify") + " · press play in panel";
     return (
       <div className={`pbar ${barStyle === "float" ? "is-float" : "is-full"}`} style={{ "--vc": accent }}>
-        <div className="pbar-cover">{cover ? <img src={cover.u} alt="" /> : <span className="pbar-glyph">{isMix ? "♪" : "♬"}</span>}</div>
+        {/* radio stations have no album art: run the desk visualizer small */}
+        <div className="pbar-cover">{window.DeskViz
+          ? <window.DeskViz kind={deskKind} grain={0.1} scan={0.18} real={isMix && playing} analyser={p.analyser} />
+          : <span className="pbar-glyph">{isMix ? "♪" : "♬"}</span>}</div>
         <div className="pbar-info">
           <div className="pbar-title">{title}</div>
           <div className="pbar-meta mono">{sub}<span className="pbar-pl">· {isMix ? "My Mixes" : "Playlists"}</span></div>

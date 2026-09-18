@@ -8,30 +8,41 @@
 .dk img,.dk svg{image-rendering:pixelated}
 .dk-screen{position:absolute;inset:0 0 var(--tbh) 0;overflow:hidden}
 .dk-wall{position:absolute;inset:0}
+.dk-wl{position:absolute;inset:0}
 .dk-wall .cropwrap,.dk-wall img{width:100%;height:100%;object-fit:cover}
-.dk-wall.fade{transition:opacity 1.6s linear}
+/* 5s dissolve between stills */
+.dk-wl.in{animation:dkwIn 5s ease-in-out both}
+.dk-wl.out{animation:dkwOut 5s ease-in-out both}
+@keyframes dkwIn{from{opacity:0}to{opacity:1}}
+@keyframes dkwOut{from{opacity:1}to{opacity:0}}
 .dk-screen::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(8,22,40,.34),rgba(8,22,40,.5))}
 
 /* ---- desktop icons ---- */
-.dk-ic{position:absolute;width:92px;display:grid;justify-items:center;gap:3px;padding:6px 3px 7px;background:none;border:0;cursor:pointer;z-index:3}
+/* fixed height + room for two label lines so the selection box never grows
+   past its slot; content is centered as a unit inside the highlight */
+.dk-ic{position:absolute;width:92px;height:82px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:4px 3px;background:none;border:0;cursor:pointer;z-index:3}
 .dk-ic svg{filter:drop-shadow(1px 1px 0 rgba(0,0,0,.55))}
-.dk-ic span{font-family:var(--font-marker);font-size:14px;line-height:1.2;color:#fff;text-align:center;text-shadow:1px 1px 0 rgba(0,0,0,.9);word-break:break-word}
+.dk-ic span{flex:none;max-width:100%;font-family:var(--font-marker);font-size:14px;line-height:1.3;padding-bottom:2px;color:#fff;text-align:center;text-shadow:1px 1px 0 rgba(0,0,0,.9);word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .dk-ic:hover{background:rgba(90,150,230,.3);outline:1px dotted rgba(255,255,255,.5)}
 .dk-ic.sel{background:#3a6ea5;outline:1px dotted rgba(255,255,255,.75)}
 .dk-ic.drag{opacity:.75}
 
 /* ---- windows ---- */
-.dkw{position:absolute;display:flex;flex-direction:column;min-width:240px;border-radius:6px 6px 0 0;padding:3px;background:linear-gradient(180deg,#4a95ea 0 3px,#2f7ad8 3px 9px,#1f63c2 9px 19px,#1550a4 19px 26px,#12408c 26px);box-shadow:1px 1px 0 #0b2f66,2px 2px 0 rgba(0,0,0,.35),inset 1px 1px 0 rgba(255,255,255,.5)}
+/* Each app carries its own --wc, so title bar + frame colour-code the window;
+   the bands are derived from it rather than hand-picked per app. */
+.dkw{--wc:#41669a;--wcL:color-mix(in srgb,var(--wc),#fff 30%);--wcM:color-mix(in srgb,var(--wc),#fff 12%);--wcD:color-mix(in srgb,var(--wc),#000 22%);--wcX:color-mix(in srgb,var(--wc),#000 38%);position:absolute;display:flex;flex-direction:column;min-width:240px;border-radius:6px 6px 0 0;padding:3px;background:linear-gradient(180deg,var(--wcL) 0 3px,var(--wcM) 3px 9px,var(--wc) 9px 19px,var(--wcD) 19px 26px,var(--wcX) 26px);box-shadow:1px 1px 0 var(--wcX),2px 2px 0 rgba(0,0,0,.35),inset 1px 1px 0 rgba(255,255,255,.4)}
 .dkw-bar{height:29px;display:flex;align-items:center;gap:7px;padding:0 5px 0 8px;color:#fff;cursor:grab;user-select:none}
 .dkw-bar.grab{cursor:grabbing}
 .dkw-bar b{flex:1;min-width:0;font-family:var(--font-marker);font-weight:400;font-size:18px;line-height:1;text-shadow:1px 1px 0 rgba(0,0,0,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dkw-ic{width:16px;height:16px;flex:none;display:block}
 .dkw-btns{display:flex;gap:3px}
-.dkw-btns button{width:21px;height:20px;border-radius:2px;border:1px solid #fff;box-shadow:inset -1px -1px 0 rgba(0,0,0,.35);background:linear-gradient(180deg,#7fb4f0 0 50%,#3d7fd0 50%);color:#fff;display:grid;place-items:center;cursor:pointer;padding:0}
+.dkw-btns button{width:21px;height:20px;border-radius:2px;border:1px solid #fff;box-shadow:inset -1px -1px 0 rgba(0,0,0,.35);background:linear-gradient(180deg,var(--wcL) 0 50%,var(--wcD) 50%);color:#fff;display:grid;place-items:center;cursor:pointer;padding:0}
 .dkw-btns .cl{background:linear-gradient(180deg,#f28d72 0 50%,#c33a17 50%);border-color:#ffd0c2}
 .dkw-btns svg{width:11px;height:11px}
-.dkw-body{flex:1;min-height:0;overflow:auto;background:#ece9e1;box-shadow:inset 1px 1px 0 #fff,inset -1px -1px 0 #a9a599;padding:12px;font-size:13.5px;line-height:1.6;color:#3a372f}
-.dkw-body h4{font-family:var(--font-display);font-weight:400;font-size:19px;margin-bottom:8px}
+/* Jacob's marker face inside the windows too — readme.txt and the URL bar
+   stay monospace on purpose. */
+.dkw-body{flex:1;min-height:0;overflow:auto;background:#ece9e1;box-shadow:inset 1px 1px 0 #fff,inset -1px -1px 0 #a9a599;padding:12px;font-family:var(--font-marker);font-size:16px;line-height:1.5;color:#3a372f}
+.dkw-body h4{font-family:var(--font-marker);font-weight:400;font-size:21px;margin-bottom:8px}
 .dkw-body p{max-width:52ch;text-wrap:pretty}
 .dkw-rz{position:absolute;right:0;bottom:0;width:15px;height:15px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 45%,rgba(255,255,255,.7) 45% 55%,transparent 55%)}
 
@@ -40,6 +51,13 @@
 .dk-start{height:100%;padding:0 20px 0 12px;border:0;border-radius:0 10px 10px 0;background:linear-gradient(180deg,#8ec95c 0 3px,#66ae37 3px 12px,#4b9327 12px 26px,#357518 26px);box-shadow:inset 1px 1px 0 rgba(255,255,255,.55);color:#fff;font-family:var(--font-marker);font-size:19px;text-shadow:1px 1px 0 rgba(0,0,0,.45);display:flex;align-items:center;gap:7px;cursor:pointer}
 .dk-start em{width:15px;height:15px;display:block;background:conic-gradient(#e8503a 0 25%,#7bbf46 0 50%,#2f7fd1 0 75%,#f0c31e 0)}
 .dk-tasks{display:flex;gap:5px;flex:1;min-width:0;padding-left:4px;overflow:hidden}
+/* task buttons give up width first and truncate with an ellipsis; Back to
+   portfolio sits outside the task strip so it never gets sliced */
+.dk-task{flex:0 1 auto;min-width:0;overflow:hidden}
+.dk-task span{min-width:2ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Back to portfolio rides at the end of the task strip but never gives up
+   width — the task buttons shrink and truncate around it instead */
+.dk-back{flex:none;margin-left:auto}
 .dk-task,.dk-back{display:flex;align-items:center;gap:6px;height:25px;padding:0 11px;border:0;border-radius:2px;color:#fff;font-family:var(--font-marker);font-size:15px;cursor:pointer;white-space:nowrap;max-width:180px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,.04));box-shadow:inset 1px 1px 0 rgba(255,255,255,.3),inset -1px -1px 0 rgba(0,0,0,.25)}
 .dk-task.on{background:#0f4592;box-shadow:inset 1px 1px 0 rgba(0,0,0,.4)}
 .dk-task svg,.dk-back svg{width:15px;height:15px;flex:none}
@@ -95,15 +113,15 @@
 .dk-btn:hover{background:linear-gradient(180deg,#fff 0 50%,#cfe0f5 50%)}
 .dk-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
 .dk-paper{background:#efe2c4;padding:14px;font-family:var(--font-marker);font-size:20px;line-height:1.5;min-height:120px;white-space:pre-wrap;box-shadow:inset 1px 1px 0 rgba(0,0,0,.12)}
-.dk-ta{width:100%;margin-top:10px;min-height:90px;padding:8px;font:13px/1.6 var(--font-body);border:1px solid #9aa4b2;background:#fff;resize:vertical}
-.dk-note{background:#fdf3a8;padding:10px;box-shadow:1px 1px 0 rgba(0,0,0,.22);font-size:13px}
+.dk-ta{width:100%;margin-top:10px;min-height:90px;padding:8px;font:16px/1.5 var(--font-marker);border:1px solid #9aa4b2;background:#fff;resize:vertical}
+.dk-note{background:#fdf3a8;padding:10px;box-shadow:1px 1px 0 rgba(0,0,0,.22);font-size:15px}
 .dk-notes{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
 .dk-note b{display:block;font-family:var(--font-marker);font-size:15px;font-weight:400;margin-bottom:4px}
 .dk-paint-tools{display:flex;gap:6px;align-items:center;padding:6px;background:#dfe6f2;box-shadow:inset 1px 1px 0 #fff;flex-wrap:wrap}
 .dk-sw{width:18px;height:18px;border:1px solid #6b7280;cursor:pointer;padding:0}
 .dk-sw.on{outline:2px solid #12408c;outline-offset:1px}
 .dk-canvas{flex:1;min-height:0;background:#fff;display:block;cursor:crosshair;touch-action:none;width:100%}
-.dk-trash button{display:flex;gap:8px;align-items:center;width:100%;text-align:left;background:none;border:0;padding:4px 2px;font:13px var(--font-body);color:#3a372f;cursor:pointer}
+.dk-trash button{display:flex;gap:8px;align-items:center;width:100%;text-align:left;background:none;border:0;padding:4px 2px;font:16px var(--font-marker);color:#3a372f;cursor:pointer}
 .dk-trash button:hover{background:#2f6fb5;color:#fff}
 .dk-trash-msg{margin-top:10px;font-family:var(--font-marker);font-size:17px;color:#6b6452;min-height:1.4em}
 .dk-deck{display:flex;gap:10px;align-items:center;padding:8px 6px;border-bottom:1px solid #cfc9bb;text-decoration:none;color:#3a372f}
@@ -112,4 +130,80 @@
 .dk-deck small{font-size:11.5px;opacity:.8}
 .dk-lb{position:absolute;inset:0;z-index:60;background:rgba(6,14,26,.86);display:grid;place-items:center;padding:24px}
 .dk-lb .cropwrap,.dk-lb img{max-width:100%;max-height:100%;object-fit:contain}
-@media (max-width:720px){.dk{--tbh:34px}.dk-ic{width:74px}.dk-ic span{font-size:12.5px}.dk-tray .np,.dk-tray .name{display:none}}
+/* ---- the font icon is a photograph, not a drawn glyph: no snapshot border,
+   and the image is scaled up a touch inside its box ---- */
+.dk-photoic{display:block;flex:none;overflow:hidden}
+.dk-photoic img{width:100%;height:100%;object-fit:cover;display:block;image-rendering:auto;transform:scale(1.22)}
+
+/* ---- corner player: the whole radio. Carries the bottom bar's dark warm
+   panel and accent, keeps the Winamp screen and chunky transport. ---- */
+.dk-mini{--vc:#d98324;position:absolute;left:50%;top:50%;z-index:60;width:560px;height:520px;max-width:calc(100% - 20px);max-height:calc(100% - 20px);background:#1b1a16;color:#f4efe6;border:2px solid color-mix(in srgb,var(--vc) 55%,#1b1a16);border-radius:14px;box-shadow:0 20px 50px -20px rgba(0,0,0,.7);overflow:hidden;display:flex;flex-direction:column}
+.dk-mini.shade{height:auto}
+.dk-mini.grab{box-shadow:0 26px 60px -20px rgba(0,0,0,.8)}
+.dkm-bar{display:flex;align-items:center;gap:10px;padding:7px 10px 7px 12px;background:#141310;border-bottom:1px solid #2f2b24;cursor:grab;user-select:none}
+.dk-mini.grab .dkm-bar{cursor:grabbing}
+.dkm-grip{width:22px;height:9px;flex:none;background:repeating-linear-gradient(90deg,#4a453c 0 2px,transparent 2px 5px) 0 0/100% 3px repeat-y}
+.dkm-bar b{flex:1;min-width:0;font-family:var(--font-mono);font-weight:400;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:color-mix(in srgb,var(--vc) 70%,#f4efe6)}
+.dkm-btns{display:flex;gap:5px}
+.dkm-btns button{width:22px;height:20px;padding:0;display:grid;place-items:center;font:11px/1 var(--font-mono);color:#cbc2b3;background:#242119;border:1px solid #3b362d;border-radius:5px;cursor:pointer}
+.dkm-btns button:hover{background:#312c23;color:#fff}
+.dkm-btns .x:hover{background:#8d3a24;border-color:#b5553a;color:#fff}
+.dkm-body{flex:1;min-height:0;display:flex}
+.dk-mini.shade .dkm-body{display:none}
+/* the visualizer fills the panel; the controls float over it */
+.dkm-stage{position:relative;flex:1;min-width:0;background:#0d0c09;cursor:pointer}
+.dkm-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:auto}
+.dkm-scrim{position:absolute;inset:0;pointer-events:none;background:radial-gradient(62% 62% at 50% 45%,transparent,rgba(13,12,9,.78))}
+.dkm-kind{position:absolute;top:9px;left:50%;transform:translateX(-50%);font:9px/1 var(--font-mono);letter-spacing:.14em;text-transform:uppercase;color:#f4efe680;pointer-events:none}
+.dkm-ctl{position:absolute;left:12px;right:12px;bottom:12px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;cursor:default}
+.dkm-gear{position:absolute;top:34px;right:12px;width:190px;display:grid;gap:9px;padding:10px;background:rgba(13,12,9,.92);border:1px solid #3b362d;border-radius:8px;cursor:default}
+.dkm-gear label{display:grid;gap:5px;font:9.5px/1 var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:#cbc2b3}
+.dkm-gear b{color:var(--vc);font-weight:400}
+.dkm-gear input{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;background:#3a352c}
+.dkm-gear input::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:50%;background:var(--vc)}
+/* no screen strip: the name and time float straight on the visualizer, held
+   legible by a glow, a soft dark blur under the glyphs and a thin dark stroke */
+.dkm-lcd{min-width:0;display:flex;align-items:baseline;gap:22px;background:none;border:0;padding:2px 2px 0;overflow:hidden;filter:drop-shadow(0 1px 7px rgba(8,10,7,.85)) drop-shadow(0 0 16px rgba(8,10,7,.6))}
+/* with no box to clip against, the marquee's second loop copy showed and ran
+   into the time readout — wide gap between copies + a fade at both edges */
+.dkm-track{flex:1;min-width:0;overflow:hidden;display:block;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 14px,#000 84%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0,#000 14px,#000 84%,transparent 100%)}
+.dkm-scroll{display:flex;gap:120px;width:max-content;max-width:none;animation:dkmMar 13s linear infinite}
+.dkm-scroll em{font-style:normal;white-space:nowrap;font-family:var(--font-marker);font-size:26px;line-height:1.15;color:#8dffb0;-webkit-text-stroke:.6px rgba(8,12,8,.75);paint-order:stroke fill;text-shadow:0 0 5px #8dffb0aa,0 0 14px #39d35377}
+@keyframes dkmMar{to{transform:translateX(calc(-50% - 60px))}}
+.dkm-lcd small{flex:none;margin-left:auto;font:11px/1 var(--font-mono);letter-spacing:.06em;color:#8dffb0;-webkit-text-stroke:.5px rgba(8,12,8,.7);paint-order:stroke fill;text-shadow:0 0 5px #39d35399}
+.dkm-seek,.dkm-vol{-webkit-appearance:none;appearance:none;height:5px;border-radius:3px;background:#3a352c;cursor:pointer}
+.dkm-seek{width:100%;background:linear-gradient(to right,var(--vc) var(--pct,0%),#3a352c var(--pct,0%))}
+.dkm-seek::-webkit-slider-thumb,.dkm-vol::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:13px;height:13px;border-radius:50%;background:var(--vc,#9c7a3c);border:0}
+.dkm-seek::-moz-range-thumb,.dkm-vol::-moz-range-thumb{width:13px;height:13px;border:0;border-radius:50%;background:var(--vc)}
+.dkm-seek:disabled{opacity:.4;cursor:default}
+.dkm-row{display:flex;align-items:center;gap:8px;min-width:0}
+/* transport keeps the Winamp chunk, in the dark palette */
+.dkm-t{min-width:52px;height:30px;padding:0 10px;font:13px/1 var(--font-mono);color:#f4efe6;background:linear-gradient(180deg,#332e26 0 50%,#211d17 50%);border:1px solid #4a443a;border-top-color:#5d564a;border-radius:4px;box-shadow:inset 1px 1px 0 rgba(255,255,255,.07);cursor:pointer}
+.dkm-t:hover{background:linear-gradient(180deg,#403a30 0 50%,#2a251e 50%);color:var(--vc)}
+.dkm-t:active{background:#1b1812;box-shadow:inset 1px 1px 2px rgba(0,0,0,.6)}
+.dkm-vol{width:0;opacity:0;margin-left:auto;transition:width .18s ease,opacity .18s ease}
+.dk-mini:hover .dkm-vol{width:96px;opacity:1}
+.dkm-list{display:grid;gap:2px;max-height:132px;overflow:auto;padding:5px;background:rgba(13,12,9,.92);border:1px solid #2f2b24;border-radius:7px}
+.dkm-list button{text-align:left;padding:6px 8px;border:0;border-radius:4px;background:none;color:#cbc2b3;font:12px/1.35 var(--font-mono);cursor:pointer}
+.dkm-list button:hover{background:#242119;color:#fff}
+.dkm-list button.on{background:var(--vc);color:#1b1a16}
+
+/* ---- the font window: photo bleeds to the frame, copy scrolls over it ---- */
+.dkw-body.bleed{padding:0;overflow:hidden;background:#1b1a16}
+.dk-fontcard{position:relative;width:100%;height:100%;border:0;border-radius:0;box-shadow:none;display:flex;flex-direction:column;background:none}
+.dk .fc-bg img,.dk .fc-scan img{image-rendering:auto}
+
+/* ---- playlists: each row links out, with its embed underneath ---- */
+.dk-pls{display:flex;flex-direction:column;gap:14px}
+.dk-pl{display:flex;flex-direction:column;gap:0}
+/* half width, and the embed itself scaled to 75% so its type and art shrink
+   with it rather than just being cropped — no frame, just the player */
+.dk-pl-name{font-family:var(--font-marker);font-size:16px;color:#2a2620}
+.dk-embed{margin-top:2px;width:50%;min-width:218px;height:108px;overflow:hidden;display:block}
+.dk-embed iframe{width:133.34%;height:144px;border:0;background:transparent;transform:scale(.75);transform-origin:top left}
+
+/* ---- the floating player bar has to clear the taskbar ---- */
+body:has(.dk) .pbar.is-float{bottom:calc(38px + 14px)}
+body:has(.dk) .pbar.is-full{bottom:38px}
+
+@media (max-width:720px){.dk{--tbh:34px}body:has(.dk) .pbar.is-float{bottom:48px}body:has(.dk) .pbar.is-full{bottom:34px}.dk-mini{width:min(560px,calc(100% - 12px));height:min(520px,calc(100% - 12px))}.dk-ic{width:74px}.dk-ic span{font-size:12.5px}.dk-tray .np,.dk-tray .name{display:none}}

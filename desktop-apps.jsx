@@ -36,28 +36,25 @@
     return (<div><div className="dk-shots"><button style={{ cursor: "default" }}>{project.pending ? null : <img src={project.src} alt={project.title} />}</button></div><p style={{ marginTop: 10 }}>{project.note}</p></div>);
   }
 
-  /* ---- Radio: drives the shared player, so it keeps going elsewhere ---- */
-  function RadioApp() {
-    const p = window.usePlayer();
-    if (!p) return <p>Radio unavailable.</p>;
+  /* ---- What I'm listening to: just the list. Clicking a playlist used to
+     hand it to the site player, which pulled the visitor into the radio;
+     now each row is a plain link out to Spotify/Apple. ---- */
+  const outLink = (pl) => pl.page || (pl.embed || "")
+    .replace("embed.music.apple.com", "music.apple.com")
+    .replace("open.spotify.com/embed/", "open.spotify.com/");
+  function ListeningApp() {
+    const lists = (PG.radio || []);
+    if (!lists.length) return <p>No playlists yet.</p>;
     return (
-      <div>
-        <h4>Radio</h4>
-        <div className="dk-tabs">
-          {p.mixes.map((m, i) =>
-            <button key={m.id} className={`dk-tab ${p.isMix && p.mixIdx === i ? "on" : ""}`} onClick={() => p.toMix(i)}>{m.title}</button>)}
-        </div>
-        <div className="dk-tabs">
-          {p.playlists.map((pl, i) =>
-            <button key={pl.id} className={`dk-tab ${!p.isMix && p.plIdx === i ? "on" : ""}`} onClick={() => p.toPlaylist(i)}>{pl.name}</button>)}
-        </div>
-        <div className="dk-row">
-          <button className="dk-btn" onClick={p.togglePlay}>{p.playing ? "Pause" : "Play"}</button>
-          <button className="dk-btn" onClick={p.prev}>Prev</button>
-          <button className="dk-btn" onClick={p.next}>Next</button>
-          <button className="dk-btn" onClick={p.shuffle}>Shuffle</button>
-        </div>
-        <p style={{ marginTop: 10, fontSize: 12, color: "#6b6452" }}>Playing: {p.isMix ? (p.mix && p.mix.title) : (p.playlist && p.playlist.name)}</p>
+      <div className="dk-pls">
+        {lists.map((pl, i) =>
+          <div className="dk-pl" key={pl.name + i}>
+            <div className="dk-pl-name">{pl.name}</div>
+            {pl.embed &&
+            <div className="dk-embed">
+              <iframe src={pl.embed} height={144} allow="autoplay *; encrypted-media *;" loading="lazy" title={pl.name}></iframe>
+            </div>}
+          </div>)}
       </div>);
   }
 
@@ -188,22 +185,50 @@
       </div>);
   }
 
-  /* ---- Font story ---- */
+  /* ---- Font story: the pre-desktop panel, brought back as-was — the photo
+     of Jacob's dad blurred behind white text, fixed while the copy scrolls
+     over it. Uses the original .fc-* styles in playground.css. ---- */
   function FontApp() {
     const fs = PG.fontStory || {};
     const slots = window.useMediaSlots();
     const cover = window.MediaSlots.crop(slots, "font:cover");
     const scan = window.MediaSlots.crop(slots, "font:scan");
-    const [sample, setSample] = useState(fs.previewPlaceholder || "type something");
+    const [typed, setTyped] = useState("");
+    const [editing, setEditing] = useState(false);
+    const inputRef = useRef(null);
+    useEffect(() => { if (editing && inputRef.current) inputRef.current.focus(); }, [editing]);
     return (
-      <div>
-        <h4>{fs.title || "The font"}</h4>
-        {cover && <div className="dk-shots" style={{ gridTemplateColumns: "1fr", marginBottom: 10 }}><button style={{ aspectRatio: "16/9", cursor: "default" }}><CroppedImg value={cover} alt="" /></button></div>}
-        <p style={{ whiteSpace: "pre-wrap" }}>{fs.story || ""}</p>
-        <div className="dk-paper" style={{ marginTop: 12, fontSize: 26 }}>{sample || " "}</div>
-        <textarea className="dk-ta" value={sample} onChange={(e) => setSample(e.target.value)} />
-        {scan && <div className="dk-shots" style={{ marginTop: 10 }}><button style={{ cursor: "default" }}><CroppedImg value={scan} alt="" /></button></div>}
-        <div className="dk-row"><a className="dk-btn" href="fonts/jacob-custom.otf" download="Lloyd Fogelhut.otf">Download the font</a></div>
+      <div className="fontcard dk-fontcard" data-text-style="soft">
+        <div className="fc-body">
+          <div className="fc-bg">
+            {cover ? <>
+              <div className="fc-bg-sharp"><CroppedImg value={cover} /></div>
+              <div className="fc-bg-blur"><CroppedImg value={cover} /></div>
+            </> : <div className="fc-bg-fallback" />}
+            <div className="fc-bg-scrim" />
+          </div>
+          <div className="fc-scroll">
+            <div className="fc-title">{fs.title || "the font"}</div>
+            <div className="fc-maker">handwriting by {fs.maker || "my dad"}</div>
+            <p className="fc-story" style={{ fontFamily: "JacobMarker", fontSize: "19px" }}>{fs.story}</p>
+            <div className="fc-sample">{fs.sample}</div>
+            <div className="fc-preview">
+              <div className="fc-label">try it</div>
+              {editing
+                ? <textarea ref={inputRef} className="fc-type" value={typed}
+                    onChange={(e) => setTyped(e.target.value)} onBlur={() => typed.trim() === "" && setEditing(false)} />
+                : <button className="fc-type fc-type-ghost" onClick={() => setEditing(true)} style={{ height: "50px", fontSize: "20px" }}>
+                    {typed.trim() ? typed : fs.previewPlaceholder || "type here"}
+                  </button>}
+            </div>
+            {scan &&
+              <div className="fc-compare">
+                <figure><div className="fc-scan"><CroppedImg value={scan} /></div><figcaption>original</figcaption></figure>
+                <figure><div className="fc-digi">{fs.maker || "Lloyd Fogelhut"}</div><figcaption>digitized</figcaption></figure>
+              </div>}
+            <a className="fc-download" href={fs.fontFile || "fonts/jacob-custom.otf"} download={fs.downloadAs || "Lloyd Fogelhut.otf"}>↓ download the font</a>
+          </div>
+        </div>
       </div>);
   }
 
@@ -218,20 +243,24 @@
     </div>);
   }
 
+  /* The radio has no window any more: its icon opens the corner player
+     (desktop.jsx intercepts the "radio" id). The registry entry survives so
+     the icon and the Start-menu row still have art and a title. */
   window.DeskApps = {
     registry: {
-      projects: { title: "My Projects", Icon: I.Folder, body: (ctx) => <ProjectsApp open={ctx.open} />, size: { w: 460, h: 320 } },
-      radio: { title: "Radio", Icon: I.Radio, body: () => <RadioApp />, size: { w: 430, h: 300 } },
-      photos: { title: "Photos", Icon: I.Photos, body: () => <PhotosApp />, size: { w: 520, h: 380 } },
-      paint: { title: "Paint", Icon: I.Paint, body: () => <PaintApp />, size: { w: 520, h: 400 } },
-      decks: { title: "Pitch Decks", Icon: I.Deck, body: () => <DecksApp />, size: { w: 460, h: 300 } },
-      guestbook: { title: "Guestbook", Icon: I.Book, body: () => <GuestbookApp />, size: { w: 470, h: 400 } },
-      letter: { title: "Write me a letter", Icon: I.Letter, body: () => <LetterApp />, size: { w: 440, h: 400 } },
-      font: { title: "The font", Icon: I.Font, body: () => <FontApp />, size: { w: 470, h: 420 } },
-      trash: { title: "Recycle Bin", Icon: I.Bin, body: () => <TrashApp />, size: { w: 400, h: 280 } },
-      readme: { title: "readme.txt", Icon: I.Note, body: () => <ReadmeApp />, size: { w: 400, h: 260 } }
+      projects: { title: "My Projects", Icon: I.Folder, tint: "#41669a", body: (ctx) => <ProjectsApp open={ctx.open} />, size: { w: 460, h: 320 } },
+      radio: { title: "Radio", Icon: I.Radio, tint: "#5b6b8c", mini: true },
+      listening: { title: "What I'm listening to", Icon: I.Headphones, tint: "#5c3560", body: () => <ListeningApp />, size: { w: 430, h: 400 } },
+      photos: { title: "Photos", Icon: I.Photos, tint: "#6b4a70", body: () => <PhotosApp />, size: { w: 520, h: 380 } },
+      paint: { title: "Paint", Icon: I.Paint, tint: "#9b5e39", body: () => <PaintApp />, size: { w: 520, h: 400 } },
+      decks: { title: "Pitch Decks", Icon: I.Deck, tint: "#3c6b68", body: () => <DecksApp />, size: { w: 460, h: 300 } },
+      guestbook: { title: "Guestbook", Icon: I.Book, tint: "#66743c", body: () => <GuestbookApp />, size: { w: 470, h: 400 } },
+      letter: { title: "Write me a letter", Icon: I.Letter, tint: "#8a6a2f", body: () => <LetterApp />, size: { w: 440, h: 400 } },
+      font: { title: "The font", Icon: I.Font, tint: "#7a4a5e", bleed: true, body: () => <FontApp />, size: { w: 660, h: 620 } },
+      trash: { title: "Recycle Bin", Icon: I.Bin, tint: "#555a61", body: () => <TrashApp />, size: { w: 400, h: 280 } },
+      readme: { title: "readme.txt", Icon: I.Note, tint: "#4c5b67", body: () => <ReadmeApp />, size: { w: 400, h: 260 } }
     },
-    webApp: (p) => ({ title: p.title + " — Internet", Icon: I.Web, body: () => <WebApp project={p} />, size: { w: 640, h: 460 } }),
-    imageApp: (p) => ({ title: p.title, Icon: I.Img, body: () => <ImageApp project={p} />, size: { w: 460, h: 380 } })
+    webApp: (p) => ({ title: p.title + " — Internet", Icon: I.Web, tint: "#41669a", body: () => <WebApp project={p} />, size: { w: 640, h: 460 } }),
+    imageApp: (p) => ({ title: p.title, Icon: I.Img, tint: "#6b4a70", body: () => <ImageApp project={p} />, size: { w: 460, h: 380 } })
   };
 })();
