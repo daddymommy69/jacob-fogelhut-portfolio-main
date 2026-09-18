@@ -349,7 +349,7 @@
   function PlayerBar() {
     const p = usePlayer();
     const vizStyle = useTweakVal("vizStyle", "radial");
-    const barStyle = useTweakVal("barStyle", "full");
+    const barStyle = useTweakVal("barStyle", "float");
     const deskKind = useVizKind();
     if (!p || !p.on) return null;
     const { isMix, mix, playlist, playing, volume, time, dur, cover, accent } = p;

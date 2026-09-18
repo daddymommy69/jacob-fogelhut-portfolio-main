@@ -17,7 +17,7 @@
 
   const POS_FILE = "desk-icons.state.json";
   const BOOT_KEY = "jf-desk-booted-v1";
-  const ORDER = ["font", "projects", "radio", "listening", "photos", "paint", "decks", "guestbook", "letter", "trash"];
+  const ORDER = ["font", "projects", "radio", "listening", "photos", "paint", "guestbook", "letter", "trash"];
   const writer = () => (window.omelette && window.omelette.writeFile) || null;
 
   /* ---------------- boot ---------------- */
@@ -343,7 +343,7 @@
           {ORDER.map((key, i) => {
             const a = APPS.registry[key]; const Icon = a.Icon;
             return (
-              <button key={key} className={`dk-ic ${sel === key ? "sel" : ""}`} style={iconPos(key, i)}
+              <button key={key} data-app={key} className={`dk-ic ${sel === key ? "sel" : ""}`} style={iconPos(key, i)}
                 onPointerDown={(e) => { e.stopPropagation(); setSel(key); }}
                 onClick={() => open(key)} onDoubleClick={() => open(key)}>
                 <Icon /><span>{a.title}</span>

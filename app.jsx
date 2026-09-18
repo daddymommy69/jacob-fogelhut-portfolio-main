@@ -1140,7 +1140,9 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "introSource": "intro",
   "teaserStyle": "sign",
   "vizStyle": "radial",
-  "barStyle": "full",
+  "vizGrain": 0.2,
+  "vizScan": 0.2,
+  "barStyle": "float",
   "motion": 45,
   "cursorFollow": true,
   "rowHover": "wash"
@@ -1391,6 +1393,10 @@ function App() {
         <TweakRadio label="Visualizer" value={t.vizStyle}
         options={[{ value: "radial", label: "Radial" }, { value: "wave", label: "Wave" }, { value: "bars", label: "Bars" }]}
         onChange={(v) => {try {localStorage.setItem("jf-pv-vizStyle", v);} catch (e) {}setTweak("vizStyle", v);}} />
+        <TweakSlider label="Visualizer grain" value={t.vizGrain} min={0} max={0.6} step={0.02}
+        onChange={(v) => {try {localStorage.setItem("jf-pv-vizGrain", String(v));} catch (e) {}setTweak("vizGrain", v);}} />
+        <TweakSlider label="Visualizer scanlines" value={t.vizScan} min={0} max={0.6} step={0.02}
+        onChange={(v) => {try {localStorage.setItem("jf-pv-vizScan", String(v));} catch (e) {}setTweak("vizScan", v);}} />
         <TweakRadio label="Player bar" value={t.barStyle}
         options={[{ value: "full", label: "Full width" }, { value: "float", label: "Floating" }]}
         onChange={(v) => {try {localStorage.setItem("jf-pv-barStyle", v);} catch (e) {}setTweak("barStyle", v);}} />

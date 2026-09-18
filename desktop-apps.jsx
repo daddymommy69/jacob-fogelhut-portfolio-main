@@ -18,6 +18,7 @@
           <button key={p.id} className="dk-file" onClick={() => open(p.kind === "web" ? "web:" + p.id : "img:" + p.id)}>
             {p.kind === "web" ? <I.Web s={38} /> : <I.Img s={38} />}<span>{p.title}</span>
           </button>)}
+        <button className="dk-file" onClick={() => open("decks")}><I.Folder s={38} /><span>Pitch Decks</span></button>
       </div>);
   }
 
@@ -52,7 +53,7 @@
             <div className="dk-pl-name">{pl.name}</div>
             {pl.embed &&
             <div className="dk-embed">
-              <iframe src={pl.embed} height={144} allow="autoplay *; encrypted-media *;" loading="lazy" title={pl.name}></iframe>
+              <iframe src={pl.embed} height={200} allow="autoplay *; encrypted-media *;" loading="lazy" title={pl.name}></iframe>
             </div>}
           </div>)}
       </div>);
@@ -250,7 +251,7 @@
     registry: {
       projects: { title: "My Projects", Icon: I.Folder, tint: "#41669a", body: (ctx) => <ProjectsApp open={ctx.open} />, size: { w: 460, h: 320 } },
       radio: { title: "Radio", Icon: I.Radio, tint: "#5b6b8c", mini: true },
-      listening: { title: "What I'm listening to", Icon: I.Headphones, tint: "#5c3560", body: () => <ListeningApp />, size: { w: 430, h: 400 } },
+      listening: { title: "What I'm listening to", Icon: I.Headphones, tint: "#5c3560", body: () => <ListeningApp />, size: { w: 430, h: 500 } },
       photos: { title: "Photos", Icon: I.Photos, tint: "#6b4a70", body: () => <PhotosApp />, size: { w: 520, h: 380 } },
       paint: { title: "Paint", Icon: I.Paint, tint: "#9b5e39", body: () => <PaintApp />, size: { w: 520, h: 400 } },
       decks: { title: "Pitch Decks", Icon: I.Deck, tint: "#3c6b68", body: () => <DecksApp />, size: { w: 460, h: 300 } },
