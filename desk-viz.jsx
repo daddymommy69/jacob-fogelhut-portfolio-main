@@ -31,6 +31,22 @@
       for (let i = 0; i < 90; i++) stars.push({ a: Math.random() * 6.283, d: Math.random(), s: 0.4 + Math.random() });
       let t = 0, raf = 0, freq = null, time = null;
       const sm = {};   /* per-bin easing state, so calm↔playing is a glide */
+      /* The bar mounts a second copy of this canvas, so two run at once.
+         Cache the size (a per-frame getBoundingClientRect forced a layout
+         every frame), skip work in a hidden tab or when scrolled out of view,
+         and halve the rate while idling. */
+      let W = 8, H = 8, visible = true;
+      const measure = () => { const r = canvas.getBoundingClientRect(); W = Math.max(8, Math.round(r.width)); H = Math.max(8, Math.round(r.height)); };
+      measure();
+      const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
+      ro && ro.observe(canvas);
+      const io = typeof IntersectionObserver !== "undefined" ? new IntersectionObserver(([e]) => { visible = e.isIntersecting; }) : null;
+      io && io.observe(canvas);
+      /* scanlines: one pre-rendered tile instead of H/3 fillRects per frame */
+      const sl = document.createElement("canvas"); sl.width = 1; sl.height = 3;
+      (() => { const c = sl.getContext("2d"); c.fillStyle = "#000"; c.fillRect(0, 0, 1, 1); })();
+      const slPat = x.createPattern(sl, "repeat");
+      let last = 0;
 
       const read = () => {
         const c = cfg.current;
@@ -42,10 +58,14 @@
       };
 
 
-      const frame = () => {
+      const frame = (now) => {
+        raf = requestAnimationFrame(frame);
+        if (document.hidden || !visible) return;
         const c = cfg.current;
-        const r = canvas.getBoundingClientRect();
-        const W = Math.max(8, Math.round(r.width)), H = Math.max(8, Math.round(r.height));
+        /* 60fps only while a mix is actually playing; the idle breath and the
+           star drift read the same at 30 and cost half as much. */
+        if (now - last < (c.real && c.analyser && c.analyser.current ? 0 : 33)) return;
+        last = now;
         if (buf.width !== W || buf.height !== H) { buf.width = W; buf.height = H; }
         if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
         t += 0.045;
@@ -142,14 +162,13 @@
           x.restore();
         }
         if (c.scan > 0) {
-          x.globalAlpha = c.scan * 0.8; x.fillStyle = "#000";
-          for (let yy = 0; yy < H; yy += 3) x.fillRect(0, yy, W, 1);
+          x.globalAlpha = c.scan * 0.8; x.fillStyle = slPat;
+          x.fillRect(0, 0, W, H);
           x.globalAlpha = 1;
         }
-        raf = requestAnimationFrame(frame);
       };
       raf = requestAnimationFrame(frame);
-      return () => cancelAnimationFrame(raf);
+      return () => { cancelAnimationFrame(raf); ro && ro.disconnect(); io && io.disconnect(); };
     }, []);
 
     return <canvas ref={ref} className="dkm-canvas" />;

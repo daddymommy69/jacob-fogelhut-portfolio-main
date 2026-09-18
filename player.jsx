@@ -268,10 +268,19 @@
       resize();
       const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(resize) : null;
       ro && ro.observe(cv);
+      /* this runs alongside the bar's DeskViz canvas, so it idles at 30fps and
+         stops entirely in a hidden tab */
+      let visible = true, last = 0;
+      const io = typeof IntersectionObserver !== "undefined" ? new IntersectionObserver(([e]) => { visible = e.isIntersecting; }) : null;
+      io && io.observe(cv);
       const frame = (now) => {
+        raf = requestAnimationFrame(frame);
+        if (document.hidden || !visible) return;
+        const an = real && analyser && analyser.current;
+        if (now - last < (an ? 0 : 33)) return;
+        last = now;
         const W = cv.width / devicePixelRatio, H = cv.height / devicePixelRatio;
         ctx.clearRect(0, 0, W, H);
-        const an = real && analyser && analyser.current;
         let amp = [];
         if (an) {
           if (style === "wave") { an.getByteTimeDomainData(data); for (let i = 0; i < data.length; i++) amp.push((data[i] - 128) / 128); }
@@ -303,10 +312,9 @@
           ctx.closePath(); ctx.stroke();
           ctx.globalAlpha = 0.18; ctx.beginPath(); ctx.arc(cx, cy, base * (0.7 + avg * 0.6), 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
         }
-        raf = requestAnimationFrame(frame);
       };
       raf = requestAnimationFrame(frame);
-      return () => { cancelAnimationFrame(raf); ro && ro.disconnect(); };
+      return () => { cancelAnimationFrame(raf); ro && ro.disconnect(); io && io.disconnect(); };
     }, [style, real, color]);
     return React.createElement("canvas", { className: "viz", ref, style: { height: height || "100%", width: "100%", display: "block" } });
   }

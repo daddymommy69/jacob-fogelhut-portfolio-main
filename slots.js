@@ -30,7 +30,7 @@ window.MediaSlots = (function () {
       p = Promise.resolve(MS.load()).then(() => {cache = MS.all();return cache;});
       return p;
     }
-    p = fetch(INDEX_FILE, { cache: "no-store" }).
+    p = fetch(INDEX_FILE).
     then((r) => r.ok ? r.json() : null).
     then((idx) => {
       const map = {};
@@ -39,7 +39,7 @@ window.MediaSlots = (function () {
       const ids = Object.keys(idx);
       ids.forEach((id) => {const c = idx[id] || {};map[id] = { s: c.s || 1, x: c.x || 0, y: c.y || 0 };});
       return Promise.all(ids.map((id) =>
-      fetch(fileFor(id), { cache: "no-store" }).
+      fetch(fileFor(id)).
       then((r) => r.ok ? r.json() : null).
       then((d) => {if (d && d.u && map[id]) map[id].u = d.u;}).
       catch(() => {})

@@ -725,7 +725,7 @@ button { font-family: inherit; cursor: pointer; }
   width: min(940px, 94vw); border: 2px solid color-mix(in srgb, var(--vc,#d98324) 55%, #1b1a16);
   border-radius: 14px; box-shadow: 0 20px 50px -20px rgba(0,0,0,.7);
 }
-.pbar-cover { width: 56px; height: 56px; border-radius: 6px; overflow: hidden; background: #2a2822; display: grid; place-items: center; }
+.pbar-cover { position: relative; width: 56px; height: 56px; border-radius: 6px; overflow: hidden; background: #0d0c09; display: grid; place-items: center; }
 .pbar-cover img { width: 100%; height: 100%; object-fit: cover; }
 .pbar-glyph { font-size: 24px; color: var(--vc, #d98324); }
 .pbar-info { min-width: 0; }

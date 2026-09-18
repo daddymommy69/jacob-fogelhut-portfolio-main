@@ -111,6 +111,15 @@
   // are served together; writes go through window.omelette.writeFile, which
   // the host allowlists to *.state.json basenames only.
   const subs = new Set();
+  /* notifyBatched: during boot ~50 shards land within a few hundred ms. Firing
+     every subscriber on each arrival re-rendered the whole app ~50 times, each
+     time spreading a multi-MB slot map. Coalesce to one notify per frame. */
+  let notifyQueued = false;
+  function notifyBatched() {
+    if (notifyQueued) return;
+    notifyQueued = true;
+    requestAnimationFrame(() => { notifyQueued = false; subs.forEach((fn) => fn()); });
+  }
   let slots = {};
   // ids explicitly cleared before the sidecar fetch resolved — otherwise
   // the merge below can't tell "never set" from "just deleted" and would
@@ -147,17 +156,23 @@
           const c = idx[id] || {};
           slots[id] = { s: c.s || 1, x: c.x || 0, y: c.y || 0 };
         }
-        // Hydrate each filled slot's image from its own shard, in parallel.
-        const ids = Object.keys(idx).filter((id) => !tombstones.has(id));
-        return Promise.all(ids.map((id) =>
-          fetch(fileFor(id))
-            .then((r) => (r.ok ? r.json() : null))
-            .then((d) => {
-              const u = d && d.u;
-              if (u && slots[id] && !slots[id].u) { slots[id].u = u; subs.forEach((fn) => fn()); }
-            })
-            .catch(() => {})
-        ));
+        /* Hydrate each filled slot's image from its own shard. The shards are
+           base64 and total ~20MB, so firing all of them at once saturated the
+           connection and starved the above-the-fold photos. Run a small pool,
+           intro/still slots (what the boot screen and first view need) first. */
+        const all = Object.keys(idx).filter((id) => !tombstones.has(id));
+        const first = (id) => /^(intro:|still:|poster:)/.test(id);
+        const ids = [...all.filter(first), ...all.filter((id) => !first(id))];
+        let cursor = 0;
+        const one = (id) => fetch(fileFor(id))
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => {
+            const u = d && d.u;
+            if (u && slots[id] && !slots[id].u) { slots[id].u = u; notifyBatched(); }
+          })
+          .catch(() => {});
+        const pump = () => (cursor < ids.length ? one(ids[cursor++]).then(pump) : Promise.resolve());
+        return Promise.all(Array.from({ length: Math.min(6, ids.length) }, pump));
       })
       .catch(() => {})
       .then(() => { tombstones.clear(); loaded = true; subs.forEach((fn) => fn()); });
