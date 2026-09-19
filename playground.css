@@ -879,9 +879,10 @@
    --pgu is a "scaled pixel": it tracks whichever axis is tighter, so a
    taller window makes content bigger, not just a wider one. It has a
    floor (content stops shrinking, then the panel scrolls) and a hard
-   ceiling (stops growing on huge monitors).
+   ceiling (stops growing on huge monitors). The floor is 1x on purpose:
+   nothing is ever smaller than it was, it only grows.
    ===================================================================== */
-.pg-body { --pgu: clamp(0.84px, min(100vw / 1420, 100vh / 880), 1.32px); }
+.pg-body { --pgu: clamp(1px, min(100vw / 1420, 100vh / 880), 1.32px); }
 
 /* ---- gallery viewer ---- */
 .pg-body .gv-panel { width: min(calc(780 * var(--pgu)), 94vw); max-height: 92vh; padding: calc(22 * var(--pgu)) calc(24 * var(--pgu)) calc(26 * var(--pgu)); border-radius: calc(12 * var(--pgu)); }
@@ -923,5 +924,14 @@
 .pg-body .gv-enlarge .gv-x2 { top: 24px; right: 24px; }
 .pg-body .gv-enlarge .gv-fs-strip { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); max-width: 92vw; background: rgba(4,4,6,.72); border-radius: 999px; backdrop-filter: blur(4px); }
 
-/* ---- uniform lowercase across the playground (typed input left alone) ---- */
-.pg-body, .pg-body *:not(input):not(textarea) { text-transform: lowercase !important; }
+/* ---- uniform lowercase: OPT-IN, toggled from the playground's start menu.
+   Typed input is left alone, and so is the marker face — that font is
+   hand-drawn all-caps by design, so forcing it changes nothing but intent. ---- */
+.pg-body.pg-lower, .pg-body.pg-lower *:not(input):not(textarea) { text-transform: lowercase !important; }
+.pg-body.pg-lower .dk-ic[data-app="font"] span,
+.pg-body.pg-lower .dk-ic[data-app="guestbook"] span,
+.pg-body.pg-lower .dk-ic[data-app="letter"] span,
+.pg-body.pg-lower .dk-menu-head b,
+.pg-body.pg-lower .dk-back,
+.pg-body.pg-lower .dk-tray .name,
+.pg-body.pg-lower .dk-mi-home { text-transform: none !important; }

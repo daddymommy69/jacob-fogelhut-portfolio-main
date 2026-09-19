@@ -12,17 +12,23 @@
 
   /* A full-size photo is shown at native pixel size, so it can overflow its
      window in either axis. Drag to pan (the container also scrolls). */
-  function panPhoto(e) {
+  function panPhoto(e, onTap) {
     const el = e.currentTarget, box = el.closest(".dk-lb");
     if (!box) return;
     e.preventDefault();
     const sx = e.clientX, sy = e.clientY, sl = box.scrollLeft, st = box.scrollTop;
+    let moved = 0;
     el.classList.add("panning");
-    const move = (ev) => {box.scrollLeft = sl - (ev.clientX - sx);box.scrollTop = st - (ev.clientY - sy);};
+    const move = (ev) => {
+      moved += Math.abs(ev.movementX) + Math.abs(ev.movementY);
+      box.scrollLeft = sl - (ev.clientX - sx);box.scrollTop = st - (ev.clientY - sy);
+    };
     const up = () => {
       el.classList.remove("panning");
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
+      // a click that did not drag still dismisses, the way it always has
+      if (moved < 5 && typeof onTap === "function") onTap();
     };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
@@ -110,6 +116,12 @@
     }, [slots]);
     const [tab, setTab] = useState(0);
     const [big, setBig] = useState(null);
+    useEffect(() => {
+      if (!big) return;
+      const onKey = (e) => e.key === "Escape" && setBig(null);
+      window.addEventListener("keydown", onKey);
+      return () => window.removeEventListener("keydown", onKey);
+    }, [big]);
     const live = cats.filter((c) => c.photos.length);
     if (!live.length) return <p>No photos uploaded yet.</p>;
     const cur = live[Math.min(tab, live.length - 1)];
@@ -118,8 +130,12 @@
         <div className="dk-tabs">{live.map((c, i) => <button key={c.a} className={`dk-tab ${cur === c ? "on" : ""}`} onClick={() => setTab(i)}>{c.name}</button>)}</div>
         <div className="dk-shots">{cur.photos.map((ph, i) => <button key={i} onClick={() => setBig(ph)}><CroppedImg value={ph} alt="" /></button>)}</div>
         {big && <div className="dk-lb" onClick={(e) => e.target === e.currentTarget && setBig(null)}>
-          <img className="dk-native" src={srcOf(big)} alt="" draggable={false} onPointerDown={panPhoto} />
+          <img className="dk-native" src={srcOf(big)} alt="" draggable={false}
+          onPointerDown={(e) => panPhoto(e, () => setBig(null))} />
         </div>}
+        {/* sibling, not a child: .dk-lb scrolls, so a close button inside it
+            would scroll out of reach on a photo larger than the window */}
+        {big && <button className="dk-lb-x" onClick={() => setBig(null)} aria-label="Close">✕</button>}
       </div>);
   }
 

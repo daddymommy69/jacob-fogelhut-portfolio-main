@@ -48,9 +48,10 @@
       /* each app carries its own floor; on a screen too small for it the
          screen wins, so the window never hangs off the edge */
       /* default size scales with the screen on BOTH axes — a taller desktop
-         opens bigger windows, not just a wider one. Floor 0.84x so content
-         stays legible (the window then scrolls), ceiling 1.32x. */
-      const k = Math.min(1.32, Math.max(0.84, Math.min(W / 1420, H / 880)));
+         opens bigger windows, not just a wider one. Floor 1x — nothing ever
+         opens smaller than its authored size; the window scrolls instead.
+         Ceiling 1.32x. */
+      const k = Math.min(1.32, Math.max(1, Math.min(W / 1420, H / 880)));
       const dw = Math.round(app.size.w * k), dh = Math.round(app.size.h * k);
       const w = Math.max(Math.min(mw, W - 24), Math.min(dw, W - 24));
       const h = Math.max(Math.min(mh, H - 24), Math.min(dh, H - 24));
@@ -220,9 +221,16 @@
   }
 
   /* ---------------- start menu ---------------- */
-  function StartMenu({ open, onClose, exit, editable }) {
+  function StartMenu({ open, onClose, exit, editable, lower, setLower }) {
     const links = (DATA.social || {});
     const item = (Icon, label, props) => <a className="dk-mi" {...props}><Icon s={18} />{label}</a>;
+    /* brand logos are the real marks, so they stay images rather than being
+       redrawn — sized to the 18px icon grid and slightly desaturated so they
+       sit quietly beside the single-ink line icons. */
+    const logo = (file, label, href) =>
+    <a className="dk-mi" href={href} target="_blank" rel="noreferrer">
+        <img className="dk-mi-logo" src={"logos/xp/" + file} alt="" draggable={false} />{label}
+      </a>;
     return (
       <div className="dk-menu" onPointerDown={(e) => e.stopPropagation()}>
         <div className="dk-menu-head"><i>JF</i><b>{DATA.name}</b></div>
@@ -235,16 +243,20 @@
           </div>
           <div>
             {item(I.Mail, "Email", { href: "mailto:" + DATA.email })}
-            {links.instagram && item(I.Link, "Instagram", { href: links.instagram, target: "_blank", rel: "noreferrer" })}
-            {links.spotify && item(I.Link, "Spotify", { href: links.spotify, target: "_blank", rel: "noreferrer" })}
-            {links.linkedin && item(I.Link, "LinkedIn", { href: links.linkedin, target: "_blank", rel: "noreferrer" })}
+            {links.instagram && logo("instagram.png", "Instagram", links.instagram)}
+            {links.spotify && logo("spotify.png", "Spotify", links.spotify)}
+            {links.appleMusic && logo("apple-music.png", "Apple Music", links.appleMusic)}
+            {links.linkedin && logo("linkedin.png", "LinkedIn", links.linkedin)}
             {links.phone && item(I.Link, links.phone, { href: "tel:" + links.phone.replace(/[^\d+]/g, "") })}
             {/* Owner-only reminder: these four are wired but data.js has no
                 handles yet, so a visitor sees nothing rather than dead links. */}
-            {editable && ["instagram", "spotify", "linkedin", "phone"].filter((k) => !links[k]).map((k) =>
+            {editable && ["instagram", "spotify", "appleMusic", "linkedin"].filter((k) => !links[k]).map((k) =>
               <span key={k} className="dk-mi" style={{ opacity: .45, cursor: "default" }} title={`Add ${k} to data.js`}><I.Link s={18} />{k}</span>)}
             <div className="dk-menu-sep" />
-            <button className="dk-mi" onClick={exit}><I.Home s={18} />Back to portfolio</button>
+            <button className="dk-mi" onClick={() => setLower(!lower)}>
+              <I.Link s={18} />{lower ? "Lowercase: on" : "Lowercase: off"}
+            </button>
+            <button className="dk-mi dk-mi-home" onClick={exit}><I.Home s={18} />Back to portfolio</button>
           </div>
         </div>
         <div className="dk-menu-foot"><button onClick={exit}><I.Power s={18} />Shut down</button></div>
@@ -261,6 +273,16 @@
     const [clock, setClock] = useState(() => new Date());
     const [pos, setPos] = useState(null);
     const [mini, setMini] = useState(false);
+    /* uniform-lowercase toggle, off by default. Lives on the body so the CSS
+       can key off it; the marker face is exempt (it draws caps regardless). */
+    const [lower, setLower] = useState(() => {
+      try { return localStorage.getItem("jf-pg-lower") === "1"; } catch (e) { return false; }
+    });
+    useEffect(() => {
+      document.body.classList.toggle("pg-lower", lower);
+      try { localStorage.setItem("jf-pg-lower", lower ? "1" : "0"); } catch (e) {}
+      return () => document.body.classList.remove("pg-lower");
+    }, [lower]);
     const zRef = useRef(10);
     const screenRef = useRef(null);
     const [deskH, setDeskH] = useState(0);
@@ -379,7 +401,8 @@
           <MiniPlayer shown={mini} onClose={() => setMini(false)} editable={editable} />
         </div>
 
-        {menu && <StartMenu open={open} onClose={() => setMenu(false)} exit={exit} editable={editable} />}
+        {menu && <StartMenu open={open} onClose={() => setMenu(false)} exit={exit} editable={editable}
+        lower={lower} setLower={setLower} />}
 
         <div className="dk-bar" onPointerDown={(e) => e.stopPropagation()}>
           <button className="dk-start" onClick={() => setMenu((m) => !m)}><em />start</button>

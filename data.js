@@ -10,7 +10,13 @@ window.PORTFOLIO_DATA = {
 
   /* Links in the desktop's Start menu. Empty entries are simply not shown —
      fill in the ones you want listed. */
-  social: { instagram: "", spotify: "", linkedin: "", phone: "" },
+  social: {
+    instagram: "https://www.instagram.com/11010101010110111011111011o/",
+    spotify: "https://open.spotify.com/user/zhvgozwd7lug07mvvcnkd4kg0?si=7687076f132741f8",
+    appleMusic: "https://music.apple.com/profile/lildicklongdick",
+    linkedin: "https://www.linkedin.com/in/jacob-fogelhut/",
+    phone: ""
+  },
 
   /* INTRO — the load animation flips through these frames behind the marker
      name, then dissolves into the site. Drop a BATCH of stills into /media and
