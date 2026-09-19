@@ -219,3 +219,20 @@ body:has(.dk) .pbar.is-float{bottom:calc(38px + 14px)}
 body:has(.dk) .pbar.is-full{bottom:38px}
 
 @media (max-width:720px){.dk{--tbh:34px}body:has(.dk) .pbar.is-float{bottom:48px}body:has(.dk) .pbar.is-full{bottom:34px}.dk-mini{width:min(560px,calc(100% - 12px));height:min(520px,calc(100% - 12px))}.dk-ic{width:74px}.dk-ic span{font-size:12.5px}.dk-tray .np,.dk-tray .name{display:none}}
+
+/* =====================================================================
+   VIEWPORT SCALING — app-window content grows with BOTH width and height.
+   --pgu (playground.css) is a "scaled pixel" tracking whichever axis is
+   tighter: floor 0.84x, ceiling 1.32x. Window sizes themselves are scaled
+   by the same factor in desktop.jsx.
+   ===================================================================== */
+.dk-shots{grid-template-columns:repeat(auto-fill,minmax(calc(120 * var(--pgu,1px)),1fr));gap:calc(8 * var(--pgu,1px))}
+.dk-fill>.dk-shots{grid-template-columns:repeat(auto-fill,minmax(calc(110 * var(--pgu,1px)),1fr))}
+.dk-tabs{gap:calc(4 * var(--pgu,1px));margin-bottom:calc(10 * var(--pgu,1px))}
+.dk-tab{font-size:calc(12.5 * var(--pgu,1px));padding:calc(3 * var(--pgu,1px)) calc(10 * var(--pgu,1px))}
+.dk-files{grid-template-columns:repeat(auto-fill,minmax(calc(84 * var(--pgu,1px)),1fr));gap:calc(12 * var(--pgu,1px))}
+.dk-file{font-size:calc(12 * var(--pgu,1px))}
+/* ---- full-size photo: TRUE pixel size, uncapped. Drag or scroll to pan. ---- */
+.dk-lb{display:grid;place-content:safe center;overflow:auto;overscroll-behavior:contain;padding:0}
+.dk-lb img.dk-native{display:block;width:auto;height:auto;max-width:none;max-height:none;object-fit:none;cursor:grab}
+.dk-lb img.dk-native.panning{cursor:grabbing}

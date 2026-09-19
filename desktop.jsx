@@ -47,8 +47,13 @@
       const W = host.clientWidth, H = host.clientHeight;
       /* each app carries its own floor; on a screen too small for it the
          screen wins, so the window never hangs off the edge */
-      const w = Math.max(Math.min(mw, W - 24), Math.min(app.size.w, W - 24));
-      const h = Math.max(Math.min(mh, H - 24), Math.min(app.size.h, H - 24));
+      /* default size scales with the screen on BOTH axes — a taller desktop
+         opens bigger windows, not just a wider one. Floor 0.84x so content
+         stays legible (the window then scrolls), ceiling 1.32x. */
+      const k = Math.min(1.32, Math.max(0.84, Math.min(W / 1420, H / 880)));
+      const dw = Math.round(app.size.w * k), dh = Math.round(app.size.h * k);
+      const w = Math.max(Math.min(mw, W - 24), Math.min(dw, W - 24));
+      const h = Math.max(Math.min(mh, H - 24), Math.min(dh, H - 24));
       el.style.width = w + "px"; el.style.height = h + "px";
       /* cascade: claim the lowest slot no other live window is sitting in,
          so two windows never land on the same pixel (even when several

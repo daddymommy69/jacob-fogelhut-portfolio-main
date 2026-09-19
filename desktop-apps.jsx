@@ -10,6 +10,25 @@
   const I = window.DeskIcons;
   const CroppedImg = window.CroppedImg;
 
+  /* A full-size photo is shown at native pixel size, so it can overflow its
+     window in either axis. Drag to pan (the container also scrolls). */
+  function panPhoto(e) {
+    const el = e.currentTarget, box = el.closest(".dk-lb");
+    if (!box) return;
+    e.preventDefault();
+    const sx = e.clientX, sy = e.clientY, sl = box.scrollLeft, st = box.scrollTop;
+    el.classList.add("panning");
+    const move = (ev) => {box.scrollLeft = sl - (ev.clientX - sx);box.scrollTop = st - (ev.clientY - sy);};
+    const up = () => {
+      el.classList.remove("panning");
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  }
+  const srcOf = (v) => typeof v === "string" ? v : v && (v.u || v.url || v.src);
+
   /* ---- My Projects: folder of personal projects; web ones open live ---- */
   function ProjectsApp({ open }) {
     return (
@@ -98,7 +117,9 @@
       <div className="dk-fill">
         <div className="dk-tabs">{live.map((c, i) => <button key={c.a} className={`dk-tab ${cur === c ? "on" : ""}`} onClick={() => setTab(i)}>{c.name}</button>)}</div>
         <div className="dk-shots">{cur.photos.map((ph, i) => <button key={i} onClick={() => setBig(ph)}><CroppedImg value={ph} alt="" /></button>)}</div>
-        {big && <div className="dk-lb" onClick={() => setBig(null)}><CroppedImg value={big} alt="" /></div>}
+        {big && <div className="dk-lb" onClick={(e) => e.target === e.currentTarget && setBig(null)}>
+          <img className="dk-native" src={srcOf(big)} alt="" draggable={false} onPointerDown={panPhoto} />
+        </div>}
       </div>);
   }
 

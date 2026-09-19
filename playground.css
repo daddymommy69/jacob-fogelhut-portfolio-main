@@ -873,3 +873,55 @@
 .pg-body .dc-bar .dc-min, .pg-body .fc-bar .dc-min { margin-left: 0; }
 .pg-body .dc-bar .dc-min:first-of-type, .pg-body .fc-bar .dc-min:first-of-type { margin-left: auto; }
 .pg-body .fc-bar, .pg-body .dc-bar { gap: 7px; }
+
+/* =====================================================================
+   VIEWPORT SCALING — panels grow with BOTH width and height.
+   --pgu is a "scaled pixel": it tracks whichever axis is tighter, so a
+   taller window makes content bigger, not just a wider one. It has a
+   floor (content stops shrinking, then the panel scrolls) and a hard
+   ceiling (stops growing on huge monitors).
+   ===================================================================== */
+.pg-body { --pgu: clamp(0.84px, min(100vw / 1420, 100vh / 880), 1.32px); }
+
+/* ---- gallery viewer ---- */
+.pg-body .gv-panel { width: min(calc(780 * var(--pgu)), 94vw); max-height: 92vh; padding: calc(22 * var(--pgu)) calc(24 * var(--pgu)) calc(26 * var(--pgu)); border-radius: calc(12 * var(--pgu)); }
+.pg-body .gv-main { border-radius: calc(10 * var(--pgu)); }
+.pg-body .gv-cats-grid { gap: calc(8 * var(--pgu)) calc(22 * var(--pgu)); margin-top: calc(18 * var(--pgu)); }
+.pg-body .gv-banner-sm-pic { width: calc(76 * var(--pgu)); height: calc(76 * var(--pgu)); border-radius: calc(8 * var(--pgu)); }
+.pg-body .gv-banner-sm-name { font-size: calc(22 * var(--pgu)); }
+.pg-body .gv-row-track { gap: calc(5 * var(--pgu)); }
+.pg-body .gv-thumb { width: calc(24 * var(--pgu)); height: calc(24 * var(--pgu)); }
+.pg-body .gv-fs-thumb { width: calc(56 * var(--pgu)); height: calc(56 * var(--pgu)); }
+.pg-body .gv-section-empty, .pg-body .gv-main-empty { font-size: calc(11 * var(--pgu)); }
+
+/* ---- notebook / guestbook / mix / playlist panels ---- */
+.pg-body .desk-card { width: min(calc(352 * var(--pgu)), 88vw); }
+.pg-body .dc-mix, .pg-body .dc-playlists { width: min(calc(390 * var(--pgu)), 90vw); }
+.pg-body .dc-bar b, .pg-body .fc-bar b { font-size: calc(21 * var(--pgu)); }
+.pg-body .dc-notebook { background-image: repeating-linear-gradient(#fffdf3 0 calc(31 * var(--pgu)), #9fc0d6 calc(31 * var(--pgu)) calc(32 * var(--pgu))); }
+.pg-body .dc-notebook textarea { font-size: calc(24 * var(--pgu)); line-height: calc(32 * var(--pgu)); min-height: calc(230 * var(--pgu)); max-height: 56vh; }
+.pg-body .dc-guestbook .gb-wall { max-height: 52vh; gap: calc(10 * var(--pgu)); }
+.pg-body .dc-guestbook .gnote { width: calc(96 * var(--pgu)); min-height: calc(90 * var(--pgu)); font-size: calc(15 * var(--pgu)); }
+.pg-body .dc-guestbook .gb-form input { font-size: calc(17 * var(--pgu)); }
+.pg-body .mp-viz { height: calc(150 * var(--pgu)); }
+.pg-body .mp-title { font-size: calc(24 * var(--pgu)); }
+.pg-body .plp-name { font-size: calc(22 * var(--pgu)); }
+
+/* ---- the font panel ---- */
+.pg-body .fontcard { width: min(calc(1100 * var(--pgu)), 94vw); height: min(calc(640 * var(--pgu)), calc(100vh - 110px)); }
+.pg-body .fc-story { font-size: calc(14.5 * var(--pgu)); }
+.pg-body .fc-sample { font-size: calc(24 * var(--pgu)); }
+.pg-body .fc-type { font-size: calc(26 * var(--pgu)); }
+
+/* ---- full-size photo: TRUE pixel size, uncapped. Drag or scroll to pan. ---- */
+.pg-body .gv-enlarge { display: grid; place-content: safe center; overflow: auto; overscroll-behavior: contain; padding: 0; gap: 0; }
+.pg-body .gv-enlarge .gv-big { width: max-content; height: max-content; max-width: none; max-height: none; border-radius: 0; cursor: grab; }
+.pg-body .gv-enlarge .gv-big.panning { cursor: grabbing; }
+.pg-body .gv-enlarge .gv-native { display: block; width: auto; height: auto; max-width: none; max-height: none; }
+.pg-body .gv-enlarge .gv-nav, .pg-body .gv-enlarge .gv-x2 { position: fixed; }
+.pg-body .gv-enlarge .gv-prev { left: 24px; top: 46%; } .pg-body .gv-enlarge .gv-next { right: 24px; top: 46%; }
+.pg-body .gv-enlarge .gv-x2 { top: 24px; right: 24px; }
+.pg-body .gv-enlarge .gv-fs-strip { position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%); max-width: 92vw; background: rgba(4,4,6,.72); border-radius: 999px; backdrop-filter: blur(4px); }
+
+/* ---- uniform lowercase across the playground (typed input left alone) ---- */
+.pg-body, .pg-body *:not(input):not(textarea) { text-transform: lowercase !important; }
