@@ -11,7 +11,7 @@ window.PORTFOLIO_DATA = {
   /* Contact form target. Paste a Formspree endpoint (https://formspree.io/f/xxxx)
      and messages land in your inbox; left empty the form composes a mail
      instead, so it always works. */
-  formEndpoint: "",
+  formEndpoint: "https://formspree.io/f/xqpaqrgj",
 
   /* ----------------------------------------------------------------------
      LINKS — names that become clickable wherever they appear in a blurb or
@@ -41,7 +41,7 @@ window.PORTFOLIO_DATA = {
   ],
 
   // Hero role line — the fixed claim under the name.
-  tagline: "Multimedia creative. I make the thing, then I make sure people see it.",
+  tagline: "Multimedia creative | I make things and help make things",
 
   // Contact section — heading and button label.
   contactHeading: "Let's work",
