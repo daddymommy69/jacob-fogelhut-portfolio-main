@@ -27,7 +27,14 @@ window.PORTFOLIO_DATA = {
     null, null, null, null, null, null, null, null, null
   ],
 
-  // Hero role line — options compared via Tweaks.
+  // Hero role line — the fixed claim under the name.
+  tagline: "Multimedia creative. I make the thing, then I make sure people see it.",
+
+  // Contact section — heading and button label.
+  contactHeading: "Let's work",
+  contactCta: "Get in touch",
+
+  // Kept as alternates (Tweaks can still cycle or pin any one of these).
   taglines: [
     "Multimedia Creative",
     "Marketing",
@@ -49,33 +56,33 @@ window.PORTFOLIO_DATA = {
      ---------------------------------------------------------------------- */
   work: [
     { id: "esenes-campaign", client: "ESENES", title: "S/S Collection 2025", brands: ["ESENES"],
-      role: "Creative direction & production support", tag: "ESENES", tags: ["ESENES", "Campaign", "Fashion"], featured: true, titleAlign: "left",
+      role: "ESENES' Spring/Summer 2025 collection- head to toe. Hyphy inspired campaign for the loud product drop with Oakland's own Guapdad4000 as the main model. Helped with campaign direction and production, from ideation to execution, including an amazing photoshoot with Pinkbox Studios. Digital marketing efforts concluded over 1.5+ million impressions and 40k+ likes on Instagram throughout the campaign.", tag: "ESENES", tags: ["ESENES", "Campaign", "Fashion"], featured: true, titleAlign: "left",
       still: null, media: { kind: "instagram", src: "https://www.instagram.com/p/DI1q4AKzqeU/",
         more: ["https://www.instagram.com/reel/DH6cmk1p0HA/"],
         moreLabels: [""] } },
 
     { id: "esenes-campaign-video", client: "ESENES", title: "Eyeball Mules", brands: ["ESENES"],
-      role: "Video content for the campaign", tag: "ESENES", tags: ["ESENES", "Campaign", "Film"], featured: true,
+      role: "Video content and marketing efforts resulted in a viral video with 200k+ likes on Instagram as well several million impressions, creating a statement piece for the brand.", tag: "ESENES", tags: ["ESENES", "Campaign", "Film"], featured: true,
       still: null, media: { kind: "video", src: "media/campaign-video.mp4", pending: true, poster: "media/campaign-poster.jpg" } },
 
     { id: "esenes-viral", client: "ESENES X TOMBOGO", title: "ESENES X TOMBOGO Christmas Popup", brands: ["ESENES", "TOMBOGO"],
-      role: "Planned, coordinated, set up live event, while creating and producing event merch", tag: "ESENES X TOMBOGO", tags: ["ESENES", "TOMBOGO", "Event", "Social"],
+      role: "Planned, coordinated, set up live holiday event, between ESENES/TOMBOGO and 3319 Marché in Oakland, CA. Produced and planned event while creating and producing event merch.", tag: "ESENES X TOMBOGO", tags: ["ESENES", "TOMBOGO", "Event", "Social"],
       still: null, media: { kind: "instagram", src: "https://www.instagram.com/p/C7PqdQ8JedE/" } },
 
     { id: "esenes-event", client: "ESENES", title: "HYPEBEAST FLEA", brands: ["ESENES"],
-      role: "Full event coordination & execution", tag: "ESENES", tags: ["ESENES", "Event"],
+      role: "Full event coordination & execution. Managed the booth for the duration of the event, resulting in $10k+ in sales in two days, a 4x increase on projections", tag: "ESENES", tags: ["ESENES", "Event"],
       still: null, media: { kind: "instagram", src: "https://www.instagram.com/p/DXFN-iDGM82/" } },
 
     { id: "esenes-shoot", client: "ESENES X BRAVEST STUDIOS", title: "Brainiac Mules", brands: ["ESENES", "BRAVEST"],
-      role: "On-set production & shoot assisting", tag: "ESENES X BRAVEST STUDIOS", tags: ["ESENES", "BRAVEST", "Campaign", "Production"],
+      role: "Brand production assistant for campaign shoot as well as marketing campaign efforts. Filmed & directed by Pinkbox Studios, starring Jay305", tag: "ESENES X BRAVEST STUDIOS", tags: ["ESENES", "BRAVEST", "Campaign", "Production"],
       still: null, media: { kind: "instagram", src: "https://www.instagram.com/reel/C33NswCJ6F4/" } },
 
     { id: "hyphy-doc", client: "TOMBGOGO", title: "Girbogos Campaign", brands: ["TOMBOGO"],
-      role: "Micro-documentary on Bay Area hyphy culture", tag: "TOMBOGO", tags: ["TOMBOGO", "Film", "Documentary"], featured: true,
+      role: "Campaign shoot production help as well as content creation. Created multiple videos, including a BTS quickshot video for post release campaign efforts, as well as a microdocumentary of the shoot. Bay area centered and for the Girbogos, directly influenced by Girbaud denim, which was a key piece of fashion for the Hyphy era in the Bay Area. Video includes conversations with superstar Bay Area Creatives, such a P-LO, Karri, Jahlil Nzinga of Nzinga Studios, Nef The Pharaoh, Jay Anthony, etc.", tag: "TOMBOGO", tags: ["TOMBOGO", "Film", "Documentary"], featured: true,
       still: "media/tombogo-bus.jpg", media: { kind: "video", src: "media/is-hyphy-dead.mp4", pending: true, poster: "media/hyphy-poster.jpg" } },
 
     { id: "noise-complaints", client: "Noise Complaints", title: "RNB Experience Tour", brands: ["Noise Complaints"],
-      role: "Content creation & social media management", tag: "NOISE COMPLAINTS", tags: ["Noise Complaints", "Tour", "Social"],
+      role: "Content creation & social media management for the California leg of Noise Complaints' RnB Experience tour. live posted social media, created photo & video content.", tag: "NOISE COMPLAINTS", tags: ["Noise Complaints", "Tour", "Social"],
       still: null, media: { kind: "instagram", src: "https://www.instagram.com/p/DX0IZb5j_ul/" } },
 
     /* JUSTIN PARK / 5A — one campaign entry. The two pieces (the MV + the
@@ -93,7 +100,7 @@ window.PORTFOLIO_DATA = {
       ] },
 
     { id: "caosmote", client: "CAOS MOTE X ESENES", title: "Complexcon", brands: ["CAOS MOTE", "ESENES"],
-      role: "Social content & creative", tag: "CAOS MOTE X ESENES", tags: ["CAOS MOTE", "ESENES", "Event"],
+      role: "Helped produce, set up, and manage ESENES/ CAOS MOTE booth for complexcon. Assisted with art direction. Social content & creative", tag: "CAOS MOTE X ESENES", tags: ["CAOS MOTE", "ESENES", "Event"],
       still: null, media: { kind: "instagram", src: "https://www.instagram.com/caosmote/" } }
   ],
 
@@ -103,19 +110,126 @@ window.PORTFOLIO_DATA = {
      ---------------------------------------------------------------------- */
   decks: [
     { id: "esenes-hotboys", client: "ESENES × HOTBOYS", title: "Collaboration Deck",
-      note: "Collaboration concept matched to the HOTBOYS aesthetic", cover: null },
+      note: "Pitch for collaboration HOTBOYS in Bay Area, CA. Agreed to do their in house merch, uniform, and a food product on their menu.", cover: null },
     { id: "liz-campos", client: "Liz Campos", title: "Brand Consultation",
-      note: "Marketing systems for a fashion brand", cover: null },
+      note: "Pitch deck for helping develop marketing systems for a fashion brand based in Mexico City.", cover: null },
     { id: "plus-one", client: "PLUS ONE", title: "Show Pitch Deck",
-      note: "Pitch deck to sell a show concept", cover: null }
+      note: "Pitch deck to sell a show concept to creatives", cover: null }
   ],
+
+  /* ----------------------------------------------------------------------
+     EXTRA TAGS — tags for everything that isn't a work project (decks,
+     playground projects, mixes, radio stations, photo albums, the font).
+     Nothing here is displayed on its own item; these only surface when a
+     tag page is opened. Edited through Tag Manager.html.
+     Keys: deck:<id> · pg:<id> · mix:<id> · radio:<index> · album:<index> · font
+     ---------------------------------------------------------------------- */
+  extraTags: {
+  },
+
+  /* ----------------------------------------------------------------------
+     BLURBS — a line of context for each playground piece. Written in
+     Copy Deck v2.html. Same key scheme as extraTags, plus app:<id> for the
+     desk apps themselves.
+     Keys: app:<id> · radio:<index> · mix:<id> · album:<index> · font
+     ---------------------------------------------------------------------- */
+  blurbs: {
+    "app:radio": "Various concept mixes/tapes I created or helped create for fun. One fake radio station with adverts and all, one classic mixtape DJ inspired, as the likes of a DJ Drama/Scream/Don Cannon style tape, one mix created to DJ a wedding. Last mix is a concept tape about an alien coming to Earth. Fun stuff here",
+    "app:listening": "Random Playlists including my favorite releases of 2026 and Spotify likes. Come pick my brain",
+    "app:photos": "Photos from wherever I was. Bad quality iPhone pics are in the moment and professional shots are from my fans AKA wedding Photographers. Come see a slice of my life.",
+    "app:guestbook": "Write something down.  I read every one of them, I swear",
+    "app:paint": "Draw something. Save downloads it as a PNG.",
+    "app:letter": "Type a note and it comes out in my handwriting.",
+    "font": "A typeface drawn from my dad's handwriting."
+  },
+
+  /* ----------------------------------------------------------------------
+     KRINKY — the playground assistant. He reads the blurbs above, and
+     these are his own lines. Edited in Copy Deck v2.html → Krinky.
+     greeting  first arrival ever    returning every visit after that
+     idle      unprompted, after 20s
+     open      you opened a window  click     you clicked him
+     fallback  item has no blurb    reaction  follows one of your blurbs
+     music     a mix is playing     viz       you changed the visualizer
+     ---------------------------------------------------------------------- */
+  krinky: {
+    greeting: [
+      "Hi. I'm Krinky. I live here."
+    ],
+    returning: [
+      "its me krinky again",
+      "lets a krinky dinky time",
+      "im gonna go krinko mode",
+      "my krinkometer is busting",
+      "krinky is so back",
+      "you again. krinktastic.",
+      "i never left. krinkily.",
+      "full krink ahead"
+    ],
+    idle: [
+      "Still here. No pressure.",
+      "You can open things, by the way.",
+      "I counted the icons again. Nine.",
+      "This is the part where I say something useful.",
+      "Take your time. I have nowhere to be. Literally.",
+      "Sometimes I just stand here and buffer."
+    ],
+    open: [
+      "Bold choice.",
+      "Ah, this one. Good. Fine. Sure.",
+      "I helped with this. I didn't.",
+      "Careful, it's load-bearing.",
+      "There it is. The thing you clicked.",
+      "Drag it, resize it, whatever. Windows are free."
+    ],
+    click: [
+      "Ow.",
+      "Yes? I have no additional information.",
+      "That's my face.",
+      "Please. Not in front of the icons.",
+      "You clicked the help. The help is me. This is it.",
+      "Again? Okay. Again."
+    ],
+    fallback: [
+      "He hasn't written anything for this one yet.",
+      "No notes on this. Draw your own conclusions.",
+      "This one speaks for itself. It has to.",
+      "I had a line for this. It's gone.",
+      "Unlabeled. Mysterious. Probably fine.",
+      "I'm told the work speaks. Loudly, allegedly."
+    ],
+    reaction: [
+      "...anyway.",
+      "That's the pitch.",
+      "I think that's the whole thing, yeah.",
+      "He wrote that himself. You can tell.",
+      "Wild stuff. Truly.",
+      "Take from that what you will."
+    ],
+    music: [
+      "This part's good. Turn it up.",
+      "I feel this one in my center hole.",
+      "Music's on. Everything's better now. Statistically.",
+      "I'd dance but I'm a cursor.",
+      "Somebody made this. On purpose.",
+      "Volume's a slider. Just saying."
+    ],
+    viz: [
+      "Different shapes. Same music.",
+      "Ooh. Do that again.",
+      "That's my favourite one. They're all my favourite one.",
+      "Now it's a graph. Now it's art.",
+      "I preferred the last one. No I didn't.",
+      "Keep clicking. Something's bound to happen."
+    ]
+  },
 
   /* ----------------------------------------------------------------------
      PLAYGROUND — a little retro desktop.
      ---------------------------------------------------------------------- */
   playground: {
     // About / readme.txt — verbatim from you.
-    about: "just a guy living life.\ni can help your dreams come true.\nlets make your ideas real.\n\nlive laugh love",
+    about: "just a guy living life.\ni have ideas and i try to make them real\nwhat are your dreams\n\nlive laugh love",
 
     // Apple Music first (set in Playground.html embed); Spotify fallback album.
     appleMusic: "https://embed.music.apple.com/us/playlist/2026/pl.u-gxblvzRt88Kpbp",
