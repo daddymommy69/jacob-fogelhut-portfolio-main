@@ -321,8 +321,8 @@ function Header({ theme, cycleTheme }) {
       <div className="wrap head-inner">
         <a className="head-brand" href="#top">{DATA.name}</a>
         <nav className="head-nav">
-          <a href="#playground">Playground</a>
-          <a href={`mailto:${DATA.email}`}>Contact</a>
+          <a href="#playground">More</a>
+          <a href="#contact">Contact</a>
           <button className="theme-btn" onClick={cycleTheme} aria-label="Toggle theme">
             <span className="dot" style={{ background: theme === "dark" ? "currentColor" : "transparent" }}></span>
             {tLabel}
@@ -335,15 +335,15 @@ function Header({ theme, cycleTheme }) {
 /* =====================================================================
    HERO
    ===================================================================== */
-function Hero({ roleLine }) {
+function Hero({ line }) {
   const [idx, setIdx] = useState(0);
-  const cycling = roleLine === "__cycle";
+  const cycling = line === "__cycle";
   useEffect(() => {
     if (!cycling) return;
     const id = setInterval(() => setIdx((i) => (i + 1) % DATA.taglines.length), 3200);
     return () => clearInterval(id);
   }, [cycling]);
-  const role = cycling ? DATA.taglines[idx] : roleLine;
+  const role = cycling ? DATA.taglines[idx] : line === "__fixed" || !line ? DATA.tagline : line;
   return (
     <section className="wrap hero" id="top">
       <h1 className="hero-h1">Jacob<br />Fogelhut</h1>
@@ -379,7 +379,7 @@ function ProjectDetail({ item, onStep, onClose, stepped }) {
       </div>
       <div className="detail-meta">
         <h4 style={{ fontFamily: "JacobMarker" }}>{r.title}</h4>
-        <div className="d-role">{r.role}</div>
+        <div className="d-role">{window.linkify ? window.linkify(r.role) : r.role}</div>
         <TagChips tags={r.tags} extra={item.stat && <span className="d-stat chip">{item.stat}</span>} />
         {(item.media.kind === "instagram" || item.media.kind === "spotify") &&
         <a className="detail-out" href={item.media.src} target="_blank" rel="noreferrer">
@@ -460,7 +460,7 @@ function BrandItem({ brand, feel, isOpen, onToggle, cursorFollow }) {
               </div>
               <div className="detail-meta">
                 <h4 style={{ fontFamily: "JacobMarker" }}>{piece.title}</h4>
-                <div className="d-role">{piece.role}</div>
+                <div className="d-role">{window.linkify ? window.linkify(piece.role) : piece.role}</div>
                 <TagChips tags={window.resolveItem(piece).tags} extra={piece.stat && <span className="d-stat chip">{piece.stat}</span>} />
                 {(piece.media.kind === "instagram" || piece.media.kind === "spotify") &&
               <a className="detail-out" href={piece.media.src} target="_blank" rel="noreferrer">
@@ -837,7 +837,7 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, onRequ
         <article className="pp-card" onClick={(e) => e.stopPropagation()}>
           <div className="pp-eyebrow mono">{item.client}</div>
           <h2 className="pp-title" style={{ fontFamily: "JacobMarker", textAlign: item.titleAlign }}>{r.title}</h2>
-          <div className="pp-role" style={{ fontSize: item.roleSize, textAlign: item.roleAlign }}>{r.role}</div>
+          <div className="pp-role" style={{ fontSize: item.roleSize, textAlign: item.roleAlign }}>{window.linkify ? window.linkify(r.role) : r.role}</div>
 
           <div className="pp-tags">
             <TagChips tags={r.tags} extra={item.stat && <span className="d-stat chip">{item.stat}</span>} />
@@ -917,6 +917,9 @@ function TagView({ tag, onOpen, onClose }) {
     return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
   }, [onClose]);
   const matches = DATA.work.filter((w) => window.resolveItem(w).tags.some((t) => t.toLowerCase() === tag.toLowerCase()));
+  const others = window.workFacets().filter((f) => f.tag.toLowerCase() !== tag.toLowerCase());
+  const jump = React.useContext(TagCtx);
+  const extras = window.extraTagged(tag);
   return (
     <div className="tagview" onClick={onClose}>
       <div className="tagview-inner" onClick={(e) => e.stopPropagation()}>
@@ -928,11 +931,17 @@ function TagView({ tag, onOpen, onClose }) {
           </div>
           <button className="po-x" onClick={onClose} aria-label="Close"><IcX /></button>
         </div>
-        <div className="tagview-grid">
-          {matches.map((w) => {
+        <div className="tv-jump">
+          <button className="facet" onClick={onClose}>All<i>{DATA.work.length}</i></button>
+          {others.map((f) =>
+          <button key={f.tag} className="facet" onClick={() => jump(f.tag)}>{f.tag}<i>{f.n}</i></button>
+          )}
+        </div>
+        <div className="tagview-grid" key={tag}>
+          {matches.map((w, i) => {
             const r = window.resolveItem(w);
             return (
-              <button key={w.id} className="tv-card" onClick={() => onOpen(w)}>
+              <button key={w.id} className="tv-card" style={{ animationDelay: Math.min(i, 8) * 55 + "ms" }} onClick={() => onOpen(w)}>
                 <div className="tv-media"><Thumb item={w} revealName={w.client} /></div>
                 <div className="tv-cap">
                   <b style={{ fontFamily: "JacobMarker" }}>{r.title}</b>
@@ -941,14 +950,90 @@ function TagView({ tag, onOpen, onClose }) {
               </button>);
           })}
         </div>
+        {extras.length > 0 &&
+        <div className="tv-extra">
+          <span className="mono">Elsewhere</span>
+          <div className="tv-extra-list">
+            {extras.map((x) =>
+            <a key={x.key} className="tv-ext" href={x.href}>
+              <b>{x.title}</b><span className="mono">{x.sub}</span>
+            </a>
+            )}
+          </div>
+        </div>}
       </div>
     </div>);
 }
 
 /* =====================================================================
+   EXTRA TAGS — decks, playground pieces, mixes, stations, albums and the
+   font can carry tags too (DATA.extraTags, edited in Tag Manager.html).
+   They are never shown on their own item; they only surface here, on a
+   tag page, under "Elsewhere".
+   ===================================================================== */
+window.extraTagged = (tag) => {
+  const map = DATA.extraTags || {};
+  const PG = DATA.playground || {};
+  const label = (key) => {
+    const [kind, rest] = [key.split(":")[0], key.split(":").slice(1).join(":")];
+    const find = (arr, id) => (arr || []).find((x) => x.id === id);
+    if (kind === "deck") {const d = find(DATA.decks, rest);return d && { title: d.title, sub: d.client || "pitch deck", href: "#decks" };}
+    if (kind === "pg") {const p = find(PG.projects, rest);return p && { title: p.title, sub: "personal project", href: "Playground.html" };}
+    if (kind === "mix") {const m = find(PG.mixes, rest);return m && { title: m.title, sub: "radio mix", href: "Playground.html" };}
+    if (kind === "radio") {const r = (PG.radio || [])[+rest];return r && { title: r.name, sub: "station", href: "Playground.html" };}
+    if (kind === "album") {const n = (PG.galleryCategoryNames || PG.albumNames || [])[+rest];return n && { title: n, sub: "photos", href: "Playground.html" };}
+    if (key === "font") {const f = PG.fontStory;return f && { title: f.title, sub: "the font", href: "Playground.html" };}
+    return null;
+  };
+  return Object.keys(map).
+  filter((k) => (map[k] || []).some((t) => t.toLowerCase() === tag.toLowerCase())).
+  map((k) => {const l = label(k);return l && { key: k, ...l };}).
+  filter(Boolean);
+};
+
+/* =====================================================================
    WORK SECTION
    ===================================================================== */
-function Work({ listMode, openMode, feel, cursorFollow, rowHover, multiOpen, onOpenFull, onEditMedia }) {
+/* =====================================================================
+   FILTER ROW — the one entry point into the tag system. Facets are the
+   three categories Jacob picked, then every brand that appears in the
+   work, each shown with its count; anything with nothing behind it is
+   dropped rather than shown as a dead end. Clicking opens that tag's
+   page (TagCtx); "All" closes it.
+   ===================================================================== */
+const CATEGORY_FACETS = ["Event", "Music", "Fashion"];
+window.tagCount = (tag) =>
+DATA.work.filter((w) => window.resolveItem(w).tags.some((t) => t.toLowerCase() === tag.toLowerCase())).length;
+window.workFacets = () => {
+  const seen = new Set(CATEGORY_FACETS.map((c) => c.toLowerCase()));
+  const brands = [];
+  DATA.work.forEach((w) => (w.brands || []).forEach((b) => {
+    if (seen.has(b.toLowerCase())) return;
+    seen.add(b.toLowerCase());brands.push(b);
+  }));
+  return [...CATEGORY_FACETS, ...brands].
+  map((t) => ({ tag: t, n: window.tagCount(t) })).
+  filter((f) => f.n > 0);
+};
+
+function FilterRow({ active }) {
+  const openTag = React.useContext(TagCtx);
+  const facets = useMemo(() => window.workFacets(), []);
+  if (!facets.length) return null;
+  return (
+    <div className="facets" role="group" aria-label="Filter work by tag">
+      <button className={`facet ${active ? "" : "on"}`} onClick={() => openTag(null)}>
+        All<i>{DATA.work.length}</i>
+      </button>
+      {facets.map((f) =>
+      <button key={f.tag}
+      className={`facet ${active && active.toLowerCase() === f.tag.toLowerCase() ? "on" : ""}`}
+      onClick={() => openTag(f.tag)}>{f.tag}<i>{f.n}</i></button>
+      )}
+    </div>);
+}
+
+function Work({ activeTag, listMode, openMode, feel, cursorFollow, rowHover, multiOpen, onOpenFull, onEditMedia }) {
   const [openMap, setOpenMap] = useState({}); // id -> viewId (project shown in that row's panel)
   useEffect(() => {setOpenMap({});}, [listMode, multiOpen]);
   const PI = window.useProjInfo ? window.useProjInfo() : null;
@@ -1045,14 +1130,24 @@ function Work({ listMode, openMode, feel, cursorFollow, rowHover, multiOpen, onO
 /* =====================================================================
    PLAYGROUND TEASER — marker sign  ⇄  polaroid collage (Tweak)
    ===================================================================== */
-function TeaserSign() {
+function TeaserWindow() {
+  const PG = (window.PORTFOLIO_DATA || {}).playground || {};
+  const names = ["My Projects", "Radio", "Photos", "readme.txt"];
   return (
-    <div className="tsign">
-      <span className="tsign-rope tsign-rope-l"></span>
-      <span className="tsign-rope tsign-rope-r"></span>
-      <div className="tsign-board">
-        <span className="tsign-word" style={{ fontFamily: "JacobMarker" }}>Playground</span>
-        <span className="tsign-arrow mono">step inside →</span>
+    <div className="twin">
+      <div className="twin-bar">
+        <span className="twin-dots"><i></i><i></i><i></i></span>
+        <span className="twin-name mono">jacob_other_projects.exe</span>
+      </div>
+      <div className="twin-body">
+        <div className="twin-icons">
+          {names.map((n) =>
+            <span className="twin-ic" key={n}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="15" rx="2" fill="none" stroke="currentColor" strokeWidth="1.6" /><path d="M3 8h18" stroke="currentColor" strokeWidth="1.6" /></svg>
+              <em>{n}</em>
+            </span>)}
+        </div>
+        <span className="twin-open mono">click to open →</span>
       </div>
     </div>);
 }
@@ -1090,11 +1185,11 @@ function Teaser({ style }) {
   return (
     <Reveal>
       <section className="wrap teaser">
-        <div className="teaser-mono mono">Off the clock</div>
-        <a className={`teaser-link ${collage ? "is-collage" : "is-sign"}`} href="#playground">
-          {collage ? <TeaserCollage photos={photos} /> : <TeaserSign />}
+        <div className="teaser-mono mono">Self-directed</div>
+        <a className={`teaser-link ${collage ? "is-collage" : "is-window"}`} href="#playground">
+          {collage ? <TeaserCollage photos={photos} /> : <TeaserWindow />}
         </a>
-        <div className="teaser-hint">{collage ? "Snapshots from the playground — step inside →" : "A little corner of things I make for fun — step inside →"}</div>
+        <div className="teaser-hint">{collage ? "Snapshots from the desktop — step inside →" : "A web app, mixes, photos and a font, on a desktop you can click around →"}</div>
       </section>
     </Reveal>);
 }
@@ -1107,8 +1202,8 @@ function Contact() {
   return (
     <Reveal>
       <section className="wrap contact" id="contact">
-        <h2 className="serif" style={{ fontFamily: "JacobMarker", fontSize: "90px" }}>Let's make<br />something real.</h2>
-        <a className="contact-btn magnetic" ref={btnRef} href={`mailto:${DATA.email}`}>Contact me <IcArrow /></a>
+        <h2 className="serif" style={{ fontFamily: "JacobMarker", fontSize: "76px" }}>Let's work</h2>
+        <a className="contact-btn magnetic" ref={btnRef} href="#contact">Get in touch <IcArrow /></a>
       </section>
     </Reveal>);
 }
@@ -1124,9 +1219,10 @@ function Footer() {
    TWEAKS + APP
    ===================================================================== */
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "krinkyKind": "cursor",
   "theme": "light",
   "accent": "#9c7a3c",
-  "roleLine": "__cycle",
+  "heroLine": "__fixed",
   "listMode": "projects",
   "openMode": "full",
   "openAnim": "zoom",
@@ -1138,7 +1234,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "inlineMulti": false,
   "intro": "photoCycle",
   "introSource": "intro",
-  "teaserStyle": "sign",
+  "teaserStyle": "window",
   "vizStyle": "radial",
   "vizGrain": 0.2,
   "vizScan": 0.2,
@@ -1297,8 +1393,8 @@ function App() {
 
       <div className={`site ${showBoot || showIntro ? "pre" : "go"} ${openFull ? "site-behind" : ""}`}>
         <Header theme={t.theme} cycleTheme={cycleTheme} />
-        <Hero roleLine={t.roleLine} />
-        <Work listMode={t.listMode} openMode={t.openMode} feel={t.inlineFeel} cursorFollow={showCursor} rowHover={t.rowHover} multiOpen={t.inlineMulti} onOpenFull={openProject} onEditMedia={setEditMedia} />
+        <Hero line={t.heroLine} />
+        <Work activeTag={tagView} listMode={t.listMode} openMode={t.openMode} feel={t.inlineFeel} cursorFollow={showCursor} rowHover={t.rowHover} multiOpen={t.inlineMulti} onOpenFull={openProject} onEditMedia={setEditMedia} />
         <Teaser style={t.teaserStyle} />
         <Contact />
         <Footer />
@@ -1343,9 +1439,9 @@ function App() {
         <TweakButton label="Replay intro" secondary onClick={replayIntro} />
 
         <TweakSection label="Hero" />
-        <TweakSelect label="Role line" value={t.roleLine}
-        options={[{ value: "__cycle", label: "Auto (cycle all)" }, ...DATA.taglines.map((x) => ({ value: x, label: x }))]}
-        onChange={(v) => setTweak("roleLine", v)} />
+        <TweakSelect label="Role line" value={t.heroLine}
+        options={[{ value: "__fixed", label: "Fixed line" }, { value: "__cycle", label: "Auto (cycle all)" }, ...DATA.taglines.map((x) => ({ value: x, label: x }))]}
+        onChange={(v) => setTweak("heroLine", v)} />
 
         <TweakSection label="Work layout" />
         <TweakSelect label="Row hover" value={t.rowHover}
@@ -1386,7 +1482,7 @@ function App() {
 
         <TweakSection label="Playground teaser" />
         <TweakRadio label="Style" value={t.teaserStyle}
-        options={[{ value: "sign", label: "Marker sign" }, { value: "collage", label: "Polaroid collage" }]}
+        options={[{ value: "window", label: "Browser window" }, { value: "collage", label: "Polaroid collage" }]}
         onChange={(v) => setTweak("teaserStyle", v)} />
 
         <TweakSection label="Radio" />
@@ -1400,6 +1496,11 @@ function App() {
         <TweakRadio label="Player bar" value={t.barStyle}
         options={[{ value: "full", label: "Full width" }, { value: "float", label: "Floating" }]}
         onChange={(v) => {try {localStorage.setItem("jf-pv-barStyle", v);} catch (e) {}setTweak("barStyle", v);}} />
+
+        <TweakSection label="Krinky (playground)" />
+        <TweakRadio label="Character" value={t.krinkyKind}
+        options={[{ value: "cursor", label: "Cursor" }, { value: "disc", label: "CD" }, { value: "player", label: "Player" }]}
+        onChange={(v) => setTweak("krinkyKind", v)} />
 
         <TweakSection label="Media" />
         <TweakButton label="Open Media Manager →" onClick={() => {window.location.href = "media.html";}} />

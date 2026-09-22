@@ -41,6 +41,14 @@
   /* ---------------- window ---------------- */
   function Win({ id, app, z, minimized, focus, close, min, children }) {
     const ref = useRef(null);
+    /* Krinky reacts to the window appearing: he walks over, or gets squashed
+       if it opened on top of him. */
+    useEffect(() => {
+      const el = ref.current; if (!el) return;
+      const key = id === "font" ? "font" : "app:" + id;
+      const t = setTimeout(() => window.krinkySay && window.krinkySay({ kind: "open", key, el }), 260);
+      return () => clearTimeout(t);
+    }, []);
     const mw = (app.min && app.min.w) || 240, mh = (app.min && app.min.h) || 150;
     useEffect(() => {
       const el = ref.current, host = el && el.parentElement; if (!host) return;
@@ -95,7 +103,7 @@
     };
     const Icon = app.Icon;
     return (
-      <div className="dkw" ref={ref} style={{ zIndex: z, display: minimized ? "none" : "flex", "--wc": app.tint || "#41669a" }} onPointerDown={() => focus(id)}>
+      <div className="dkw" data-app={id} ref={ref} style={{ zIndex: z, display: minimized ? "none" : "flex", "--wc": app.tint || "#41669a" }} onPointerDown={() => focus(id)}>
         <div className="dkw-bar" onPointerDown={onDown}>
           <span className="dkw-ic"><Icon s={16} /></span><b>{app.title}</b>
           <span className="dkw-btns">
@@ -162,6 +170,7 @@
       if (e.target.closest(".dkm-ctl,.dkm-list,.dkm-gear")) return;
       const next = KINDS[(KINDS.indexOf(kind) + 1) % KINDS.length];
       setKind(next);
+      window.krinkySay && window.krinkySay({ kind: "viz" });
       window.VizKind && window.VizKind.set(next);   /* the taskbar thumbnail follows */
     };
     const setDial = (key, v) => {
@@ -212,7 +221,7 @@
               {list &&
                 <div className="dkm-list">
                   {(p.mixes || []).map((m, i) =>
-                    <button key={m.id} className={p.isMix && p.mixIdx === i ? "on" : ""} onClick={() => pick(i)}>{m.title}</button>)}
+                    <button key={m.id} className={p.isMix && p.mixIdx === i ? "on" : ""} data-krinky={"mix:" + m.id} onClick={() => pick(i)}>{m.title}</button>)}
                 </div>}
             </div>
           </div>
@@ -221,7 +230,7 @@
   }
 
   /* ---------------- start menu ---------------- */
-  function StartMenu({ open, onClose, exit, editable, lower, setLower }) {
+  function StartMenu({ open, onClose, exit, editable, lower, setLower, krOff, setKrOff }) {
     const links = (DATA.social || {});
     const item = (Icon, label, props) => <a className="dk-mi" {...props}><Icon s={18} />{label}</a>;
     /* brand logos are the real marks, so they stay images rather than being
@@ -255,6 +264,9 @@
             <div className="dk-menu-sep" />
             <button className="dk-mi" onClick={() => setLower(!lower)}>
               <I.Link s={18} />{lower ? "Lowercase: on" : "Lowercase: off"}
+            </button>
+            <button className="dk-mi" onClick={() => setKrOff(!krOff)}>
+              <I.Link s={18} />{krOff ? "Krinky: off" : "Krinky: on"}
             </button>
             <button className="dk-mi dk-mi-home" onClick={exit}><I.Home s={18} />Back to portfolio</button>
           </div>
@@ -295,6 +307,14 @@
     }, [booted]);
     const player = window.usePlayer && window.usePlayer();
     const editable = !!writer();
+    /* The main site's Tweaks panel unmounts on this route, so the playground
+       carries its own — same storage key, so the two stay in sync. */
+    const [tw, setTweak] = window.useTweaks({ krinkyKind: "cursor" }, "jf-tweaks-main");
+    /* Krinky can be sent away from the Start menu; the choice sticks. */
+    const [krOff, setKrOff] = useState(() => {
+      try { return localStorage.getItem("jf-krinky-off") === "1"; } catch (e) { return false; }
+    });
+    useEffect(() => { try { localStorage.setItem("jf-krinky-off", krOff ? "1" : "0"); } catch (e) {} }, [krOff]);
 
     useEffect(() => { const t = setInterval(() => setClock(new Date()), 20000); return () => clearInterval(t); }, []);
     useEffect(() => {
@@ -399,10 +419,11 @@
               {w.app.body({ open })}
             </Win>))}
           <MiniPlayer shown={mini} onClose={() => setMini(false)} editable={editable} />
+          <window.Krinky kind={tw.krinkyKind || "cursor"} off={krOff} player={player} />
         </div>
 
         {menu && <StartMenu open={open} onClose={() => setMenu(false)} exit={exit} editable={editable}
-        lower={lower} setLower={setLower} />}
+        lower={lower} setLower={setLower} krOff={krOff} setKrOff={setKrOff} />}
 
         <div className="dk-bar" onPointerDown={(e) => e.stopPropagation()}>
           <button className="dk-start" onClick={() => setMenu((m) => !m)}><em />start</button>
@@ -420,6 +441,14 @@
             <span>{clock.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span>
           </div>
         </div>
+
+        <window.TweaksPanel>
+          <window.TweakSection label="Krinky" />
+          <window.TweakRadio label="Character" value={tw.krinkyKind || "cursor"}
+          options={[{ value: "cursor", label: "Cursor" }, { value: "disc", label: "CD" }, { value: "player", label: "Player" }]}
+          onChange={(v) => setTweak("krinkyKind", v)} />
+          <window.TweakToggle label="Show Krinky" value={!krOff} onChange={(v) => setKrOff(!v)} />
+        </window.TweaksPanel>
       </div>);
   }
 

@@ -4,7 +4,8 @@
    (window.PlaygroundApp) on hash change — no page reload — so the radio
    (mounted in window.PlayerProvider, above the views) never stops playing.
 
-   Routes:  #playground → Playground   ·   anything else → main site
+   Routes:  #playground → Playground   ·   #contact → Contact   ·
+            anything else → main site
    Old links keep working: Playground.html redirects here to #playground;
    project deep-links (?p=<id>) live on the main route.
    ========================================================================= */
@@ -24,10 +25,12 @@
       if (route !== "playground") window.scrollTo(0, 0);
     }, [route]);
 
-    const Main = window.MainApp, Play = window.PlaygroundApp;
+    const Main = window.MainApp, Play = window.PlaygroundApp, Contact = window.ContactPage;
     const view = route === "playground"
       ? React.createElement(Play)
-      : React.createElement(Main);
+      : route === "contact" && Contact
+        ? React.createElement(Contact)
+        : React.createElement(Main);
 
     return React.createElement(
       window.PlayerProvider, null,

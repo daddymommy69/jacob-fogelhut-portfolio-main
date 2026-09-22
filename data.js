@@ -8,6 +8,19 @@ window.PORTFOLIO_DATA = {
   name: "Jacob Fogelhut",
   email: "jacobfogelhut@gmail.com",
 
+  /* Contact form target. Paste a Formspree endpoint (https://formspree.io/f/xxxx)
+     and messages land in your inbox; left empty the form composes a mail
+     instead, so it always works. */
+  formEndpoint: "",
+
+  /* ----------------------------------------------------------------------
+     LINKS — names that become clickable wherever they appear in a blurb or
+     role line. Edited in Link Manager.html. Longest name wins, so
+     "ESENES X TOMBOGO" is matched before "ESENES".
+     ---------------------------------------------------------------------- */
+  links: [/*LINKS-BEGIN*/
+  /*LINKS-END*/],
+
   /* Links in the desktop's Start menu. Empty entries are simply not shown —
      fill in the ones you want listed. */
   social: {
