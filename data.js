@@ -75,11 +75,11 @@ window.PORTFOLIO_DATA = {
         moreLabels: [""] } },
 
     { id: "esenes-campaign-video", client: "ESENES", title: "Eyeball Mules", brands: ["ESENES"],
-      role: "Video content and marketing efforts resulted in a viral video with 200k+ likes on Instagram as well several million impressions, creating a statement piece for the brand.", tag: "ESENES", tags: ["ESENES", "Campaign", "Film"], featured: true,
+      role: "Video content and marketing efforts resulted in a [viral video](https://www.instagram.com/reel/C6_5a26uCbz/?utm_source=ig_web_copy_link&stkn=MzRlODBiNWFlZA==) with 300k+ likes on Instagram as well several million impressions, creating a statement piece for the brand.", tag: "ESENES", tags: ["ESENES", "Campaign", "Film"], featured: true,
       still: null, media: { kind: "video", src: "media/campaign-video.mp4", pending: true, poster: "media/campaign-poster.jpg" } },
 
     { id: "esenes-viral", client: "ESENES X TOMBOGO", title: "ESENES X TOMBOGO Christmas Popup", brands: ["ESENES", "TOMBOGO"],
-      role: "Planned, coordinated, set up live holiday event, between ESENES/TOMBOGO and 3319 Marché in Oakland, CA. Produced and planned event while creating and producing event merch.", tag: "ESENES X TOMBOGO", tags: ["ESENES", "TOMBOGO", "Event", "Social"],
+      role: "Planned, coordinated, set up live holiday event, between ESENES/TOMBOGO and [3319 Marché](https://www.3319marche.com/home) in Oakland, CA. Produced and planned event while creating and producing event merch.", tag: "ESENES X TOMBOGO", tags: ["ESENES", "TOMBOGO", "Event", "Social"],
       still: null, media: { kind: "instagram", src: "https://www.instagram.com/p/C7PqdQ8JedE/" } },
 
     { id: "esenes-event", client: "ESENES", title: "HYPEBEAST FLEA", brands: ["ESENES"],
@@ -125,7 +125,7 @@ window.PORTFOLIO_DATA = {
     { id: "esenes-hotboys", client: "ESENES × HOTBOYS", title: "Collaboration Deck",
       note: "Pitch for collaboration HOTBOYS in Bay Area, CA. Agreed to do their in house merch, uniform, and a food product on their menu.", cover: null },
     { id: "liz-campos", client: "Liz Campos", title: "Brand Consultation",
-      note: "Pitch deck for helping develop marketing systems for a fashion brand based in Mexico City.", cover: null },
+      note: "Pitch deck for helping develop marketing systems for [Liz Campos](https://lizcamposmx.com/en-us) based in Mexico City. ", cover: null },
     { id: "plus-one", client: "PLUS ONE", title: "Show Pitch Deck",
       note: "Pitch deck to sell a show concept to creatives", cover: null }
   ],
@@ -150,10 +150,9 @@ window.PORTFOLIO_DATA = {
     "app:radio": "Various concept mixes/tapes I created or helped create for fun. One fake radio station with adverts and all, one classic mixtape DJ inspired, as the likes of a DJ Drama/Scream/Don Cannon style tape, one mix created to DJ a wedding. Last mix is a concept tape about an alien coming to Earth. Fun stuff here",
     "app:listening": "Random Playlists including my favorite releases of 2026 and Spotify likes. Come pick my brain",
     "app:photos": "Photos from wherever I was. Bad quality iPhone pics are in the moment and professional shots are from my fans AKA wedding Photographers. Come see a slice of my life.",
-    "app:guestbook": "Write something down.  I read every one of them, I swear",
     "app:paint": "Draw something. Save downloads it as a PNG.",
-    "app:letter": "Type a note and it comes out in my handwriting.",
-    "font": "A typeface drawn from my dad's handwriting."
+    "app:guestbook": "Write something down.  I read every one of them, I swear",
+    "app:letter": "Type a note and it comes out in my handwriting."
   },
 
   /* ----------------------------------------------------------------------
@@ -228,6 +227,32 @@ window.PORTFOLIO_DATA = {
       "Somebody made this. On purpose.",
       "Volume's a slider. Just saying."
     ],
+    watch: [
+      "you should watch [this video]"
+    ],
+    videos: [
+      "https://www.youtube.com/watch?v=f5WiJVz7pFY",
+      "https://www.youtube.com/watch?v=Pfu08ULFK88",
+      "https://www.youtube.com/watch?v=G9fc2r7m1so",
+      "https://www.youtube.com/watch?v=RcBApiftZs4",
+      "https://www.youtube.com/watch?v=q96o9AvJO0M",
+      "https://www.youtube.com/watch?v=osuY809zd5U",
+      "https://www.youtube.com/watch?v=54JFowaYei8",
+      "https://www.youtube.com/watch?v=UUrah82vQhk",
+      "https://www.youtube.com/watch?v=Pkup4zo97E0",
+      "https://www.youtube.com/watch?v=yrpBF09glIo",
+      "https://www.youtube.com/watch?v=Ovd4-eJsLgM",
+      "https://www.youtube.com/watch?v=b3BaKhWOzX0",
+      "https://www.youtube.com/watch?v=9rPOuZ4vY50",
+      "https://www.youtube.com/watch?v=EcPDUn5CaIo",
+      "https://www.youtube.com/watch?v=lItkr3MR1I4",
+      "https://www.youtube.com/watch?v=NkARD8oTzOM",
+      "https://www.youtube.com/watch?v=jBK-Mdkqjvk",
+      "https://www.youtube.com/watch?v=GAyw3Gahx90",
+      "https://www.youtube.com/watch?v=Vl-GJaitlNs",
+      "https://www.youtube.com/watch?v=umF1kfVujhM",
+      "https://www.youtube.com/watch?v=1T3LA4TJRgE&list=LL"
+    ],
     viz: [
       "Different shapes. Same music.",
       "Ooh. Do that again.",
@@ -235,12 +260,7 @@ window.PORTFOLIO_DATA = {
       "Now it's a graph. Now it's art.",
       "I preferred the last one. No I didn't.",
       "Keep clicking. Something's bound to happen."
-    ],
-    /* watch: an idle line; the words in [brackets] link to a random video below */
-    watch: [
-      "you should watch [this video]"
-    ],
-    videos: []
+    ]
   },
 
   /* ----------------------------------------------------------------------
@@ -293,11 +313,7 @@ window.PORTFOLIO_DATA = {
     fontStory: {
       title: "My Dads Handwriting",
       maker: "Lloyd Fogelhut",
-      story:
-        "inspired by a creator immortalizing her architect dad and my need to create, i found a way i could try to honor my dad as well. Growing up, I thought he had the coolest and most unique handwriting. I loved watching him write me absent excuses for school, and i saw his building drafts as his artwork.\n\n" +
-        "scanning actual notes and drafts from his early work and cleaning up each letter in Photoshop, i have made his handwriting into a usable and downloadable font. i want to share it with the world, so please download it below, and i hope you find a fun use with it. if you do, please show me!\n\n" +
-        "He started to lose his memory after chemo in 2018, and has slowly been deteriorating. affirming what we already knew, he was diagnosed with mild to moderate alzheimers. my mom said he cracked a joke immediately after the doctor told them the news. thats how he has been living his life for the past 15 years. from two different chemo treatments, to losing his memory, he has stayed positive and has laughed through the process. while he may ask me seven times in a row if i saw my cousin on a trip, each time will have a new joke. Frustrating for him a lot of the time, he will always find the positive in everything and anything.\n\n" +
-        "one of my role models, one of my heroes, and my main inspiration for how i live my life. please download, use, and share the ice city architects font.",
+      story: "inspired by a [@kaseyfelix](https://www.tiktok.com/t/ZP8Tmk64w/) immortalizing her architect dad, and my need to create, i found a tried to honor my dad the same way. Him being an architect as well, I thought he had the coolest and most unique handwriting growing up. I loved watching him write me absent excuses for school, and i saw his building drafts as his artwork.\n\nscanning actual notes and drafts from his early work and cleaning up each letter in Photoshop, i have made his handwriting into a usable and downloadable font. i want to share it with the world, so please download it below, and i hope you find a fun use with it. if you do, please show me!\n\nHe started to lose his memory after chemo in 2018, and has slowly been deteriorating. affirming what we already knew, he was diagnosed with mild to moderate alzheimers. my mom said he cracked a joke immediately after the doctor told them the news. thats how he has been living his life for the past 15 years. from two different chemo treatments, to losing his memory, he has stayed positive and has laughed through the process. while he may ask me seven times in a row if i saw my cousin on a trip, each time will have a new joke. Frustrating for him a lot of the time, he will always find the positive in everything and anything.\n\none of my role models, one of my heroes, and my main inspiration for how i live my life. please download, use, and share the ice city architects font.",
       sample: "Abcdefghijklmnopqrstuvwxyz\n0 1 2 3 4 5 6 7 8 9  & ? ! @ #",
       fontFile: "fonts/jacob-custom.otf",
       downloadAs: "Lloyd Fogelhut.otf",
