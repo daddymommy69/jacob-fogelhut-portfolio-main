@@ -479,25 +479,6 @@ button { font-family: inherit; cursor: pointer; }
 .teaser-mono { color: var(--muted); margin-bottom: 28px; }
 .teaser-link { display: inline-block; color: inherit; }
 
-/* --- marker sign --- */
-.tsign { position: relative; display: inline-block; padding-top: 38px; transition: transform .45s var(--ease); }
-.teaser-link.is-sign:hover .tsign { transform: rotate(-1deg) translateY(-3px); }
-.tsign-rope { position: absolute; top: 2px; width: 2px; height: 46px; background: color-mix(in srgb, var(--text) 30%, transparent); transform-origin: top center; }
-.tsign-rope-l { left: 16%; transform: rotate(22deg); }
-.tsign-rope-r { right: 16%; transform: rotate(-22deg); }
-.tsign-board {
-  position: relative; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 7px;
-  box-shadow: var(--shadow); padding: clamp(24px, 4vw, 44px) clamp(40px, 8vw, 96px);
-  display: flex; flex-direction: column; align-items: center; gap: 10px;
-}
-.tsign-board::before, .tsign-board::after {
-  content: ""; position: absolute; top: 12px; width: 8px; height: 8px; border-radius: 50%;
-  background: color-mix(in srgb, var(--text) 28%, transparent);
-}
-.tsign-board::before { left: 16px; } .tsign-board::after { right: 16px; }
-.tsign-word { font-size: clamp(42px, 8vw, 98px); line-height: .9; color: var(--text); }
-.tsign-arrow { color: var(--accent); letter-spacing: .14em; text-transform: uppercase; font-size: 11px; }
-
 /* --- polaroid collage --- */
 .tcollage { position: relative; display: inline-flex; align-items: center; justify-content: center; padding: 34px 20px 44px; }
 .tcollage-stack { display: inline-flex; }
@@ -1022,19 +1003,21 @@ textarea.medit-input { resize: vertical; line-height: 1.5; }
 .twin-open{color:var(--accent);letter-spacing:.12em}
 .inlink{color:var(--text);text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--accent) 60%,transparent);text-underline-offset:3px;text-decoration-thickness:1px;transition:color .2s var(--ease)}
 .inlink:hover{color:var(--accent)}
-.cpage{min-height:100vh;display:flex;flex-direction:column}
-.cpage-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-top:26px;padding-bottom:26px}
-.cpage-back{color:var(--muted)}
-.cpage-back:hover{color:var(--text)}
-.cpage-kicker{color:var(--accent);letter-spacing:.14em}
+.inlink.hl{color:var(--accent);text-decoration-color:currentColor}.inlink.hl:hover{color:var(--text)}
+.fontcard .inlink.hl{color:#ffd98a;text-decoration-color:currentColor}.fontcard .inlink.hl:hover{color:#fff}
+.cpage{min-height:100vh;display:flex;flex-direction:column;padding-bottom:96px}
+.cpage-head{position:sticky;top:0}
+.cpage-brand{opacity:1;transform:none}
+.cpage-here{color:var(--accent);letter-spacing:.06em}
 .cpage-body{flex:1;padding-top:clamp(18px,4vw,40px);padding-bottom:clamp(40px,8vw,80px)}
 .cpage-title{font-size:clamp(46px,9vw,110px);line-height:.92;margin:0 0 clamp(28px,5vw,54px)}
 .cpage-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,.65fr);gap:clamp(28px,6vw,72px);align-items:start}
 @media (max-width:860px){.cpage-grid{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:560px){.cpage-head .head-inner{height:auto;flex-wrap:wrap;gap:8px;padding:12px 0}.cpage-head .head-nav{gap:14px}.cpage-title{font-size:clamp(40px,13vw,64px)}.cside-mail,.cside-list a{font-size:19px}}
 .cform{display:flex;flex-direction:column;gap:18px}
 .cf-row{display:flex;flex-direction:column;gap:7px}
 .cf-row>.mono{color:var(--muted)}
-.cf-row input,.cf-row textarea{font-family:var(--font-body,inherit);font-size:15px;color:var(--text);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:12px 13px;width:100%;transition:border-color .2s var(--ease)}
+.cf-row input,.cf-row textarea{font-family:var(--font-body,inherit);font-size:16px;color:var(--text);background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:12px 13px;width:100%;transition:border-color .2s var(--ease)}
 .cf-row textarea{resize:vertical;min-height:130px;line-height:1.5}
 .cf-row input:focus,.cf-row textarea:focus{outline:none;border-color:var(--accent)}
 .cf-send{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:4px}
@@ -1044,10 +1027,10 @@ textarea.medit-input { resize: vertical; line-height: 1.5; }
 .cf-note{color:var(--accent)}
 .cf-note.bad{color:#b1472f}
 .cside{display:flex;flex-direction:column;gap:14px}
-.cside-mail{font-family:var(--font-mono);font-size:13px;color:var(--text);text-decoration:underline;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,var(--accent) 55%,transparent);word-break:break-all}
+.cside-mail{font-family:var(--font-marker);font-size:22px;letter-spacing:.01em;color:var(--text);text-decoration:underline;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,var(--accent) 55%,transparent);word-break:break-all}
 .cside-mail:hover{color:var(--accent)}
 .cside-list{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:2px}
-.cside-list a{display:flex;align-items:center;gap:12px;padding:12px 2px;border-top:1px solid var(--line);color:var(--text);font-size:14px}
+.cside-list a{display:flex;align-items:center;gap:12px;padding:12px 2px;border-top:1px solid var(--line);color:var(--text);font-family:var(--font-marker);font-size:22px;letter-spacing:.01em}
 .cside-list li:last-child a{border-bottom:1px solid var(--line)}
 .cside-list a:hover{color:var(--accent)}
 .cside-list img{opacity:.85}

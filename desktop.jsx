@@ -23,15 +23,17 @@
   /* ---------------- boot ---------------- */
   function Boot({ onDone }) {
     const [out, setOut] = useState(false);
+    const [fast] = useState(() => { try { return sessionStorage.getItem(BOOT_KEY) === "1"; } catch (e) { return false; } });
     useEffect(() => {
-      const a = setTimeout(() => setOut(true), 2300);
-      const b = setTimeout(onDone, 2850);
+      const k = fast ? 3 : 1;
+      const a = setTimeout(() => setOut(true), 2300 / k);
+      const b = setTimeout(onDone, 2850 / k);
       return () => { clearTimeout(a); clearTimeout(b); };
-    }, [onDone]);
+    }, [onDone, fast]);
     return (
-      <div className={`dk-boot ${out ? "out" : ""}`} onClick={onDone}>
+      <div className={`dk-boot ${out ? "out" : ""} ${fast ? "fast" : ""}`} onClick={onDone}>
         <div className="dk-boot-in">
-          <div className="dk-boot-name">{DATA.name}</div>
+          <div className="dk-boot-name">jacob_desktop.exe</div>
           <div className="dk-boot-sub">starting up</div>
           <div className="dk-boot-bar"><i /></div>
         </div>
@@ -229,8 +231,11 @@
       </div>);
   }
 
+  const KR_KINDS = ["cursor", "disc", "player"];
+  const KR_LABEL = { cursor: "Cursor", disc: "CD", player: "Player" };
+
   /* ---------------- start menu ---------------- */
-  function StartMenu({ open, onClose, exit, editable, lower, setLower, krOff, setKrOff }) {
+  function StartMenu({ open, onClose, exit, editable, krOff, setKrOff, krKind, cycleKr }) {
     const links = (DATA.social || {});
     const item = (Icon, label, props) => <a className="dk-mi" {...props}><Icon s={18} />{label}</a>;
     /* brand logos are the real marks, so they stay images rather than being
@@ -262,11 +267,11 @@
             {editable && ["instagram", "spotify", "appleMusic", "linkedin"].filter((k) => !links[k]).map((k) =>
               <span key={k} className="dk-mi" style={{ opacity: .45, cursor: "default" }} title={`Add ${k} to data.js`}><I.Link s={18} />{k}</span>)}
             <div className="dk-menu-sep" />
-            <button className="dk-mi" onClick={() => setLower(!lower)}>
-              <I.Link s={18} />{lower ? "Lowercase: on" : "Lowercase: off"}
+            <button className="dk-mi" onClick={cycleKr}>
+              <I.Link s={18} /><span className="dk-mi-fix">{KR_KINDS.map((k) => <span key={k} aria-hidden={k !== (krKind || "disc")} className={k === (krKind || "disc") ? "on" : ""}>{"Krinky's appearance: " + KR_LABEL[k]}</span>)}</span>
             </button>
             <button className="dk-mi" onClick={() => setKrOff(!krOff)}>
-              <I.Link s={18} />{krOff ? "Krinky: off" : "Krinky: on"}
+              <I.Link s={18} /><span className="dk-mi-fix"><span aria-hidden={!!krOff} className={krOff ? "" : "on"}>Krinky: on</span><span aria-hidden={!krOff} className={krOff ? "on" : ""}>Krinky: off</span></span>
             </button>
             <button className="dk-mi dk-mi-home" onClick={exit}><I.Home s={18} />Back to portfolio</button>
           </div>
@@ -278,7 +283,7 @@
   /* ---------------- desktop ---------------- */
   function Desktop() {
     const slots = window.useMediaSlots();
-    const [booted, setBooted] = useState(() => { try { return localStorage.getItem(BOOT_KEY) === "1"; } catch (e) { return true; } });
+    const [booted, setBooted] = useState(false);
     const [wins, setWins] = useState([]);
     const [menu, setMenu] = useState(false);
     const [sel, setSel] = useState(null);
@@ -309,12 +314,17 @@
     const editable = !!writer();
     /* The main site's Tweaks panel unmounts on this route, so the playground
        carries its own — same storage key, so the two stay in sync. */
-    const [tw, setTweak] = window.useTweaks({ krinkyKind: "cursor" }, "jf-tweaks-main");
+    const [tw, setTweak] = window.useTweaks({ krinkyKind: "disc" }, "jf-tweaks-main");
     /* Krinky can be sent away from the Start menu; the choice sticks. */
     const [krOff, setKrOff] = useState(() => {
       try { return localStorage.getItem("jf-krinky-off") === "1"; } catch (e) { return false; }
     });
     useEffect(() => { try { localStorage.setItem("jf-krinky-off", krOff ? "1" : "0"); } catch (e) {} }, [krOff]);
+
+    const cycleKr = () => {
+      const now = tw.krinkyKind || "disc";
+      setTweak("krinkyKind", KR_KINDS[(KR_KINDS.indexOf(now) + 1) % KR_KINDS.length]);
+    };
 
     useEffect(() => { const t = setInterval(() => setClock(new Date()), 20000); return () => clearInterval(t); }, []);
     useEffect(() => {
@@ -393,7 +403,7 @@
       return { left: 10 + Math.floor(i / perCol) * 96, top: 12 + (i % perCol) * pitch };
     };
 
-    if (!booted) return <Boot onDone={() => { try { localStorage.setItem(BOOT_KEY, "1"); } catch (e) {} setBooted(true); }} />;
+    if (!booted) return <Boot onDone={() => { try { sessionStorage.setItem(BOOT_KEY, "1"); } catch (e) {} setBooted(true); }} />;
 
     const n = walls.length || 1;
     const wall = walls[wp.cur % n];
@@ -419,11 +429,11 @@
               {w.app.body({ open })}
             </Win>))}
           <MiniPlayer shown={mini} onClose={() => setMini(false)} editable={editable} />
-          <window.Krinky kind={tw.krinkyKind || "cursor"} off={krOff} player={player} />
+          <window.Krinky kind={tw.krinkyKind || "disc"} off={krOff} player={player} />
         </div>
 
         {menu && <StartMenu open={open} onClose={() => setMenu(false)} exit={exit} editable={editable}
-        lower={lower} setLower={setLower} krOff={krOff} setKrOff={setKrOff} />}
+        krOff={krOff} setKrOff={setKrOff} krKind={tw.krinkyKind || "disc"} cycleKr={cycleKr} />}
 
         <div className="dk-bar" onPointerDown={(e) => e.stopPropagation()}>
           <button className="dk-start" onClick={() => setMenu((m) => !m)}><em />start</button>
@@ -444,10 +454,12 @@
 
         <window.TweaksPanel>
           <window.TweakSection label="Krinky" />
-          <window.TweakRadio label="Character" value={tw.krinkyKind || "cursor"}
+          <window.TweakRadio label="Character" value={tw.krinkyKind || "disc"}
           options={[{ value: "cursor", label: "Cursor" }, { value: "disc", label: "CD" }, { value: "player", label: "Player" }]}
           onChange={(v) => setTweak("krinkyKind", v)} />
           <window.TweakToggle label="Show Krinky" value={!krOff} onChange={(v) => setKrOff(!v)} />
+          <window.TweakSection label="Type" />
+          <window.TweakToggle label="Uniform lowercase" value={lower} onChange={setLower} />
         </window.TweaksPanel>
       </div>);
   }

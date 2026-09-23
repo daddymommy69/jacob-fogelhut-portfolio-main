@@ -35,6 +35,14 @@
   const pool = (n) => ((DATA.krinky || {})[n] || []);
   const pick = (n) => { const a = pool(n); return a.length ? a[Math.floor(Math.random() * a.length)] : ""; };
   const blurb = (k) => ((DATA.blurbs || {})[k] || "");
+  /* "watch" line with a random link from the videos pool. [brackets] mark the
+     linked words; no brackets links the whole line. */
+  const videoLine = () => {
+    let url = pick("videos").trim(); if (!url) return "";
+    if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+    const line = pick("watch") || "you should watch [this video]";
+    return /\[[^\]]+\](?!\()/.test(line) ? line.replace(/\[([^\]]+)\](?!\()/, (m, t) => "[" + t + "](" + url + ")") : "[" + line + "](" + url + ")";
+  };
 
   function Krinky({ kind = "cursor", off, player }) {
     const [, setTick] = useState(0);
@@ -57,6 +65,7 @@
       if (!text) return;
       const mm = m.current;
       mm.idle = 0; mm.quietUntil = Date.now() + 1200; mm.sayAt = Date.now(); mm.talking = true;
+      mm.sayMs = String(text).includes("](") ? SAY_MS * 2 : SAY_MS;
       if (mm.state === "sleep" || mm.state === "sun") { mm.state = "idle"; mm.target = null; }
       timers.current.forEach(clearTimeout); timers.current = [];
       const a = { text, id: mm.sayAt, stage: 0 };
@@ -122,14 +131,14 @@
           try { met = !!localStorage.getItem(MET_KEY); localStorage.setItem(MET_KEY, "1"); } catch (e) {}
           say(pick(met ? "returning" : "greeting") || pick("greeting"));
         }
-        if (mm.talking && Date.now() - mm.sayAt > SAY_MS) { mm.talking = false; setBubbles([]); }
+        if (mm.talking && !mm.hold && Date.now() - mm.sayAt > (mm.sayMs || SAY_MS)) { mm.talking = false; setBubbles([]); }
 
         mm.idle++;
         const quiet = Date.now() < mm.quietUntil;
         if (mm.state === "idle" || mm.state === "walk") {
           if (mm.idle > SLEEP_TICKS) { mm.state = "sleep"; mm.st = now; }
           else if (mm.idle > IDLE_TICKS && mm.idle % IDLE_TICKS === 0 && !quiet)
-            say(P && P.playing && Math.random() < 0.5 ? pick("music") : pick("idle"));
+            say(P && P.playing && Math.random() < 0.5 ? pick("music") : (pool("videos").length && Math.random() < 0.35 ? videoLine() : pick("idle")));
         }
         if (mm.state === "squash" && now - mm.st > 8) mm.state = "idle";
         if (mm.state === "stuck" && now - mm.st > 18) { mm.x += mm.facing * -14; mm.state = "idle"; mm.target = null; }
@@ -316,7 +325,7 @@
               <div key={b.id} className={`kr-bubble ${i ? "second" : ""}`}>
                 <span className="kr-dot a" />
                 {b.stage > 1 && <span className="kr-dot b" />}
-                {b.stage > 2 && <div className="kr-bal">{b.text}</div>}
+                {b.stage > 2 && <div className="kr-bal" onPointerEnter={() => { mm.hold = true; }} onPointerLeave={() => { mm.hold = false; mm.sayAt = Date.now() - (mm.sayMs || SAY_MS) + 2500; }}>{String(b.text).includes("](") && window.linkify ? window.linkify(b.text) : (window.plainText ? window.plainText(b.text) : b.text)}</div>}
               </div>)}
           </div>}
       </React.Fragment>);

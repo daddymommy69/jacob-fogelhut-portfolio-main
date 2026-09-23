@@ -12,11 +12,29 @@
    names match first so "ESENES X TOMBOGO" beats "ESENES".
    ========================================================================= */
 (function () {
-  const { useState, useMemo } = React;
+  const { useState, useMemo, useEffect } = React;
   const DATA = window.PORTFOLIO_DATA || {};
 
   const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  /* [words](url) written in Copy Deck becomes a highlighted link; plain
+     segments still get the name-matching from DATA.links. */
+  const MD = /\[([^\]]+)\]\(((?:https?:\/\/|mailto:)[^\s)]+)\)/g;
+  window.plainText = (s) => (s == null ? s : String(s).replace(MD, "$1"));
   window.linkify = function (text) {
+    if (!text) return text;
+    const s = String(text);
+    if (!s.includes("](")) return names(s);
+    const out = []; let last = 0, m, k = 0;
+    MD.lastIndex = 0;
+    while ((m = MD.exec(s))) {
+      if (m.index > last) out.push(<React.Fragment key={k++}>{names(s.slice(last, m.index))}</React.Fragment>);
+      out.push(<a key={k++} className="inlink hl" href={m[2]} target="_blank" rel="noopener noreferrer">{m[1]}</a>);
+      last = m.index + m[0].length;
+    }
+    if (last < s.length) out.push(<React.Fragment key={k++}>{names(s.slice(last))}</React.Fragment>);
+    return out;
+  };
+  function names(text) {
     const pairs = (DATA.links || []).filter((l) => l && l.name && l.url);
     if (!text || !pairs.length) return text;
     const sorted = [...pairs].sort((a, b) => b.name.length - a.name.length);
@@ -29,7 +47,7 @@
         ? <a key={i} className="inlink" href={hit.url} target="_blank" rel="noopener noreferrer">{p}</a>
         : <React.Fragment key={i}>{p}</React.Fragment>;
     });
-  };
+  }
 
   const PROFILES = [
     ["instagram", "Instagram", "logos/instagram.svg"],
@@ -39,6 +57,26 @@
   ];
 
   function ContactPage() {
+    /* Theme lives in the main site's tweak store; the contact route mounts
+       outside <App>, so it reads and writes the same key. */
+    const [tw, setTweak] = window.useTweaks({ theme: "light", accent: "#9c7a3c" }, "jf-tweaks-main");
+    const [sysDark, setSysDark] = useState(() =>
+      window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    useEffect(() => {
+      if (!window.matchMedia) return;
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      const f = (e) => setSysDark(e.matches);
+      mq.addEventListener("change", f);
+      return () => mq.removeEventListener("change", f);
+    }, []);
+    const effTheme = tw.theme === "auto" ? (sysDark ? "dark" : "light") : tw.theme;
+    useEffect(() => { document.documentElement.setAttribute("data-theme", effTheme); }, [effTheme]);
+    const cycleTheme = () => {
+      const order = ["light", "dark", "auto"];
+      setTweak("theme", order[(order.indexOf(tw.theme) + 1) % 3]);
+    };
+    const tLabel = tw.theme === "auto" ? "Auto" : tw.theme === "dark" ? "Dark" : "Light";
+
     const S = DATA.social || {};
     const endpoint = DATA.formEndpoint || "";
     const [f, setF] = useState({ name: "", email: "", subject: "", message: "" });
@@ -69,12 +107,22 @@
 
     return (
       <div className="cpage">
-        <header className="cpage-head wrap">
-          <a className="cpage-back mono" href="#home">← {DATA.name}</a>
-          <span className="mono cpage-kicker">Contact</span>
+        <header className="site-head cpage-head">
+          <div className="wrap head-inner">
+            <a className="head-brand cpage-brand" href="#home">{DATA.name}</a>
+            <nav className="head-nav">
+              <a href="#work">Work</a>
+              <a href="#playground">jacob_desktop.exe</a>
+              <span className="cpage-here mono">Contact</span>
+              <button className="theme-btn" onClick={cycleTheme} aria-label="Toggle theme">
+                <span className="dot" style={{ background: effTheme === "dark" ? "currentColor" : "transparent" }}></span>
+                {tLabel}
+              </button>
+            </nav>
+          </div>
         </header>
         <section className="wrap cpage-body">
-          <h1 className="cpage-title" style={{ fontFamily: "JacobMarker" }}>Let's work</h1>
+          <h1 className="cpage-title" style={{ fontFamily: "JacobMarker" }}>Contact me</h1>
           <div className="cpage-grid">
             <form className="cform" onSubmit={submit}>
               <label className="cf-row">
@@ -86,8 +134,8 @@
                 <input type="email" value={f.email} onChange={set("email")} required autoComplete="email" />
               </label>
               <label className="cf-row">
-                <span className="mono">What it's for</span>
-                <input value={f.subject} onChange={set("subject")} placeholder="campaign, event, video, anything" />
+                <span className="mono">Inquiry</span>
+                <input value={f.subject} onChange={set("subject")} />
               </label>
               <label className="cf-row">
                 <span className="mono">Message</span>
@@ -110,7 +158,7 @@
                     <a href={S[k]} target="_blank" rel="noopener noreferrer">
                       <img src={icon} alt="" width="18" height="18" />
                       <span>{label}</span>
-                      <em className="mono">↗</em>
+                      <em className="mono" aria-hidden="true">↗</em>
                     </a>
                   </li>)}
               </ul>

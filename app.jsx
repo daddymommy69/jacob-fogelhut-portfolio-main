@@ -321,7 +321,7 @@ function Header({ theme, cycleTheme }) {
       <div className="wrap head-inner">
         <a className="head-brand" href="#top">{DATA.name}</a>
         <nav className="head-nav">
-          <a href="#playground">More</a>
+          <a href="#playground">jacob_desktop.exe</a>
           <a href="#contact">Contact</a>
           <button className="theme-btn" onClick={cycleTheme} aria-label="Toggle theme">
             <span className="dot" style={{ background: theme === "dark" ? "currentColor" : "transparent" }}></span>
@@ -347,7 +347,7 @@ function Hero({ line }) {
   return (
     <section className="wrap hero" id="top">
       <h1 className="hero-h1">Jacob<br />Fogelhut</h1>
-      <div className="hero-role" key={role}>{role}</div>
+      <div className="hero-role" key={role}>{window.linkify ? window.linkify(role) : role}</div>
     </section>);
 }
 
@@ -1219,7 +1219,7 @@ function Footer() {
    TWEAKS + APP
    ===================================================================== */
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
-  "krinkyKind": "cursor",
+  "krinkyKind": "disc",
   "theme": "light",
   "accent": "#9c7a3c",
   "heroLine": "__fixed",

@@ -58,8 +58,9 @@
         <div className="dk-webnote">Blank? Some sites block being shown inside another page — use Go.</div>
       </div>);
   }
+  const lk = (t) => (window.linkify ? window.linkify(t) : t);
   function ImageApp({ project }) {
-    return (<div><div className="dk-shots"><button style={{ cursor: "default" }}>{project.pending ? null : <img src={project.src} alt={project.title} />}</button></div><p style={{ marginTop: 10 }}>{project.note}</p></div>);
+    return (<div><div className="dk-shots"><button style={{ cursor: "default" }}>{project.pending ? null : <img src={project.src} alt={project.title} />}</button></div><p style={{ marginTop: 10 }}>{lk(project.note)}</p></div>);
   }
 
   /* ---- What I'm listening to: just the list. Clicking a playlist used to
@@ -98,7 +99,7 @@
       <div className="dk-pls" ref={wrap}>
         {lists.map((pl, i) =>
           <div className="dk-pl" key={pl.name + i}>
-            <div className="dk-pl-name">{pl.name}</div>
+            <div className="dk-pl-name" data-krinky={"radio:" + i}>{pl.name}</div>
             {pl.embed &&
             <div className="dk-embed">
               <iframe key={nonce[i]} data-idx={i} src={pl.embed} allow="autoplay *; encrypted-media *;" loading="lazy" title={pl.name}></iframe>
@@ -127,7 +128,7 @@
     const cur = live[Math.min(tab, live.length - 1)];
     return (
       <div className="dk-fill">
-        <div className="dk-tabs">{live.map((c, i) => <button key={c.a} className={`dk-tab ${cur === c ? "on" : ""}`} onClick={() => setTab(i)}>{c.name}</button>)}</div>
+        <div className="dk-tabs">{live.map((c, i) => <button key={c.a} className={`dk-tab ${cur === c ? "on" : ""}`} data-krinky={"album:" + c.a} onClick={() => setTab(i)}>{c.name}</button>)}</div>
         <div className="dk-shots">{cur.photos.map((ph, i) => <button key={i} onClick={() => setBig(ph)}><CroppedImg value={ph} alt="" /></button>)}</div>
         {big && <div className="dk-lb" onClick={(e) => e.target === e.currentTarget && setBig(null)}>
           <img className="dk-native" src={srcOf(big)} alt="" draggable={false}
@@ -188,7 +189,7 @@
   function DecksApp() {
     return (<div>{(DATA.decks || []).map((d) =>
       <a key={d.id} className="dk-deck" href={`mailto:${DATA.email}?subject=${encodeURIComponent("Deck request — " + d.client + " " + d.title)}`}>
-        <I.Deck s={30} /><span><b>{d.client} — {d.title}</b><small>{d.note} · click to request</small></span>
+        <I.Deck s={30} /><span><b>{d.client} — {d.title}</b><small>{window.plainText ? window.plainText(d.note) : d.note} · click to request</small></span>
       </a>)}</div>);
   }
 
@@ -271,7 +272,7 @@
           <div className="fc-scroll">
             <div className="fc-title">{fs.title || "the font"}</div>
             <div className="fc-maker">handwriting by {fs.maker || "my dad"}</div>
-            <p className="fc-story" style={{ fontFamily: "JacobMarker", fontSize: "19px" }}>{fs.story}</p>
+            <p className="fc-story" style={{ fontFamily: "JacobMarker", fontSize: "19px" }}>{lk(fs.story)}</p>
             <div className="fc-sample">{fs.sample}</div>
             <div className="fc-preview">
               <div className="fc-label">try it</div>
@@ -294,7 +295,7 @@
   }
 
   /* ---- readme + recycle bin ---- */
-  function ReadmeApp() { return <div style={{ whiteSpace: "pre-wrap", fontFamily: "var(--font-mono)", fontSize: 12.5 }}>{PG.about}</div>; }
+  function ReadmeApp() { return <div style={{ whiteSpace: "pre-wrap", fontFamily: "var(--font-mono)", fontSize: 12.5 }}>{lk(PG.about)}</div>; }
   function TrashApp() {
     const lines = ["nice try.", "that idea stays buried.", "you didn't see anything.", "deleted for a reason.", "the cutting room floor."];
     const [msg, setMsg] = useState("");
