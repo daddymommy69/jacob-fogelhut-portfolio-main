@@ -14,15 +14,41 @@
 
   function Shell() {
     const [route, setRoute] = useState(() => (location.hash.replace("#", "") || "home"));
+    const prevRoute = React.useRef(route);
     useEffect(() => {
-      const f = () => setRoute(location.hash.replace("#", "") || "home");
+      const f = () => {
+        const next = location.hash.replace("#", "") || "home";
+        /* Back to portfolio from the desktop replays the intro photo sequence.
+           Set here (before the main view renders), not in an effect. */
+        if (prevRoute.current === "playground" && next !== "playground" && next !== "contact") window.__introShown = false;
+        setRoute(next);
+      };
       window.addEventListener("hashchange", f);
       return () => window.removeEventListener("hashchange", f);
     }, []);
     useEffect(() => {
       document.body.classList.toggle("pg-body", route === "playground");
-      // jump to top when returning to the main site
-      if (route !== "playground") window.scrollTo(0, 0);
+      /* Leaving the main view counts as having seen the intro, so coming back
+         from Contact never replays it. Coming back from the desktop ("Back to
+         portfolio") DOES replay it — the photo sequence is the way back in. */
+      prevRoute.current = route;
+      if (route !== "home" && route !== "") window.__introShown = true;
+      if (route === "playground") return;
+      /* #work lands on the work list (the contact page links to it); every
+         other main-site route starts at the top. The section only exists
+         after the main view mounts, so this waits a frame. */
+      if (route === "work") {
+        const go = () => {
+          const el = document.getElementById("work");
+          if (el) window.scrollTo(0, Math.max(0, el.offsetTop - 70));
+        };
+        requestAnimationFrame(() => setTimeout(go, 60));
+        return;
+      }
+      /* The swap can land before the new view is laid out, and the browser
+         then restores the old offset — so re-assert next frame. */
+      window.scrollTo(0, 0);
+      requestAnimationFrame(() => window.scrollTo(0, 0));
     }, [route]);
 
     const Main = window.MainApp, Play = window.PlaygroundApp, Contact = window.ContactPage;

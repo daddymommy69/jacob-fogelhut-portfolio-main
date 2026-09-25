@@ -281,9 +281,21 @@
     const [typed, setTyped] = useState("");
     const [editing, setEditing] = useState(false);
     const inputRef = useRef(null);
+    const cardRef = useRef(null);
+    /* scroll-driven blur: the blurred layer's mask edge rises as you read.
+       Top of story = mostly sharp (blur only near the bottom); end of story =
+       blur reaches nearly the top, with the very top still a touch sharper.
+       Tied 1:1 to scroll, so scrolling back up un-blurs. */
+    const onStoryScroll = (e) => {
+      const el = e.currentTarget, card = cardRef.current; if (!card) return;
+      const max = el.scrollHeight - el.clientHeight;
+      const p = max > 0 ? Math.min(1, Math.max(0, el.scrollTop / max)) : 0;
+      card.style.setProperty("--fc-mask-top", (0.55 * p).toFixed(3));
+      card.style.setProperty("--fc-mask-edge", (90 - 75 * p).toFixed(1) + "%");
+    };
     useEffect(() => { if (editing && inputRef.current) inputRef.current.focus(); }, [editing]);
     return (
-      <div className="fontcard dk-fontcard" data-text-style="soft">
+      <div className="fontcard dk-fontcard" data-text-style="soft" ref={cardRef}>
         <div className="fc-body">
           <div className="fc-bg">
             {cover ? <>
@@ -292,7 +304,7 @@
             </> : <div className="fc-bg-fallback" />}
             <div className="fc-bg-scrim" />
           </div>
-          <div className="fc-scroll">
+          <div className="fc-scroll" onScroll={onStoryScroll}>
             <div className="fc-title">{fs.title || "the font"}</div>
             <div className="fc-maker">handwriting by {fs.maker || "my dad"}</div>
             <p className="fc-story" style={{ fontFamily: "JacobMarker", fontSize: "19px" }}>{lk(fs.story)}</p>

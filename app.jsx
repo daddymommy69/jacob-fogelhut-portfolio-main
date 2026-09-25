@@ -534,17 +534,19 @@ function Lightbox({ item, startAt, onClose }) {
   const vref = useRef(null);
   const posRef = useRef(startAt || 0);
   useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(posRef.current); };
-    window.addEventListener("keydown", onKey);
+    // capture phase + stopImmediatePropagation: Esc closes ONLY the viewer,
+    // never the project page underneath
+    const onKey = (e) => { if (e.key === "Escape") { e.stopImmediatePropagation(); e.preventDefault(); onClose(posRef.current); } };
+    window.addEventListener("keydown", onKey, true);
     const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden"; // was never actually set before
-    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey, true); document.body.style.overflow = prev; };
   }, [onClose]);
-  const bail = () => onClose(posRef.current);
+  const bail = (e) => { if (e) e.stopPropagation(); onClose(posRef.current); };
   if (!item) return null;
-  return (
+  return ReactDOM.createPortal(
     <div className="lb" onClick={bail}>
-      <button className="lb-x" onClick={bail} aria-label="Close"><IcX /></button>
+      <button className="lb-x" onClick={bail} aria-label="Close fullscreen"><IcX /></button>
       <div className="lb-stage" onClick={(e) => e.stopPropagation()}>
         {item.type === "video" ?
         <video ref={vref} className="lb-media" src={item.src} poster={item.poster} controls autoPlay playsInline
@@ -553,7 +555,7 @@ function Lightbox({ item, startAt, onClose }) {
         <img className="lb-media" src={item.url} alt="" />}
       </div>
       <div className="lb-hint mono">Esc to close</div>
-    </div>);
+    </div>, document.body);
 }
 
 /* the single "main player" a project page funnels every clickable piece of
@@ -801,12 +803,19 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, onRequ
   const openFullscreen = (at) => {
     const cur = combined[Math.min(activeIdx, combined.length - 1)];
     if (!cur || cur.type !== "video" && cur.type !== "photo") return;
+    // own history entry, so Back (browser/phone gesture) closes just the video
+    try { history.pushState({ pp: item.id, fs: 1 }, "", location.href); } catch (e) {}
     setFs({
       at: at || 0,
       item: cur.type === "video" ? { type: "video", src: cur.src, poster: cur.poster } : { type: "image", url: cur.src }
     });
   };
-  const closeFullscreen = (pos) => { setResumeAt(pos != null ? pos : null); setFs(null); };
+  const closeFullscreen = (pos) => {
+    setResumeAt(pos != null ? pos : null); setFs(null); window.__ppFsOpen = false;
+    if (history.state && history.state.fs) { window.__ppFsPopPending = true; try { history.back(); } catch (e) { window.__ppFsPopPending = false; } }
+  };
+  useEffect(() => { window.__ppFsOpen = !!fs; }, [fs]);
+  useEffect(() => { window.__ppFsClose = () => { window.__ppFsOpen = false; setFs(null); }; return () => { window.__ppFsClose = null; window.__ppFsOpen = false; }; }, []);
   // Instagram/Spotify/YouTube embeds stay PERSISTENTLY mounted for the life of
   // the page and are shown/hidden via CSS rather than conditionally rendered,
   // so a swap never unmounts a live third-party iframe mid-session.
@@ -1270,7 +1279,12 @@ function App() {
     setOpenFull(null);
   };
   useEffect(() => {
-    const onPop = () => setOpenFull(null);
+    // popping back from a fullscreen video lands on the project entry: close
+    // only the video. Anything else closes the project.
+    const onPop = () => {
+      if (window.__ppFsOpen || window.__ppFsPopPending) { window.__ppFsPopPending = false; if (window.__ppFsClose) window.__ppFsClose(); return; }
+      setOpenFull(null);
+    };
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
   }, []);

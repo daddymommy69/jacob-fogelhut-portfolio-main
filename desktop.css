@@ -276,3 +276,7 @@ body:has(.dk) .pbar.is-full{bottom:38px}
 
 /* mix names read in caps everywhere: radio list, LCD marquee */
 .dkm-list button,.dkm-scroll em{text-transform:uppercase}
+
+/* font window: scroll-driven blur (vars set by FontApp on scroll) */
+.dk-fontcard{--fc-blur-top:2px;--fc-blur-bottom:18px}
+.dk-fontcard .fc-bg-blur{-webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,var(--fc-mask-top,0)) 0%,#000 var(--fc-mask-edge,90%));mask-image:linear-gradient(to bottom,rgba(0,0,0,var(--fc-mask-top,0)) 0%,#000 var(--fc-mask-edge,90%))}
