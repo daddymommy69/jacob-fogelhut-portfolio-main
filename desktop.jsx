@@ -17,7 +17,7 @@
 
   const POS_FILE = "desk-icons.state.json";
   const BOOT_KEY = "jf-desk-booted-v1";
-  const ORDER = ["font", "projects", "radio", "listening", "photos", "paint", "guestbook", "letter", "trash"];
+  const ORDER = ["font", "design", "decks", "web", "radio", "listening", "photos", "paint", "guestbook", "letter", "trash"];
   const writer = () => (window.omelette && window.omelette.writeFile) || null;
 
   /* ---------------- boot ---------------- */
@@ -235,7 +235,8 @@
   const KR_LABEL = { cursor: "Cursor", disc: "CD", player: "Player" };
 
   /* ---------------- start menu ---------------- */
-  function StartMenu({ open, onClose, exit, editable, krOff, setKrOff, krKind, cycleKr }) {
+  const AVATAR = "https://pub-0c4f005a66f14c8394bc1abf2fcf0d25.r2.dev/assets/POLAROIDS/WEDDING/WEDDING%202.JPG";
+  function StartMenu({ open, onClose, exit, editable, krOff, setKrOff, krKind, cycleKr, order, avatar }) {
     const links = (DATA.social || {});
     const item = (Icon, label, props) => <a className="dk-mi" {...props}><Icon s={18} />{label}</a>;
     /* brand logos are the real marks, so they stay images rather than being
@@ -247,10 +248,10 @@
       </a>;
     return (
       <div className="dk-menu" onPointerDown={(e) => e.stopPropagation()}>
-        <div className="dk-menu-head"><i>JF</i><b>{DATA.name}</b></div>
+        <div className="dk-menu-head"><i className="dk-av"><CroppedImg value={avatar || AVATAR} alt="" /></i><b>{DATA.name}</b></div>
         <div className="dk-menu-cols">
           <div>
-            {ORDER.concat("readme").map((k) => {
+            {order.concat("readme").map((k) => {
               const a = APPS.registry[k]; const Icon = a.Icon;
               return <button key={k} className="dk-mi" onClick={() => { open(k); onClose(); }}><Icon s={18} />{a.title}</button>;
             })}
@@ -268,10 +269,10 @@
               <span key={k} className="dk-mi" style={{ opacity: .45, cursor: "default" }} title={`Add ${k} to data.js`}><I.Link s={18} />{k}</span>)}
             <div className="dk-menu-sep" />
             <button className="dk-mi" onClick={cycleKr}>
-              <I.Link s={18} /><span className="dk-mi-fix">{KR_KINDS.map((k) => <span key={k} aria-hidden={k !== (krKind || "disc")} className={k === (krKind || "disc") ? "on" : ""}>{"Krinky's appearance: " + KR_LABEL[k]}</span>)}</span>
+              <span className={`dk-mi-kr ${krOff ? "off" : ""}`}><window.KrinkyArt kind={krKind || "disc"} size={22} /></span><span className="dk-mi-fix">{KR_KINDS.map((k) => <span key={k} aria-hidden={k !== (krKind || "disc")} className={k === (krKind || "disc") ? "on" : ""}>{"Krinky's appearance: " + KR_LABEL[k]}</span>)}</span>
             </button>
             <button className="dk-mi" onClick={() => setKrOff(!krOff)}>
-              <I.Link s={18} /><span className="dk-mi-fix"><span aria-hidden={!!krOff} className={krOff ? "" : "on"}>Krinky: on</span><span aria-hidden={!krOff} className={krOff ? "on" : ""}>Krinky: off</span></span>
+              <span className={`dk-mi-dot ${krOff ? "off" : "on"}`} /><span className="dk-mi-fix"><span aria-hidden={!!krOff} className={krOff ? "" : "on"}>Krinky: on</span><span aria-hidden={!krOff} className={krOff ? "on" : ""}>Krinky: off</span></span>
             </button>
             <button className="dk-mi dk-mi-home" onClick={exit}><I.Home s={18} />Back to portfolio</button>
           </div>
@@ -384,6 +385,10 @@
     /* Icons are locked: the arrangement is the ORDER grid, same for Jacob and
        for visitors. Reordering is a code change now, on request. */
 
+    const order = useMemo(() => ORDER.filter((k) =>
+      k === "web" ? APPS.folderItems(slots, k).length > 0 :
+      k === "decks" ? (DATA.decks || []).length > 0 : true), [slots]);
+
     const iconLayout = useMemo(() => {
       // Fit the column to the screen instead of a fixed 78px pitch: a short
       // window used to push the last icons under the taskbar, and visitors
@@ -415,7 +420,7 @@
             {wallPrev ? <div className="dk-wl out" key={"p" + wp.k}><CroppedImg value={wallPrev} alt="" /></div> : null}
             {wall ? <div className={`dk-wl ${wp.prev == null ? "" : "in"}`} key={"c" + wp.k}><CroppedImg value={wall} alt="" /></div> : null}
           </div>
-          {ORDER.map((key, i) => {
+          {order.map((key, i) => {
             const a = APPS.registry[key]; const Icon = a.Icon;
             return (
               <button key={key} data-app={key} className={`dk-ic ${sel === key ? "sel" : ""}`} style={iconPos(key, i)}
@@ -433,7 +438,7 @@
         </div>
 
         {menu && <StartMenu open={open} onClose={() => setMenu(false)} exit={exit} editable={editable}
-        krOff={krOff} setKrOff={setKrOff} krKind={tw.krinkyKind || "disc"} cycleKr={cycleKr} />}
+        krOff={krOff} setKrOff={setKrOff} krKind={tw.krinkyKind || "disc"} cycleKr={cycleKr} order={order} avatar={window.MediaSlots.crop(slots, "me:avatar")} />}
 
         <div className="dk-bar" onPointerDown={(e) => e.stopPropagation()}>
           <button className="dk-start" onClick={() => setMenu((m) => !m)}><em />start</button>

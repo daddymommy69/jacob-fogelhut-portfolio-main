@@ -286,12 +286,14 @@ window.PORTFOLIO_DATA = {
       { name: "5A / ALBUM",     kind: "spotify", embed: "https://open.spotify.com/embed/album/59d6GhSOOMRlfYrAc6jfeo" }
     ],
 
-    // Personal projects (live in the "Projects" folder on the desktop).
+    // Folder items. folder: "design" | "web". Image items get their picture
+    // from the Media Manager (slot "proj:<id>"); a folder with nothing in it
+    // stays off the desktop. Edit these in Copy Deck → Playground → Folder items.
     projects: [
-      { id: "hunters-finds", title: "Hunter's Finds", note: "Food-rating web app I built for friends",
+      { id: "hunters-finds", folder: "web", title: "Hunter's Finds", note: "Food-rating web app I built for friends",
         kind: "web", src: "https://hunters-finds.vercel.app/" },
-      { id: "top-dog", title: "Top Dog", note: "Shirt design for friends",
-        kind: "image", src: "media/top-dog.png", pending: true }
+      { id: "top-dog", folder: "design", title: "Top Dog", note: "Shirt design for friends",
+        kind: "image", src: "", pending: true }
     ],
 
     // Gallery (you upload later → placeholders for now).
@@ -462,6 +464,7 @@ window.REMOTE_MEDIA = {
   "alb:3:4": "assets/POLAROIDS/WEDDING/EDP_Olivia%26Kevin-1318.png",
   "font:cover": "assets/DAD%20FONT/DAD%20FONT%20COVER.png",
   "font:scan": "assets/DAD%20FONT/DAD%20FONT%202.JPG",
+  "me:avatar": "assets/POLAROIDS/WEDDING/WEDDING%202.JPG",
   "gallery:esenes-campaign:0": "assets/SNS%20GUAPDAD/The%20money%20already%20printed.%20So%20buckle%20up%20n%20get%20that%20%F0%9F%92%A9%20my%20beloveds.%20Who%20need%20a%20belt%20thoTo%20show%20ou%20(5).jpg",
   "gallery:esenes-campaign:1": "assets/SNS%20GUAPDAD/The%20money%20already%20printed.%20So%20buckle%20up%20n%20get%20that%20%F0%9F%92%A9%20my%20beloveds.%20Who%20need%20a%20belt%20thoTo%20show%20ou%20(4).jpg",
   "gallery:esenes-campaign:2": "assets/SNS%20GUAPDAD/The%20money%20already%20printed.%20So%20buckle%20up%20n%20get%20that%20%F0%9F%92%A9%20my%20beloveds.%20Who%20need%20a%20belt%20thoTo%20show%20ou.jpg",

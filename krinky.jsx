@@ -1,7 +1,7 @@
 /* =========================================================================
    krinky.jsx — Krinky, the playground assistant.
 
-   He replaces the hover tooltip entirely: he reads Jacob's blurbs (data.js →
+   Hover makes him look over; clicking an item has him read it: he reads Jacob's blurbs (data.js →
    blurbs) verbatim, then pops a second bubble with a reaction of his own
    (data.js → krinky.*). One requestAnimationFrame loop, sampled down to
    12fps, drives every pose — walks, blinks and spins are stepped rather than
@@ -217,8 +217,18 @@
         const ic = tag ? null : e.target.closest(".dk-ic[data-app]");
         if (!tag && !ic) return;
         const key = tag ? tag.dataset.krinky : (ic.dataset.app === "font" ? "font" : "app:" + ic.dataset.app);
-        if (key === mm.lastKey && Date.now() - mm.sayAt < 4000) return;
-        if (Date.now() < mm.quietUntil) return;        mm.lastKey = key;
+        /* hover only draws his eye; the blurb waits for a click */
+        if (key === mm.lastKey && Date.now() - mm.lookAt < 2500) return;
+        mm.lastKey = key; mm.lookAt = Date.now();
+        goTo(tag ? (tag.closest(".dkw") || tag) : ic);
+      };
+      const onTap = (e) => {
+        if (!e.target.closest) return;
+        const tag = e.target.closest("[data-krinky]");
+        const ic = tag ? null : e.target.closest(".dk-ic[data-app]");
+        if (!tag && !ic) return;
+        const key = tag ? tag.dataset.krinky : (ic.dataset.app === "font" ? "font" : "app:" + ic.dataset.app);
+        mm.saidKey = key; mm.saidAt = Date.now();
         sayFor(key);
         goTo(tag ? (tag.closest(".dkw") || tag) : ic);
       };
@@ -240,20 +250,25 @@
             const b = { l: d.el.offsetLeft, t: d.el.offsetTop, r: d.el.offsetLeft + d.el.offsetWidth, b: d.el.offsetTop + d.el.offsetHeight };
             if (hit(box(), b)) { mm.state = "squash"; mm.st = mm.t; } else goTo(d.el);
           }
-          const own = blurb(d.key);
-          own ? say(own, true) : say(pick("open"));
+          /* the click that opened it already had him read the blurb */
+          if (!(mm.saidKey === d.key && Date.now() - mm.saidAt < 1500)) {
+            const own = blurb(d.key);
+            own ? say(own, true) : say(pick("open"));
+          }
         }
         if (d.kind === "viz") say(pick("viz"));
         if (d.kind === "hover") sayFor(d.key);
       };
 
       document.addEventListener("pointerover", onOver, true);
+      document.addEventListener("click", onTap, true);
       document.addEventListener("pointermove", onMove, true);
       window.addEventListener("krinky", onKrinky);
       return () => {
         dead = true; cancelAnimationFrame(raf);
         timers.current.forEach(clearTimeout);
         document.removeEventListener("pointerover", onOver, true);
+        document.removeEventListener("click", onTap, true);
         document.removeEventListener("pointermove", onMove, true);
         window.removeEventListener("krinky", onKrinky);
       };

@@ -160,6 +160,13 @@
     card("cutout:headphones", `<b>Headphones</b><span>drops into the collage</span>`, { height: 190, shape: "rect", radius: 2 })]
   );
 
+  // 5b ── Start menu profile picture + folder images
+  section("Profile picture", "Start menu, next to your name \u00b7 crop to your face", "square",
+    [card("me:avatar", `<b>Profile picture</b><span>square</span>`, { height: 170, shape: "rect", radius: 3 })]);
+  const projImgs = (PG.projects || []).filter((p) => p.kind !== "web");
+  section("Folder images", "Design folder items \u00b7 a folder shows once it has one", "wide",
+    projImgs.map((p) => card("proj:" + p.id, `<b>${p.title}</b><span>${p.folder || ""}</span>`, { height: 170, shape: "rect", radius: 2 })));
+
   // 6a ── Pitch deck covers: open full-size from the Pitch Decks window
   const decks = window.PORTFOLIO_DATA.decks || [];
   section(

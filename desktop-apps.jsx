@@ -35,15 +35,23 @@
   }
   const srcOf = (v) => typeof v === "string" ? v : v && (v.u || v.url || v.src);
 
-  /* ---- My Projects: folder of personal projects; web ones open live ---- */
-  function ProjectsApp({ open }) {
+  /* ---- Folders: Design / Web Concepts hold PG.projects by their `folder`.
+     An image item counts once it has a picture (Media Manager slot
+     "proj:<id>", or a src not marked pending); a web item once it has a URL.
+     Empty folders stay off the desktop. ---- */
+  const projImg = (slots, p) => slots["proj:" + p.id] || (!p.pending && p.src) || null;
+  const filled = (slots, p) => p.kind === "web" ? !!p.src : !!projImg(slots, p);
+  const folderItems = (slots, f) => (PG.projects || []).filter((p) => p.folder === f && filled(slots, p));
+  function FolderApp({ open, folder }) {
+    const slots = window.useMediaSlots();
+    const items = folderItems(slots, folder);
+    if (!items.length) return <div className="dk-empty">This folder is empty.</div>;
     return (
       <div className="dk-files">
-        {(PG.projects || []).map((p) =>
-          <button key={p.id} className="dk-file" onClick={() => open(p.kind === "web" ? "web:" + p.id : "img:" + p.id)}>
+        {items.map((p) =>
+          <button key={p.id} className="dk-file" data-krinky={"proj:" + p.id} onClick={() => open(p.kind === "web" ? "web:" + p.id : "img:" + p.id)}>
             {p.kind === "web" ? <I.Web s={38} /> : <I.Img s={38} />}<span>{p.title}</span>
           </button>)}
-        <button className="dk-file" onClick={() => open("decks")}><I.Folder s={38} /><span>Pitch Decks</span></button>
       </div>);
   }
 
@@ -60,7 +68,9 @@
   }
   const lk = (t) => (window.linkify ? window.linkify(t) : t);
   function ImageApp({ project }) {
-    return (<div><div className="dk-shots"><button style={{ cursor: "default" }}>{project.pending ? null : <img src={project.src} alt={project.title} />}</button></div><p style={{ marginTop: 10 }}>{lk(project.note)}</p></div>);
+    const slots = window.useMediaSlots();
+    const v = projImg(slots, project);
+    return (<div><div className="dk-shots"><button style={{ cursor: "default" }}>{v ? <CroppedImg value={v} alt={project.title} /> : null}</button></div><p style={{ marginTop: 10 }}>{lk(project.note)}</p></div>);
   }
 
   /* ---- What I'm listening to: just the list. Clicking a playlist used to
@@ -322,13 +332,15 @@
      (desktop.jsx intercepts the "radio" id). The registry entry survives so
      the icon and the Start-menu row still have art and a title. */
   window.DeskApps = {
+    folderItems,
     registry: {
-      projects: { title: "My Projects", Icon: I.Folder, tint: "#41669a", body: (ctx) => <ProjectsApp open={ctx.open} />, size: { w: 460, h: 320 }, min: { w: 320, h: 240 } },
+      design: { title: "Design", Icon: I.FolderDesign, tint: "#9b5e39", body: (ctx) => <FolderApp open={ctx.open} folder="design" />, size: { w: 460, h: 320 }, min: { w: 320, h: 240 } },
+      web: { title: "Web Concepts", Icon: I.FolderWeb, tint: "#41669a", body: (ctx) => <FolderApp open={ctx.open} folder="web" />, size: { w: 460, h: 320 }, min: { w: 320, h: 240 } },
       radio: { title: "Radio", Icon: I.Radio, tint: "#5b6b8c", mini: true },
       listening: { title: "What I'm listening to", Icon: I.Headphones, tint: "#5c3560", body: () => <ListeningApp />, size: { w: 720, h: 620 }, min: { w: 560, h: 420 } },
       photos: { title: "Photos", Icon: I.Photos, tint: "#6b4a70", body: () => <PhotosApp />, size: { w: 520, h: 380 }, min: { w: 400, h: 320 } },
       paint: { title: "Paint", Icon: I.Paint, tint: "#9b5e39", body: () => <PaintApp />, size: { w: 520, h: 400 }, min: { w: 420, h: 300 } },
-      decks: { title: "Pitch Decks", Icon: I.Deck, tint: "#3c6b68", body: () => <DecksApp />, size: { w: 460, h: 300 }, min: { w: 340, h: 220 } },
+      decks: { title: "Pitch Decks", Icon: I.FolderDecks, tint: "#3c6b68", body: () => <DecksApp />, size: { w: 460, h: 300 }, min: { w: 340, h: 220 } },
       guestbook: { title: "Guestbook", Icon: I.Book, tint: "#66743c", body: () => <GuestbookApp />, size: { w: 470, h: 400 }, min: { w: 340, h: 300 } },
       letter: { title: "Write me a letter", Icon: I.Letter, tint: "#8a6a2f", body: () => <LetterApp />, size: { w: 440, h: 400 }, min: { w: 360, h: 320 } },
       font: { title: "The font", Icon: I.Font, tint: "#7a4a5e", bleed: true, body: () => <FontApp />, size: { w: 660, h: 620 }, min: { w: 400, h: 400 } },

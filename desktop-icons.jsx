@@ -6,7 +6,7 @@
    ========================================================================= */
 (function () {
   const { useState } = React;
-  const S = ({ children, s = 44 }) => <svg viewBox="0 0 48 48" width={s} height={s} aria-hidden="true">{children}</svg>;
+  const S = ({ children, s = 44, x, y }) => <svg viewBox="0 0 48 48" width={s} height={s} x={x} y={y} aria-hidden="true">{children}</svg>;
 
   const Folder = ({ s }) => <S s={s}>
     <path d="M5 13c0-1.7 1.3-3 3-3h11l4 4h17c1.7 0 3 1.3 3 3v22c0 1.7-1.3 3-3 3H8c-1.7 0-3-1.3-3-3z" fill="#fdc44f" stroke="#8a5c07" strokeWidth="1.5"/>
@@ -85,10 +85,21 @@
   const Power = ({ s }) => <S s={s}><circle cx="24" cy="24" r="17" fill="#c9440f" stroke="#7d2708" strokeWidth="1.5"/><path d="M24 13v13" stroke="#fff" strokeWidth="3.4"/><path d="M15 21a11 11 0 1 0 18 0" fill="none" stroke="#fff" strokeWidth="3"/></S>;
   const Home = ({ s }) => <S s={s}><path d="M24 8 6 24h6v16h10V29h4v11h10V24h6z" fill="#f2c24c" stroke="#8a6410" strokeWidth="1.5"/></S>;
 
+  /* folder carrying a big badge of what's inside; the badge breaks past the
+     folder's edge on purpose so the three folders read apart at a glance */
+  const FolderOf = (Badge) => ({ s = 44 }) => <svg viewBox="0 0 48 48" width={s} height={s} overflow="visible" aria-hidden="true">
+    <g transform="translate(-1 -2)">
+      <path d="M5 13c0-1.7 1.3-3 3-3h11l4 4h17c1.7 0 3 1.3 3 3v22c0 1.7-1.3 3-3 3H8c-1.7 0-3-1.3-3-3z" fill="#fdc44f" stroke="#8a5c07" strokeWidth="1.5"/>
+      <path d="M5 20h38v6H5z" fill="#ffe08a"/><path d="M5 32h38v5H5z" fill="#e39a17"/>
+    </g>
+    <g transform="translate(22 20) scale(.66)"><Badge s={48} /></g>
+  </svg>;
+  const FolderDesign = FolderOf(Paint), FolderDecks = FolderOf(Deck), FolderWeb = FolderOf(Web);
+
   const Mark = {
     min: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 11h8"/></svg>,
     close: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4.5 4.5 11.5 11.5M11.5 4.5 4.5 11.5"/></svg>
   };
 
-  window.DeskIcons = { Folder, Web, Radio, Headphones, Photos, Paint, Deck, Book, Letter, Font, Bin, Note, Img, Mail, Link, Power, Home, Mark };
+  window.DeskIcons = { FolderDesign, FolderDecks, FolderWeb, Folder, Web, Radio, Headphones, Photos, Paint, Deck, Book, Letter, Font, Bin, Note, Img, Mail, Link, Power, Home, Mark };
 })();

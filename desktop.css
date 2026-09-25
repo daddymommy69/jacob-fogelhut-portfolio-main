@@ -32,7 +32,7 @@
 /* ---- windows ---- */
 /* Each app carries its own --wc, so title bar + frame colour-code the window;
    the bands are derived from it rather than hand-picked per app. */
-.dkw{--wc:#41669a;--wcL:color-mix(in srgb,var(--wc),#fff 30%);--wcM:color-mix(in srgb,var(--wc),#fff 12%);--wcD:color-mix(in srgb,var(--wc),#000 22%);--wcX:color-mix(in srgb,var(--wc),#000 38%);position:absolute;display:flex;flex-direction:column;min-width:240px;border-radius:6px 6px 0 0;padding:3px;background:linear-gradient(180deg,var(--wcL) 0 3px,var(--wcM) 3px 9px,var(--wc) 9px 19px,var(--wcD) 19px 26px,var(--wcX) 26px);box-shadow:1px 1px 0 var(--wcX),2px 2px 0 rgba(0,0,0,.35),inset 1px 1px 0 rgba(255,255,255,.4)}
+.dkw{--wc:#41669a;--wcL:color-mix(in srgb,var(--wc),#fff 30%);--wcM:color-mix(in srgb,var(--wc),#fff 12%);--wcD:color-mix(in srgb,var(--wc),#000 22%);--wcX:color-mix(in srgb,var(--wc),#000 38%);position:absolute;display:flex;flex-direction:column;min-width:240px;border-radius:6px;padding:3px;background:linear-gradient(180deg,var(--wcL) 0 3px,var(--wcM) 3px 9px,var(--wc) 9px 19px,var(--wcD) 19px 26px,var(--wcX) 26px);box-shadow:1px 1px 0 var(--wcX),2px 2px 0 rgba(0,0,0,.35),inset 1px 1px 0 rgba(255,255,255,.4)}
 .dkw-bar{height:29px;display:flex;align-items:center;gap:7px;padding:0 5px 0 8px;color:#fff;cursor:grab;user-select:none}
 .dkw-bar.grab{cursor:grabbing}
 .dkw-bar b{flex:1;min-width:0;font-family:var(--font-body);font-weight:600;font-size:13px;line-height:1;text-shadow:1px 1px 0 rgba(0,0,0,.55);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -46,7 +46,11 @@
 .dkw-body{flex:1;min-height:0;overflow:auto;background:#ece9e1;box-shadow:inset 1px 1px 0 #fff,inset -1px -1px 0 #a9a599;padding:12px;font-family:var(--font-body);font-size:16px;line-height:1.5;color:#3a372f}
 .dkw-body h4{font-family:var(--font-body);font-weight:400;font-size:21px;margin-bottom:8px}
 .dkw-body p{max-width:52ch;text-wrap:pretty}
-.dkw-rz{position:absolute;right:0;bottom:0;width:15px;height:15px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 45%,rgba(255,255,255,.7) 45% 55%,transparent 55%)}
+.dkw-body{border-radius:0 0 3px 3px}
+/* XP size grip, quieter: three short ridges, light over dark so it reads on
+   the cream panes and over the font photo alike */
+.dkw-rz{position:absolute;right:4px;bottom:4px;width:13px;height:13px;cursor:nwse-resize;opacity:.55;background:linear-gradient(135deg,transparent 0 52%,rgba(255,255,255,.9) 52% 57%,rgba(0,0,0,.35) 57% 62%,transparent 62% 70%,rgba(255,255,255,.9) 70% 75%,rgba(0,0,0,.35) 75% 80%,transparent 80% 88%,rgba(255,255,255,.9) 88% 93%,rgba(0,0,0,.35) 93%)}
+.dkw-rz:hover{opacity:.9}
 
 /* ---- taskbar ---- */
 .dk-bar{position:absolute;left:0;right:0;bottom:0;height:var(--tbh);z-index:40;display:flex;align-items:center;gap:8px;padding-right:6px;background:linear-gradient(180deg,#4a95ea 0 2px,#2f7ad8 2px 6px,#1f63c2 6px 26px,#1550a4 26px 33px,#0f3c85 33px);box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
@@ -83,6 +87,15 @@
 .dk-mi{display:flex;align-items:center;gap:8px;width:100%;min-width:0;padding:6px 7px;border:0;background:none;cursor:pointer;font-family:var(--font-body);font-size:12.5px;color:#22303c;text-align:left;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dk-mi svg{width:18px;height:18px;flex:none}
 .dk-menu-sep{height:1px;margin:4px 2px;background:#b9bfc9}
+.dk-av{width:38px!important;height:38px!important;padding:0;overflow:hidden;border:2px solid #fff;border-radius:3px;background:#0f4592!important;box-shadow:1px 1px 0 rgba(0,0,0,.35)!important}
+.dk-av .cropwrap,.dk-av img{width:100%;height:100%;object-fit:cover;display:block}
+.dk-mi-kr{width:18px;height:18px;flex:none;display:grid;place-items:center;overflow:visible}
+.dk-mi-kr svg{width:22px!important;height:22px!important;margin:-2px}
+.dk-mi-kr.off{filter:grayscale(1);opacity:.45}
+.dk-mi-dot{width:18px;height:18px;flex:none;position:relative}
+.dk-mi-dot::after{content:"";position:absolute;inset:4px;border-radius:50%;border:1px solid rgba(0,0,0,.35);box-shadow:inset 1px 1px 0 rgba(255,255,255,.55)}
+.dk-mi-dot.on::after{background:#3aa64a}.dk-mi-dot.off::after{background:#d23a2a}
+.dk-ic svg[overflow=visible]{overflow:visible}
 .dk-mi-fix{display:grid}.dk-mi-fix>span{grid-area:1/1;visibility:hidden}.dk-mi-fix>span.on{visibility:visible}
 .dk-menu-foot{display:flex;justify-content:flex-end;gap:6px;padding:6px 8px}
 .dk-menu-foot button{display:flex;align-items:center;gap:6px;border:0;background:none;color:#fff;font-family:var(--font-body);font-size:12.5px;cursor:pointer}
@@ -99,6 +112,7 @@
 @keyframes dkboot{to{width:100%}}
 
 /* ---- app internals ---- */
+.dk-empty{height:100%;display:grid;place-items:center;font-family:var(--font-body);font-size:13px;color:#7a7568}
 .dk-files{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:12px;align-content:start}
 /* apps whose content should fill the window and reflow as it resizes */
 .dk-fill{display:flex;flex-direction:column;height:100%;min-height:0}
@@ -154,6 +168,7 @@
 /* ---- corner player: the whole radio. Carries the bottom bar's dark warm
    panel and accent, keeps the Winamp screen and chunky transport. ---- */
 .dk-mini{--vc:#d98324;position:absolute;left:50%;top:50%;z-index:60;width:560px;height:520px;max-width:calc(100% - 20px);max-height:calc(100% - 20px);background:#1b1a16;color:#f4efe6;border:2px solid color-mix(in srgb,var(--vc) 55%,#1b1a16);border-radius:14px;box-shadow:0 20px 50px -20px rgba(0,0,0,.7);overflow:hidden;display:flex;flex-direction:column}
+.dk-mini{border-radius:6px;overflow:hidden}
 .dk-mini.shade{height:auto}
 .dk-mini.grab{box-shadow:0 26px 60px -20px rgba(0,0,0,.8)}
 .dkm-bar{display:flex;align-items:center;gap:10px;padding:7px 10px 7px 12px;background:#141310;border-bottom:1px solid #2f2b24;cursor:grab;user-select:none}
@@ -209,7 +224,7 @@
 .dkm-list button.on{background:var(--vc);color:#1b1a16}
 
 /* ---- the font window: photo bleeds to the frame, copy scrolls over it ---- */
-.dkw-body.bleed{padding:0;overflow:hidden;background:#1b1a16}
+.dkw-body.bleed{padding:0;overflow:hidden;background:#1b1a16;box-shadow:none}
 .dk-fontcard{position:relative;width:100%;height:100%;border:0;border-radius:0;box-shadow:none;display:flex;flex-direction:column;background:none}
 .dk .fc-bg img,.dk .fc-scan img{image-rendering:auto}
 
