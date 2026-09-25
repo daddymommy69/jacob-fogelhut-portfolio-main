@@ -64,7 +64,7 @@
     const say = (text, withReaction) => {
       if (!text) return;
       const mm = m.current;
-      mm.idle = 0; mm.quietUntil = Date.now() + 1200; mm.sayAt = Date.now(); mm.talking = true;
+      mm.idle = 0; mm.quietUntil = Date.now() + 1200; mm.sayAt = Date.now(); mm.talking = true; mm.hold = false;
       mm.sayMs = String(text).includes("](") ? SAY_MS * 2 : SAY_MS;
       if (mm.state === "sleep" || mm.state === "sun") { mm.state = "idle"; mm.target = null; }
       timers.current.forEach(clearTimeout); timers.current = [];

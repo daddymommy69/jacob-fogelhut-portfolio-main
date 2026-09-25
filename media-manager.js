@@ -160,6 +160,13 @@
     card("cutout:headphones", `<b>Headphones</b><span>drops into the collage</span>`, { height: 190, shape: "rect", radius: 2 })]
   );
 
+  // 6a ── Pitch deck covers: open full-size from the Pitch Decks window
+  const decks = window.PORTFOLIO_DATA.decks || [];
+  section(
+    "Pitch deck covers", "opens full-size when a visitor clicks the deck", "wide",
+    decks.map((d) => card("deck:" + d.id + ":cover", `<b>${d.client}</b><span>${d.title}</span>`, { height: 170, shape: "rect", radius: 2 }))
+  );
+
   // 6b ── The font story (#4) -------------------------------------------------
   // Slot ids: font:cover (dad photo w/ font overlay) · font:scan (handwriting).
   const fs = PG.fontStory || {};

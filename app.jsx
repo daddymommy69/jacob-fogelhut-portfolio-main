@@ -321,7 +321,7 @@ function Header({ theme, cycleTheme }) {
       <div className="wrap head-inner">
         <a className="head-brand" href="#top">{DATA.name}</a>
         <nav className="head-nav">
-          <a href="#playground">jacob_desktop.exe</a>
+          <a className="nav-exe" href="#playground">jacob_desktop.exe</a>
           <a href="#contact">Contact</a>
           <button className="theme-btn" onClick={cycleTheme} aria-label="Toggle theme">
             <span className="dot" style={{ background: theme === "dark" ? "currentColor" : "transparent" }}></span>

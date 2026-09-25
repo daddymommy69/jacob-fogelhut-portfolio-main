@@ -132,8 +132,16 @@
 .dk-trash button{display:flex;gap:8px;align-items:center;width:100%;text-align:left;background:none;border:0;padding:4px 2px;font:16px var(--font-body);color:#3a372f;cursor:pointer}
 .dk-trash button:hover{background:#2f6fb5;color:#fff}
 .dk-trash-msg{margin-top:10px;font-family:var(--font-body);font-size:13px;color:#6b6452;min-height:1.4em}
-.dk-deck{display:flex;gap:10px;align-items:center;padding:8px 6px;border-bottom:1px solid #cfc9bb;text-decoration:none;color:#3a372f}
-.dk-deck:hover{background:#2f6fb5;color:#fff}
+.dk-deck{display:flex;gap:10px;align-items:center;padding:8px 6px;border-bottom:1px solid #cfc9bb;color:#3a372f}
+.dk-deck-open{flex:none;display:grid;place-items:center;width:48px;height:36px;padding:0;background:none;border:0;cursor:pointer}
+.dk-deck-open:disabled{cursor:default}
+.dk-deck-th{display:block;width:48px;height:36px;overflow:hidden;border:1px solid #9aa4b2;background:#fff}
+.dk-deck-th img{width:100%;height:100%;object-fit:cover}
+.dk-deck-open:not(:disabled):hover .dk-deck-th{outline:2px solid #2f6fb5}
+.dk-deck-t{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.dk-deck-t:hover{color:#2f6fb5;text-decoration:underline}
+.dk-deck small a.inlink{color:#0a4fd6;text-decoration:underline;text-decoration-color:currentColor}.dk-deck small a.inlink:hover{color:#123f8a}
+@media (pointer:coarse){.dk-back{min-height:32px}.dk-tray button{min-width:32px;min-height:32px;display:inline-grid;place-items:center}}
 .dk-deck b{display:block;font-family:var(--font-body);font-size:13.5px;font-weight:600}
 .dk-deck small{font-size:11.5px;opacity:.8}
 .dk-lb{position:absolute;inset:0;z-index:60;background:rgba(6,14,26,.86);display:grid;place-items:center;padding:24px}
@@ -240,11 +248,9 @@ body:has(.dk) .pbar.is-full{bottom:38px}
 .dk-lb img.dk-native.panning{cursor:grabbing}
 .dk-lb-x{position:absolute;top:8px;right:8px;z-index:61;width:26px;height:26px;border:1px solid #fff;border-radius:50%;background:rgba(6,14,26,.72);color:#fff;font-size:12px;line-height:1;display:grid;place-items:center;cursor:pointer;padding:0}
 .dk-lb-x:hover{background:#c33a17}
-/* ---- the name in the start menu and "back to portfolio" run on the
-   custom marker face (it is wide, so both get a touch more size) ---- */
+/* ---- the name in the start menu runs on the custom marker face ---- */
 .dk-menu-head b{font-family:var(--font-marker);font-size:18px;font-weight:400;letter-spacing:.01em}
-.dk-back{font-family:var(--font-marker);font-size:15px;letter-spacing:.01em}
-.dk-mi-home{font-family:var(--font-marker);font-size:16px}
+
 /* brand logos in the start menu: 35px bitmaps snapped to the 216-colour web
    palette — true brand hues, just fewer steps, which is exactly what a 2004
    shell would have shown. No desaturation. Edges stay antialiased. */

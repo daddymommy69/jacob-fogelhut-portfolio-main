@@ -186,11 +186,24 @@
   }
 
   /* ---- Pitch decks ---- */
+  /* Each deck opens its cover image (Media Manager slot "deck:<id>:cover",
+     or `cover` in data.js). No cover yet → the row just reads "cover soon". */
   function DecksApp() {
-    return (<div>{(DATA.decks || []).map((d) =>
-      <a key={d.id} className="dk-deck" href={`mailto:${DATA.email}?subject=${encodeURIComponent("Deck request — " + d.client + " " + d.title)}`}>
-        <I.Deck s={30} /><span><b>{d.client} — {d.title}</b><small>{window.plainText ? window.plainText(d.note) : d.note} · click to request</small></span>
-      </a>)}</div>);
+    const slots = window.useMediaSlots();
+    const [big, setBig] = useState(null);
+    return (<div>{(DATA.decks || []).map((d) => {
+      const cv = slots["deck:" + d.id + ":cover"] || d.cover;
+      return (<div key={d.id} className={`dk-deck ${cv ? "" : "off"}`}>
+        <button className="dk-deck-open" disabled={!cv} onClick={() => setBig(cv)} aria-label={cv ? "Open cover: " + d.client : undefined}>
+          {cv ? <span className="dk-deck-th"><CroppedImg value={cv} alt="" /></span> : <I.Deck s={30} />}
+        </button>
+        <span><b>{cv ? <button className="dk-deck-t" onClick={() => setBig(cv)}>{d.client} — {d.title}</button> : <>{d.client} — {d.title}</>}</b><small>{lk(d.note)}{cv ? "" : " · cover soon"}</small></span>
+      </div>); })}
+      {big && <div className="dk-lb" onClick={(e) => e.target === e.currentTarget && setBig(null)}>
+        <img className="dk-native" src={srcOf(big)} alt="" draggable={false} onPointerDown={(e) => panPhoto(e, () => setBig(null))} />
+      </div>}
+      {big && <button className="dk-lb-x" onClick={() => setBig(null)} aria-label="Close">✕</button>}
+    </div>);
   }
 
   /* ---- Guestbook: same local store the desk version used ---- */

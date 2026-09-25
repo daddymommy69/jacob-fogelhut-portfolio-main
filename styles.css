@@ -74,6 +74,8 @@ button { font-family: inherit; cursor: pointer; }
 }
 .head-nav a:hover, .theme-btn:hover { color: var(--text); }
 .theme-btn { display: inline-flex; align-items: center; gap: 7px; }
+.head-nav a.nav-exe { text-transform: none; letter-spacing: .02em; }
+@media (max-width: 560px) { .head-nav { gap: 14px; } .head-nav a, .theme-btn { padding: 13px 0; margin: -13px 0; } .theme-btn { font-size: 0; gap: 0; padding: 13px 4px; } .theme-btn .dot { width: 11px; height: 11px; } .head-brand { min-width: 0; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } }
 .theme-btn .dot { width: 9px; height: 9px; border-radius: 50%; border: 1.5px solid currentColor; }
 
 /* =====================================================================

@@ -112,7 +112,7 @@
             <a className="head-brand cpage-brand" href="#home">{DATA.name}</a>
             <nav className="head-nav">
               <a href="#work">Work</a>
-              <a href="#playground">jacob_desktop.exe</a>
+              <a className="nav-exe" href="#playground">jacob_desktop.exe</a>
               <span className="cpage-here mono">Contact</span>
               <button className="theme-btn" onClick={cycleTheme} aria-label="Toggle theme">
                 <span className="dot" style={{ background: effTheme === "dark" ? "currentColor" : "transparent" }}></span>

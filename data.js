@@ -118,12 +118,12 @@ window.PORTFOLIO_DATA = {
   ],
 
   /* ----------------------------------------------------------------------
-     DECKS — covers only; full deck on request (mailto). Drop cover art into
-     /media and set `cover` to replace the typeset placeholder.
+     DECKS — each opens its cover image. Upload covers in the Media Manager
+     ("Pitch deck covers") or set `cover` to an image path.
      ---------------------------------------------------------------------- */
   decks: [
     { id: "esenes-hotboys", client: "ESENES × HOTBOYS", title: "Collaboration Deck",
-      note: "Pitch for collaboration HOTBOYS in Bay Area, CA. Agreed to do their in house merch, uniform, and a food product on their menu.", cover: null },
+      note: "Pitch for collaboration [HOTBOYS](https://www.instagram.com/worldfamoushotboys/?hl=en) in Bay Area, CA. Agreed to do their in house merch, uniform, and a food product on their menu. Played off their fun & retro [website](https://worldfamoushotboys.com/).", cover: null },
     { id: "liz-campos", client: "Liz Campos", title: "Brand Consultation",
       note: "Pitch deck for helping develop marketing systems for [Liz Campos](https://lizcamposmx.com/en-us) based in Mexico City. ", cover: null },
     { id: "plus-one", client: "PLUS ONE", title: "Show Pitch Deck",
@@ -227,6 +227,15 @@ window.PORTFOLIO_DATA = {
       "Somebody made this. On purpose.",
       "Volume's a slider. Just saying."
     ],
+    viz: [
+      "Different shapes. Same music.",
+      "Ooh. Do that again.",
+      "That's my favourite one. They're all my favourite one.",
+      "Now it's a graph. Now it's art.",
+      "I preferred the last one. No I didn't.",
+      "Keep clicking. Something's bound to happen."
+    ],
+    /* watch: an idle line; the words in [brackets] link to a random video below */
     watch: [
       "you should watch [this video]"
     ],
@@ -252,14 +261,6 @@ window.PORTFOLIO_DATA = {
       "https://www.youtube.com/watch?v=Vl-GJaitlNs",
       "https://www.youtube.com/watch?v=umF1kfVujhM",
       "https://www.youtube.com/watch?v=1T3LA4TJRgE&list=LL"
-    ],
-    viz: [
-      "Different shapes. Same music.",
-      "Ooh. Do that again.",
-      "That's my favourite one. They're all my favourite one.",
-      "Now it's a graph. Now it's art.",
-      "I preferred the last one. No I didn't.",
-      "Keep clicking. Something's bound to happen."
     ]
   },
 
@@ -311,9 +312,9 @@ window.PORTFOLIO_DATA = {
     galleryCategoryNames: ["Europe", "Asia", "Food", "Me"],
 
     fontStory: {
-      title: "My Dads Handwriting",
+      title: "My Dad's Handwriting",
       maker: "Lloyd Fogelhut",
-      story: "inspired by a [@kaseyfelix](https://www.tiktok.com/t/ZP8Tmk64w/) immortalizing her architect dad, and my need to create, i found a tried to honor my dad the same way. Him being an architect as well, I thought he had the coolest and most unique handwriting growing up. I loved watching him write me absent excuses for school, and i saw his building drafts as his artwork.\n\nscanning actual notes and drafts from his early work and cleaning up each letter in Photoshop, i have made his handwriting into a usable and downloadable font. i want to share it with the world, so please download it below, and i hope you find a fun use with it. if you do, please show me!\n\nHe started to lose his memory after chemo in 2018, and has slowly been deteriorating. affirming what we already knew, he was diagnosed with mild to moderate alzheimers. my mom said he cracked a joke immediately after the doctor told them the news. thats how he has been living his life for the past 15 years. from two different chemo treatments, to losing his memory, he has stayed positive and has laughed through the process. while he may ask me seven times in a row if i saw my cousin on a trip, each time will have a new joke. Frustrating for him a lot of the time, he will always find the positive in everything and anything.\n\none of my role models, one of my heroes, and my main inspiration for how i live my life. please download, use, and share the ice city architects font.",
+      story: "inspired by [@kaseyfelix](https://www.tiktok.com/t/ZP8Tmk64w/) immortalizing her architect dad, and my need to create, i tried to honor my dad the same way. He's an architect too, and I thought he had the coolest and most unique handwriting growing up. I loved watching him write me absence notes for school, and i saw his building drafts as his artwork.\n\nscanning actual notes and drafts from his early work and cleaning up each letter in Photoshop, i have made his handwriting into a usable and downloadable font. i want to share it with the world, so please download it below, and i hope you find a fun use with it. if you do, please show me!\n\nHe started to lose his memory after chemo in 2018, and has slowly been deteriorating. affirming what we already knew, he was diagnosed with mild to moderate Alzheimer's. my mom said he cracked a joke immediately after the doctor told them the news. that's how he has been living his life for the past 15 years. from two different chemo treatments to losing his memory, he has stayed positive and has laughed through the process. while he may ask me seven times in a row if i saw my cousin on a trip, each time will have a new joke. It's frustrating for him a lot of the time, but he always finds the positive in everything and anything.\n\none of my role models, one of my heroes, and my main inspiration for how i live my life. please download, use, and share the Ice City Architects font.",
       sample: "Abcdefghijklmnopqrstuvwxyz\n0 1 2 3 4 5 6 7 8 9  & ? ! @ #",
       fontFile: "fonts/jacob-custom.otf",
       downloadAs: "Lloyd Fogelhut.otf",
