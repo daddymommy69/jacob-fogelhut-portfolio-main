@@ -66,7 +66,8 @@
         const b = (window.MEDIA_BASE || "").replace(/\/$/, "");
         return b ? b + "/" + u.replace(/^\//, "") : u;
       };
-      const base = (PG.mixes || []).filter((m) => m.src)
+      // `hidden: true` in data.js keeps a mix off the radio until it's ready
+      const base = (PG.mixes || []).filter((m) => m.src && !m.hidden)
         .map((m) => ({ id: m.id, title: m.title, src: host(m.src), coverId: "mix:" + m.id + ":cover" }));
       const up = uploads.map((u) => ({ id: "up:" + u.id, title: u.title || "Untitled mix", src: window.AudioStore.urlFor(u.id), coverId: null, uploaded: true })).filter((m) => m.src);
       return [...base, ...up];
