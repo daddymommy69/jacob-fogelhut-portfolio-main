@@ -280,10 +280,12 @@ window.PORTFOLIO_DATA = {
        previews unless the listener is signed in. Swap these 4 for your real
        Spotify/Apple embed URLs (use the …/embed/… form). */
     radio: [
-      { name: "FAV SONG '26",   kind: "apple",   embed: "https://embed.music.apple.com/us/playlist/2026/pl.u-gxblvzRt88Kpbp" },
-      { name: "SPOTIFY LIKES",  kind: "spotify", embed: "https://open.spotify.com/embed/playlist/37i9dQZF1F5p3rmiWPIYgZ" },
-      { name: "DJ SET",         kind: "spotify", embed: "https://open.spotify.com/embed/playlist/6gRvWOkNh2iVvQBjOURGsj" },
-      { name: "5A / ALBUM",     kind: "spotify", embed: "https://open.spotify.com/embed/album/59d6GhSOOMRlfYrAc6jfeo" }
+      { name: "favorite releases of '26", kind: "apple",   embed: "https://embed.music.apple.com/us/playlist/2026/pl.u-gxblvzRt88Kpbp" },
+      { name: "favorite releases of '25", kind: "apple",   embed: "https://embed.music.apple.com/us/playlist/2025/pl.u-jV89a2JtjjW4D4", page: "https://music.apple.com/us/playlist/2025/pl.u-jV89a2JtjjW4D4" },
+      { name: "all in one",               kind: "spotify", embed: "https://open.spotify.com/embed/playlist/37i9dQZF1F5p3rmiWPIYgZ" },
+      { name: "almost a dj set",          kind: "spotify", embed: "https://open.spotify.com/embed/playlist/6gRvWOkNh2iVvQBjOURGsj" },
+      { name: "2dopeboyz & mixtape era",  kind: "spotify", embed: "https://open.spotify.com/embed/playlist/3joYofs7yEtATLn85YCdKg", page: "https://open.spotify.com/playlist/3joYofs7yEtATLn85YCdKg" },
+      { name: "?",                        kind: "spotify", embed: "https://open.spotify.com/embed/playlist/36Yk5cyUf01hYanGufZSOQ", page: "https://open.spotify.com/playlist/36Yk5cyUf01hYanGufZSOQ" }
     ],
 
     // Folder items. folder: "design" | "web". Image items get their picture
