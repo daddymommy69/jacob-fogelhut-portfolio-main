@@ -344,15 +344,46 @@
       }
       return [...b, ...alb];
     }, [slots]);
-    /* two layers so each change is a 5s dissolve, not a cut: the outgoing
-       still fades down while the incoming fades up. Fresh keys each tick so
-       the CSS animations restart. */
-    const [wp, setWp] = useState({ cur: 0, prev: null, k: 0 });
+    const nWall = window.MediaSlots.collectCrops(slots, "wall:", 12).length;
+    /* Order: the wallpapers shuffled among themselves, then the whole set
+       (wallpapers + photos) in shuffled rounds with no repeats inside a round.
+       Two FIXED layers cross-fade: the incoming picture is swapped into the
+       hidden layer (already preloaded below), then the layers trade opacity.
+       The visible layer is never re-mounted, which is what caused the flash. */
+    const shuf = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const bag = useRef([]);
+    const firstPick = useMemo(() => {
+      const w = shuf([...Array(Math.max(1, nWall)).keys()]);
+      bag.current = w.slice(1);
+      bag.current.round = 0;
+      return w[0] || 0;
+    }, [walls.length]);
+    const [wp, setWp] = useState(() => ({ a: firstPick, b: firstPick, front: "a", last: firstPick }));
+    useEffect(() => { setWp({ a: firstPick, b: firstPick, front: "a", last: firstPick }); }, [firstPick]);
+    const nextWall = (last) => {
+      if (!bag.current.length) {
+        let all = shuf([...Array(walls.length).keys()]);
+        if (all.length > 1 && all[0] === last) all.push(all.shift());
+        bag.current = all;
+      }
+      return bag.current.shift();
+    };
+    const preRef = useRef(null);
+    const ready = (i) => { const im = preRef.current && preRef.current.querySelector(`[data-pre="${i}"] img`); return !im || (im.complete && im.naturalWidth > 0); };
     useEffect(() => {
       if (walls.length < 2) return;
-      const t = setInterval(() => setWp((s) => ({ cur: (s.cur + 1) % walls.length, prev: s.cur, k: s.k + 1 })), 26000);
-      return () => clearInterval(t);
-    }, [walls.length]);
+      let pending = null, t2 = 0;
+      const step = () => {
+        const n = pending != null ? pending : nextWall(wp.last);
+        if (!ready(n)) { pending = n; t2 = setTimeout(step, 1500); return; }
+        pending = null;
+        /* load the picture into the hidden layer first, let it lay out, then fade */
+        setWp((s) => s.front === "a" ? { ...s, b: n } : { ...s, a: n });
+        t2 = setTimeout(() => setWp((s) => ({ ...s, front: s.front === "a" ? "b" : "a", last: n })), 160);
+      };
+      const t = setInterval(step, 26000);
+      return () => { clearInterval(t); clearTimeout(t2); };
+    }, [walls.length, wp.last]);
 
     const nextZ = () => ++zRef.current;
     const focus = useCallback((key) => { const z = nextZ(); setWins((w) => w.map((x) => x.key === key ? { ...x, z, minimized: false } : x)); }, []);
@@ -415,14 +446,15 @@
     if (!booted) return <Boot onDone={() => { try { sessionStorage.setItem(BOOT_KEY, "1"); } catch (e) {} setBooted(true); }} />;
 
     const n = walls.length || 1;
-    const wall = walls[wp.cur % n];
-    const wallPrev = wp.prev == null ? null : walls[wp.prev % n];
+    const wallA = walls[wp.a % n], wallB = walls[wp.b % n];
     return (
       <div className="dk" onPointerDown={() => { setMenu(false); setSel(null); }}>
         <div className="dk-screen" ref={screenRef}>
           <div className="dk-wall">
-            {wallPrev ? <div className="dk-wl out" key={"p" + wp.k}><CroppedImg value={wallPrev} alt="" /></div> : null}
-            {wall ? <div className={`dk-wl ${wp.prev == null ? "" : "in"}`} key={"c" + wp.k}><CroppedImg value={wall} alt="" /></div> : null}
+            {wallA ? <div className={`dk-wl ${wp.front === "a" ? "on" : ""}`} key="A"><CroppedImg key={wp.a} value={wallA} alt="" /></div> : null}
+            {wallB ? <div className={`dk-wl ${wp.front === "b" ? "on" : ""}`} key="B"><CroppedImg key={wp.b} value={wallB} alt="" /></div> : null}
+            {/* every wallpaper loads up front, off-screen, so a fade never waits on the network */}
+            <div className="dk-wpre" ref={preRef} aria-hidden="true">{walls.map((w, i) => <span key={i} data-pre={i}><CroppedImg value={w} alt="" /></span>)}</div>
           </div>
           {order.map((key, i) => {
             const a = APPS.registry[key]; const Icon = a.Icon;

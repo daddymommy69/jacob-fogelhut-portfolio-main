@@ -16,7 +16,7 @@
       <g>
         <path d={`M${l - r + 2} ${cy}q${r - 2} 4 ${2 * r - 4} 0`} fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" />
         <path d={`M${rr - r + 2} ${cy}q${r - 2} 4 ${2 * r - 4} 0`} fill="none" stroke={INK} strokeWidth="2" strokeLinecap="round" />
-        {teeth && <Teeth cx={cx} y={cy + r} w={tw} />}
+        {teeth && <FaceMouth cx={cx} top={cy + r} w={tw} />}
       </g>);
     return (
       <g>
@@ -24,14 +24,26 @@
         <ellipse cx={rr} cy={cy} rx={r} ry={r} fill="#fff" stroke={INK} strokeWidth="1.6" />
         <circle cx={l + look} cy={cy + 1} r={r * pupil} fill={INK} />
         <circle cx={rr + look} cy={cy + 1} r={r * pupil} fill={INK} />
-        {teeth && <Teeth cx={cx} y={cy + r + 1} w={tw} />}
+        {teeth && <FaceMouth cx={cx} top={cy + r + 1} w={tw} />}
       </g>);
   }
-  const Teeth = ({ cx, y, w = 6, gap = 0.5, hf = 1.5 }) => (
-    <g>
-      <rect x={cx - w - gap} y={y} width={w} height={w * hf} rx="1" fill="#fffdf3" stroke={INK} strokeWidth="1.4" />
-      <rect x={cx + gap} y={y} width={w} height={w * hf} rx="1" fill="#fffdf3" stroke={INK} strokeWidth="1.4" />
-    </g>);
+  /* Teeth tuck up under a curved smile: they're drawn taller than they show
+     and clipped to the area below the curve, so their tops follow the smile
+     instead of poking above it as two square corners. */
+  const Mouth = ({ id, cx, w, gap, x0, x1, y0, sag, bottom, sw = 2 }) => {
+    const d = `M${x0} ${y0}q${(x1 - x0) / 2} ${2 * sag} ${x1 - x0} 0`;
+    return (
+      <g>
+        <defs><clipPath id={id}><path d={d + `V${bottom + 4}H${x0}z`} /></clipPath></defs>
+        <g clipPath={`url(#${id})`}>
+          <rect x={cx - w - gap} y={y0 - 2} width={w} height={bottom - y0 + 2} rx="1" fill="#fffdf3" stroke={INK} strokeWidth="1.4" />
+          <rect x={cx + gap} y={y0 - 2} width={w} height={bottom - y0 + 2} rx="1" fill="#fffdf3" stroke={INK} strokeWidth="1.4" />
+        </g>
+        <path d={d} fill="none" stroke={INK} strokeWidth={sw} strokeLinecap="round" />
+      </g>);
+  };
+  const FaceMouth = ({ cx, top, w, gap = 0.5 }) =>
+    <Mouth id="krm-c" cx={cx} w={w} gap={gap} x0={cx - w - gap - 2.5} x1={cx + w + gap + 2.5} y0={top - 2} sag={3} bottom={top + w * 1.5} sw={1.8} />;
 
   /* The arrow is drawn fatter than a real cursor so both eyes and the teeth
      fit inside the silhouette — a true-proportion arrow is too thin and the
@@ -50,8 +62,7 @@
       <circle cx="32" cy="32" r="3.6" fill="#f4f7fb" stroke={INK} strokeWidth="1.2" />
       <circle cx="32" cy="32" r="1.4" fill="#cbd6e2" stroke={INK} strokeWidth="1" />
       <Face cx={32} cy={18} r={14.4} gap={14} closed={closed} look={look} teeth={false} pupil={0.26} />
-      <path d="M13 38q19 24 38 0" fill="none" stroke={INK} strokeWidth="2.6" strokeLinecap="round" />
-      <Teeth cx={32} y={49} w={9} gap={1.2} hf={1.25} />
+      <Mouth id="krm-d" cx={32} w={9} gap={1.2} x0={13} x1={51} y0={38} sag={12} bottom={60.25} sw={2.6} />
     </g>);
 
   const Player = ({ closed, look }) => (
@@ -62,7 +73,7 @@
       <circle cx="32" cy="17" r="1.8" fill={INK} />
       <rect x="12" y="49" width="14" height="4" rx="2" fill="#9aa8b6" stroke={INK} strokeWidth="1.2" />
       <Face cx={32} cy={31} r={8.5} gap={9.5} closed={closed} look={look} teeth={false} pupil={0.34} />
-      <Teeth cx={32} y={41} w={7.5} gap={0} />
+      <Mouth id="krm-p" cx={32} w={7.5} gap={0} x0={22} x1={42} y0={39} sag={3.5} bottom={52.25} sw={1.8} />
     </g>);
 
   const CAST = { cursor: Cursor, disc: Disc, player: Player };
