@@ -177,10 +177,9 @@
           line([0, -12], [0, -2]); line([0, -10], [-6 - sw * 3, -4 - lo * 4]); line([0, -10], [6 + sw * 3, -4 + lo * 4]);
           line([0, -2], [-4 + sw * 2, 8]); line([0, -2], [4 + sw * 2, 8]);
         } else {
-          /* stars: the calm drift reads better than a reactive one, so playing
-             now moves at the old idle rate and idle is slower still */
+          /* stars: a slow, calm drift — playing barely quickens it */
           const cx = W / 2, cy = H / 2, lo = smooth("lo", d ? amp(3, 64) : 0.05);
-          const rate = d ? 0.12 + lo * 0.01 : 0.055;
+          const rate = d ? 0.03 + lo * 0.006 : 0.02;
           stars.forEach((st) => {
             const dd = (st.d + t * rate * st.s) % 1, rr = dd * Math.min(W, H) * 0.62, col = ramp(dd);
             bx.fillStyle = col; bx.shadowColor = col;

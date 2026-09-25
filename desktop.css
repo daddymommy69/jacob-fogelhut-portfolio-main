@@ -270,3 +270,6 @@ body:has(.dk) .pbar.is-full{bottom:38px}
    palette — true brand hues, just fewer steps, which is exactly what a 2004
    shell would have shown. No desaturation. Edges stay antialiased. */
 .dk-mi-logo{width:18px;height:18px;flex:none;display:block;object-fit:contain}
+
+/* mix names read in caps everywhere: radio list, LCD marquee */
+.dkm-list button,.dkm-scroll em{text-transform:uppercase}

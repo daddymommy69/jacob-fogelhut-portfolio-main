@@ -334,11 +334,15 @@
       return () => { on = false; };
     }, []);
 
-    /* wallpaper: the work stills, cycling slowly */
+    /* wallpaper: the 6 wallpaper slots first, then every photo in the Photos
+       app's albums (covers + photos), cycling slowly */
     const walls = useMemo(() => {
-      const a = DATA.work.map((w) => window.MediaSlots.crop(slots, "still:" + w.id)).filter(Boolean);
       const b = window.MediaSlots.collectCrops(slots, "wall:", 12);
-      return [...b, ...a];
+      const alb = [];
+      for (let a = 0; a < 8; a++) {
+        for (let p = 0; p < 10; p++) { const v = window.MediaSlots.crop(slots, "alb:" + a + ":" + p); if (v) alb.push(v); }
+      }
+      return [...b, ...alb];
     }, [slots]);
     /* two layers so each change is a 5s dissolve, not a cut: the outgoing
        still fades down while the incoming fades up. Fresh keys each tick so

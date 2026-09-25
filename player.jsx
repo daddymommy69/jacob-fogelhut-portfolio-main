@@ -346,15 +346,52 @@
   /* =======================================================================
      BOTTOM BAR — persistent, always top layer. Adapts to the active source.
      ======================================================================= */
+  /* one line-icon set for the desktop bar so every control matches */
+  const pbSvg = (d, fill) => <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill={fill ? "currentColor" : "none"} stroke={fill ? "none" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{d}</svg>;
+  const PBI = {
+    prev: pbSvg(<><path d="M17 6v12l-9-6z" fill="currentColor" stroke="none" /><path d="M7 6v12" /></>),
+    next: pbSvg(<><path d="M7 6v12l9-6z" fill="currentColor" stroke="none" /><path d="M17 6v12" /></>),
+    play: pbSvg(<path d="M9 7v10l8-5z" fill="currentColor" stroke="none" />),
+    pause: pbSvg(<path d="M10 7v10M14 7v10" />),
+    shuffle: pbSvg(<><path d="M3 7h3.5c4 0 6 10 10 10H20M3 17h3.5c4 0 6-10 10-10H20" /><path d="M17.5 4.5 20 7l-2.5 2.5M17.5 14.5 20 17l-2.5 2.5" /></>),
+    close: pbSvg(<path d="M7 7l10 10M17 7 7 17" />)
+  };
   function PlayerBar() {
     const p = usePlayer();
     const vizStyle = useTweakVal("vizStyle", "radial");
     const barStyle = useTweakVal("barStyle", "float");
     const deskKind = useVizKind();
+    const [desk, setDesk] = useState(() => location.hash === "#playground");
+    useEffect(() => { const f = () => setDesk(location.hash === "#playground"); window.addEventListener("hashchange", f); return () => window.removeEventListener("hashchange", f); }, []);
     if (!p || !p.on) return null;
     const { isMix, mix, playlist, playing, volume, time, dur, cover, accent } = p;
     const title = isMix ? (mix ? mix.title : "My Mixes") : (playlist ? playlist.name : "Playlists");
     const sub = isMix ? `${fmt(time)} / ${fmt(dur)}` : (playlist && playlist.kind === "apple" ? "Apple Music" : "Spotify") + " · press play in panel";
+    /* desktop variant: the original left half (desk visualizer, title,
+       time · My Mixes, seek) and one matching green control set on the right */
+    if (desk) return (
+      <div className={`pbar pbar-desk ${barStyle === "float" ? "is-float" : "is-full"}`} style={{ "--vc": accent }}>
+        <div className="pbar-cover">{window.DeskViz && <window.DeskViz kind={deskKind} grain={0} scan={0} transparent real={isMix && playing} analyser={p.analyser} />}</div>
+        <div className="pbar-info">
+          <div className="pbar-title">{title}</div>
+          <div className="pbar-meta mono">{sub}<span className="pbar-pl">· {isMix ? "My Mixes" : "Playlists"}</span></div>
+          {isMix &&
+          <input className="pbar-seek" type="range" min={0} max={dur || 0} step={0.1} value={Math.min(time, dur || 0)}
+            onChange={(e) => p.seek(+e.target.value)} style={{ "--pct": (dur ? time / dur * 100 : 0) + "%" }} aria-label="Seek" />}
+        </div>
+        <div className="pbar-right">
+          <div className="pbar-ctrls">
+            <button className="pbd-ic" title={isMix ? "Previous mix" : "Previous playlist"} onClick={p.prev}>{PBI.prev}</button>
+            <button className="pbd-play" title={playing ? "Pause" : "Play"} onClick={p.togglePlay} disabled={!isMix}>{playing ? PBI.pause : PBI.play}</button>
+            <button className="pbd-ic" title={isMix ? "Next mix" : "Next playlist"} onClick={p.next}>{PBI.next}</button>
+          </div>
+          <div className="pbar-aux">
+            <button className="pbd-ic" title="Shuffle" onClick={p.shuffle}>{PBI.shuffle}</button>
+            {isMix && <input className="pbar-vol" type="range" min={0} max={1} step={0.02} value={volume} onChange={(e) => p.changeVolume(+e.target.value)} title="Volume" aria-label="Volume" />}
+            <button className="pbd-ic pb-x" title="Close radio" onClick={p.closeRadio}>{PBI.close}</button>
+          </div>
+        </div>
+      </div>);
     return (
       <div className={`pbar ${barStyle === "float" ? "is-float" : "is-full"}`} style={{ "--vc": accent }}>
         {/* radio stations have no album art: run the desk visualizer small */}

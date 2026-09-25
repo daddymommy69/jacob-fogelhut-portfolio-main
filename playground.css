@@ -301,6 +301,8 @@
    Typed input is left alone, and so is the marker face — that font is
    hand-drawn all-caps by design, so forcing it changes nothing but intent. ---- */
 .pg-body.pg-lower, .pg-body.pg-lower *:not(input):not(textarea) { text-transform: lowercase !important; }
+/* mix names stay in caps even with lowercase on */
+.pg-body.pg-lower .pbar-title, .pg-body.pg-lower .dkm-list button, .pg-body.pg-lower .dkm-scroll em { text-transform: uppercase !important; }
 .pg-body.pg-lower .dk-ic[data-app="font"] span,
 .pg-body.pg-lower .dk-ic[data-app="guestbook"] span,
 .pg-body.pg-lower .dk-ic[data-app="letter"] span,
