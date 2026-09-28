@@ -54,12 +54,12 @@ button { font-family: inherit; cursor: pointer; }
    ===================================================================== */
 .site-head {
   position: fixed; top: 0; left: 0; right: 0; z-index: 50;
-  backdrop-filter: blur(14px) saturate(140%);
-  background: color-mix(in srgb, var(--bg) 72%, transparent);
+  -webkit-backdrop-filter: blur(var(--head-blur, 0px)); backdrop-filter: blur(var(--head-blur, 0px));
+  background: color-mix(in srgb, var(--bg) var(--head-tint, 0%), transparent);
   border-bottom: 1px solid transparent;
   transition: border-color .4s var(--ease), background .4s;
 }
-.site-head.stuck { border-bottom-color: var(--line); }
+.site-head.stuck { border-bottom-color: transparent; }
 .head-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
 .head-brand {
   font-family: var(--font-marker); font-size: 22px; font-weight: 400; letter-spacing: .01em;
@@ -70,9 +70,14 @@ button { font-family: inherit; cursor: pointer; }
 .head-nav { display: flex; align-items: center; gap: clamp(16px, 2.6vw, 30px); }
 .head-nav a, .theme-btn {
   font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase;
-  color: var(--muted); background: none; border: 0; transition: color .25s var(--ease);
+  color: #fff; background: none; border: 0; transition: color .25s var(--ease);
+  text-shadow: 0 1px 8px rgba(0,0,0,.35);
 }
-.head-nav a:hover, .theme-btn:hover { color: var(--text); }
+.head-nav a:hover, .theme-btn:hover { color: var(--muted); }
+.site-head .head-brand { color: #fff; text-shadow: 0 1px 10px rgba(0,0,0,.35); transition: opacity .4s var(--ease), transform .4s var(--ease), color .25s var(--ease); }
+.site-head .head-brand:hover { color: var(--muted); }
+[data-theme="light"] .site-head:not(.on-vid) .head-nav a, [data-theme="light"] .site-head:not(.on-vid) .theme-btn, [data-theme="light"] .site-head:not(.on-vid) .head-brand { color: #111; text-shadow: none; }
+[data-theme="light"] .site-head:not(.on-vid) .head-nav a:hover, [data-theme="light"] .site-head:not(.on-vid) .theme-btn:hover, [data-theme="light"] .site-head:not(.on-vid) .head-brand:hover { color: var(--muted); }
 .theme-btn { display: inline-flex; align-items: center; gap: 7px; }
 .head-nav a.nav-exe { text-transform: none; letter-spacing: .02em; }
 @media (max-width: 560px) { .head-nav { gap: 14px; } .head-nav a, .theme-btn { padding: 13px 0; margin: -13px 0; } .theme-btn { font-size: 0; gap: 0; padding: 13px 4px; } .theme-btn .dot { width: 11px; height: 11px; } .head-brand { min-width: 0; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } }

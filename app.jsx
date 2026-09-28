@@ -309,15 +309,22 @@ function useRowHover(item, enabled) {
    ===================================================================== */
 function Header({ theme, cycleTheme }) {
   const [stuck, setStuck] = useState(false);
+  const [onVid, setOnVid] = useState(false);
   useEffect(() => {
-    const onScroll = () => setStuck(window.scrollY > 220);
+    const onScroll = () => {
+      setStuck(window.scrollY > 220);
+      // white text only while the bar sits over the hero video
+      const v = document.querySelector(".hero.has-vid .hero-vid");
+      setOnVid(!!v && v.getBoundingClientRect().bottom > 60);
+    };
+    const t = setInterval(onScroll, 1000);
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {window.removeEventListener("scroll", onScroll);clearInterval(t);};
   }, []);
   const tLabel = theme === "auto" ? "Auto" : theme === "dark" ? "Dark" : "Light";
   return (
-    <header className={`site-head ${stuck ? "stuck" : ""}`}>
+    <header className={`site-head ${stuck ? "stuck" : ""} ${onVid ? "on-vid" : ""}`}>
       <div className="wrap head-inner">
         <a className="head-brand" href="#top">{DATA.name}</a>
         <nav className="head-nav">
@@ -1267,6 +1274,8 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "heroFadeAt": 55,
   "heroExtend": 0,
   "heroFadeColor": "page",
+  "headTint": 0,
+  "headBlur": 0,
   "ppHeadVid": true,
   "vizStyle": "radial",
   "vizGrain": 0.2,
@@ -1375,6 +1384,7 @@ function App() {
   const effTheme = t.theme === "auto" ? sysDark ? "dark" : "light" : t.theme;
   useEffect(() => {document.documentElement.setAttribute("data-theme", effTheme);}, [effTheme]);
   useEffect(() => {document.documentElement.style.setProperty("--accent", t.accent);}, [t.accent]);
+  useEffect(() => {document.documentElement.style.setProperty("--head-tint", (t.headTint ?? 0) + "%");document.documentElement.style.setProperty("--head-blur", (t.headBlur ?? 0) + "px");}, [t.headTint, t.headBlur]);
 
   const cycleTheme = () => {
     const order = ["light", "dark", "auto"];
@@ -1453,6 +1463,11 @@ function App() {
         onChange={(v) => setTweak("theme", v)} />
         <TweakColor label="Accent" value={t.accent} options={ACCENTS}
         onChange={(v) => setTweak("accent", v)} />
+
+        <TweakSlider label="Top bar tint" value={t.headTint} min={0} max={100} step={1} unit="%"
+        onChange={(v) => setTweak("headTint", v)} />
+        <TweakSlider label="Top bar blur" value={t.headBlur} min={0} max={30} step={1} unit="px"
+        onChange={(v) => setTweak("headBlur", v)} />
 
         <TweakSection label="Motion" />
         <TweakSlider label="Intensity" value={t.motion} min={0} max={100} step={5}
