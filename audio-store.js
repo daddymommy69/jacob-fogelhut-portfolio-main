@@ -11,7 +11,7 @@
    way, it just skips the in-browser upload step.
 
    Storage:
-     .audio-uploads.index.state.json   { [id]: {title, size, addedAt} }
+     audio-uploads-index.state.json   { [id]: {title, size, addedAt} }
      upload-audio-<id>.state.json      { u: "data:audio/...;base64,..." }
 
    Exposes window.AudioStore: load/add/remove/list/urlFor/subscribe/ready.
@@ -19,7 +19,7 @@
    same convention as every other store in this project.
    ========================================================================= */
 (() => {
-  const INDEX_FILE = '.audio-uploads.index.state.json';
+  const INDEX_FILE = 'audio-uploads-index.state.json';
   const fileFor = (id) => 'upload-audio-' + id + '.state.json';
   const MAX_BYTES = 75 * 1024 * 1024; // 75MB
   const ACCEPT = ['audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/ogg', 'audio/x-m4a', 'audio/aac', 'audio/webm'];

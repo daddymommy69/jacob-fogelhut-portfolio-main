@@ -2,7 +2,7 @@
    slots.js — shared media-slot reader
    Storage is SHARDED: the Media Manager (<image-slot>) writes each photo into
    its OWN file `slot-<id>.state.json`, plus a tiny index
-   `.image-slots.index.state.json` holding only crop {s,x,y} + which ids are
+   `image-slots-index.state.json` holding only crop {s,x,y} + which ids are
    filled. This removes the single-file size ceiling, so the library can hold
    many high-res photos. The live site + Playground read through this helper,
    which rebuilds the same flat {id -> {u,s,x,y}} map the consumers expect.
@@ -17,7 +17,7 @@
      cutout:computer|radio  desk object cutouts
    ========================================================================= */
 window.MediaSlots = (function () {
-  const INDEX_FILE = ".image-slots.index.state.json";
+  const INDEX_FILE = "image-slots-index.state.json";
   const fileFor = (id) =>
   "slot-" + String(id).replace(/[^a-z0-9]+/gi, "-").toLowerCase() + ".state.json";
   let cache = null, p = null;

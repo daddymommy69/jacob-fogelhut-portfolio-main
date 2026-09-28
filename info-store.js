@@ -21,7 +21,7 @@
   // One fetch per id, shared. A project with three video slots was requesting
   // the same sidecar three times and logging three identical 404s.
   const vidFetches = {};
-  const fetchVidFile = (id) => vidFetches[id] || (vidFetches[id] =
+  const fetchVidFile = (id) => vidFetches[id] || (vidFetches[id] = !window.omelette ? Promise.resolve(null) :
     fetch(vidFile(id)).then((r) => (r.ok ? r.json() : null)).catch(() => null));
   // Dropped clips are stored as Blobs in IndexedDB (below), NOT as base64 in a
   // .state.json file — a big clip's data URL would blow past the host write

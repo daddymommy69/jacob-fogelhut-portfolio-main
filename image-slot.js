@@ -49,7 +49,7 @@
 /* END USAGE */
 
 (() => {
-  const STATE_FILE = '.image-slots.index.state.json';
+  const STATE_FILE = 'image-slots-index.state.json';
   // Per-photo shard storage: each photo lives in its OWN *.state.json file so
   // the library is never capped by one file's size ceiling. This index holds
   // only crop {s,x,y} + which ids are filled; heavy bytes live in slot-<id>.
