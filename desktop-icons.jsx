@@ -32,8 +32,9 @@
   const Headphones = Bmp("media/icon-ipod.png");
   const Mail = ({ s }) => <S s={s}><rect x="5" y="12" width="38" height="25" fill="#fff" stroke="#5b6470" strokeWidth="1.5"/><path d="M5 13l19 14 19-14" fill="none" stroke="#c9440f" strokeWidth="2"/></S>;
   const Link = ({ s }) => <S s={s}><circle cx="24" cy="24" r="17" fill="#2f7fd1" stroke="#123f8a" strokeWidth="1.5"/><path d="M16 24h16M24 16v16" stroke="#fff" strokeWidth="2.4"/></S>;
-  const Power = ({ s }) => <S s={s}><circle cx="24" cy="24" r="17" fill="#c9440f" stroke="#7d2708" strokeWidth="1.5"/><path d="M24 13v13" stroke="#fff" strokeWidth="3.4"/><path d="M15 21a11 11 0 1 0 18 0" fill="none" stroke="#fff" strokeWidth="3"/></S>;
-  const Home = ({ s }) => <S s={s}><path d="M24 8 6 24h6v16h10V29h4v11h10V24h6z" fill="#f2c24c" stroke="#8a6410" strokeWidth="1.5"/></S>;
+  const Power = Bmp("media/icon-power.png");
+  const Home = Bmp("media/icon-home.png");
+  const Speaker = Bmp("media/icon-speaker.png"), SpeakerOff = Bmp("media/icon-speaker-off.png"), Computer = Bmp("media/icon-computer.png");
 
   /* folder carrying a big badge of what's inside; the badge breaks past the
      folder's edge on purpose so the three folders read apart at a glance */
@@ -48,5 +49,5 @@
     close: <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4.5 4.5 11.5 11.5M11.5 4.5 4.5 11.5"/></svg>
   };
 
-  window.DeskIcons = { FolderDesign, FolderDecks, FolderWeb, Folder, Web, Radio, Headphones, Photos, Paint, Deck, Book, Letter, Font, Bin, Note, Img, Mail, Link, Power, Home, Mark };
+  window.DeskIcons = { FolderDesign, FolderDecks, FolderWeb, Folder, Web, Radio, Headphones, Photos, Paint, Deck, Book, Letter, Font, Bin, Note, Img, Mail, Link, Power, Home, Speaker, SpeakerOff, Computer, Mark };
 })();

@@ -172,10 +172,10 @@
         {show && bStyle && <div className="md-bub" key={show.id} style={bStyle}><div className="md-bal">{show.text}</div></div>}
         <div className="md-bar">
           <span className="md-start"><em><i></i><i></i><i></i><i></i></em>start</span>
-          <span className="md-task">{I.Home ? <I.Home s={14} /> : null}<span>jacob_desktop.exe</span></span>
+          <span className="md-task">{I.Computer ? <I.Computer s={15} /> : null}<span>jacob_desktop.exe</span></span>
           <span className="md-cta">click to come in →</span>
           <span className="md-tray">
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6h3l4-3v10l-4-3H2z" fill="#fff" /><path d="M11 5.5c1 .8 1 4.2 0 5M12.8 4c1.8 1.6 1.8 6.4 0 8" fill="none" stroke="#fff" strokeWidth="1.2" /></svg>
+            {I.Speaker ? <I.Speaker s={15} /> : null}
             {clock}
           </span>
         </div>

@@ -510,7 +510,7 @@
           </div>
           <div className="dk-tray">
             <span className="name">JF</span>
-            <button onClick={() => setMini(true)} aria-label="Radio">{player && player.playing ? "🔊" : "🔈"}</button>
+            <button className="dk-tray-ic" onClick={() => setMini(true)} aria-label="Radio">{player && player.playing ? <I.Speaker s={16} /> : <I.SpeakerOff s={16} />}</button>
             {player && player.on && <span className="np">{player.isMix ? (player.mix && player.mix.title) : (player.playlist && player.playlist.name)}</span>}
             <span>{clock.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</span>
           </div>

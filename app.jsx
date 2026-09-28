@@ -1210,12 +1210,12 @@ function Teaser({ style }) {
   return (
     <Reveal>
       <section className={`wrap teaser ${desk ? "teaser-top" : ""}`}>
-        <div className="teaser-mono mono">Self-directed</div>
+        {DATA.teaserLabel != null ? DATA.teaserLabel.trim() && <div className="teaser-mono mono">{DATA.teaserLabel}</div> : <div className="teaser-mono mono">Self-directed</div>}
         {desk ? <window.MiniDesk /> :
         <a className={`teaser-link ${collage ? "is-collage" : "is-window"}`} href="#playground">
           {collage ? <TeaserCollage photos={photos} /> : <TeaserWindow />}
         </a>}
-        <div className="teaser-hint">{collage ? "Snapshots from the desktop — step inside →" : "A web app, mixes, photos and a font, on a desktop you can click around →"}</div>
+        <div className="teaser-hint">{collage ? "Snapshots from the desktop — step inside →" : DATA.teaserHint != null ? DATA.teaserHint : "A web app, mixes, photos and a font, on a desktop you can click around →"}</div>
       </section>
     </Reveal>);
 }

@@ -1084,7 +1084,7 @@ textarea.medit-input { resize: vertical; line-height: 1.5; }
 .md-ic svg{filter:drop-shadow(1px 1px 0 rgba(0,0,0,.55));image-rendering:pixelated}
 .md-ic span{font-family:var(--font-display);font-size:12.5px;line-height:1.25;color:#fff;text-align:center;text-shadow:1px 1px 0 rgba(0,0,0,.9)}
 .md-ic:hover{background:rgba(90,150,230,.35);outline:1px dotted rgba(255,255,255,.6)}
-.md-kr{position:absolute;z-index:4;cursor:grab}
+.md-kr{position:absolute;z-index:4;cursor:inherit}
 .md-kr svg{display:block;filter:drop-shadow(0 3px 3px rgba(0,0,0,.35))}
 .md-bub{position:absolute;z-index:6;pointer-events:none;display:flex;justify-content:center}
 .md-bal{background:#fff;color:#123f8a;border:2px solid #123f8a;border-radius:14px;padding:8px 12px;font-family:var(--font-body);font-size:14.5px;line-height:1.35;box-shadow:3px 3px 0 rgba(18,63,138,.35);text-wrap:pretty;animation:mdPop .18s steps(3)}
@@ -1103,3 +1103,5 @@ textarea.medit-input { resize: vertical; line-height: 1.5; }
 @media (max-width:560px){.md-icons{flex-direction:row;gap:0}.md-ic{width:74px}.md-task{display:none}}
 .pp-headvid{position:absolute;z-index:-2;left:-20%;right:-20%;top:-14vh;height:min(80vh,760px);pointer-events:none;overflow:hidden;-webkit-mask-image:radial-gradient(62% 60% at 50% 40%,#000 30%,transparent 100%);mask-image:radial-gradient(62% 60% at 50% 40%,#000 30%,transparent 100%)}
 .pp-headvid video{width:100%;height:100%;object-fit:cover;filter:blur(42px) saturate(1.25);opacity:.8;transform:scale(1.12)}
+
+.md-task svg,.md-tray svg{image-rendering:auto;filter:drop-shadow(1px 1px 0 rgba(0,0,40,.35))}

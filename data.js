@@ -46,6 +46,11 @@ window.PORTFOLIO_DATA = {
      under ~8MB keeps it fast. On/off + blur amount are in Tweaks → Hero. */
   heroVideo: "https://pub-0c4f005a66f14c8394bc1abf2fcf0d25.r2.dev/assets/VIDEOS/MAIN%20PAGE%20VIDEO.MOV",
 
+  // Desktop entrance (mini desktop under the hero) — small label above it,
+  // and the line under it.
+  teaserLabel: "",
+  teaserHint: "CLICK ABOVE TO SEE MORE OF THE SITE. COME MEET KRINKY AND SEE MORE PROJECTS",
+
   // Hero role line — the fixed claim under the name.
   tagline: "Multimedia creative | I make things and help make things",
 

@@ -332,3 +332,5 @@ body:has(.dk) .pbar.is-full{bottom:38px}
 .gb-dimg{display:block;margin:4px 9px 10px;width:100%;max-width:300px;border:1px solid #c5d6ec;image-rendering:auto}
 .gb-crew .gb-who{background:#fff4e8}
 @media (max-width:520px){.gb-post{grid-template-columns:1fr}.gb-who{border-right:0;border-bottom:1px solid #c5d6ec;flex-direction:row;flex-wrap:wrap;gap:8px}}
+
+.dk-tray-ic{display:inline-grid;place-items:center}.dk-tray-ic svg{width:16px;height:16px;image-rendering:auto}
