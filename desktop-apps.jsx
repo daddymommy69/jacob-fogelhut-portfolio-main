@@ -353,7 +353,7 @@
       photos: { title: "Photos", Icon: I.Photos, tint: "#6b4a70", body: () => <PhotosApp />, size: { w: 520, h: 380 }, min: { w: 400, h: 320 } },
       paint: { title: "Paint", Icon: I.Paint, tint: "#9b5e39", body: () => <PaintApp />, size: { w: 520, h: 400 }, min: { w: 420, h: 300 } },
       decks: { title: "Pitch Decks", Icon: I.FolderDecks, tint: "#3c6b68", body: () => <DecksApp />, size: { w: 460, h: 300 }, min: { w: 340, h: 220 } },
-      guestbook: { title: "Guestbook", Icon: I.Book, tint: "#66743c", body: () => <GuestbookApp />, size: { w: 470, h: 400 }, min: { w: 340, h: 300 } },
+      guestbook: { title: "Guestbook", Icon: I.Book, tint: "#66743c", body: () => React.createElement(window.GuestbookApp || GuestbookApp), size: { w: 640, h: 560 }, min: { w: 380, h: 340 }, maxable: true, bleed: true },
       letter: { title: "Write me a letter", Icon: I.Letter, tint: "#8a6a2f", body: () => <LetterApp />, size: { w: 440, h: 400 }, min: { w: 360, h: 320 } },
       font: { title: "The font", Icon: I.Font, tint: "#7a4a5e", bleed: true, body: () => <FontApp />, size: { w: 660, h: 620 }, min: { w: 400, h: 400 } },
       trash: { title: "Recycle Bin", Icon: I.Bin, tint: "#555a61", body: () => <TrashApp />, size: { w: 400, h: 280 }, min: { w: 280, h: 200 } },

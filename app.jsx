@@ -335,7 +335,7 @@ function Header({ theme, cycleTheme }) {
 /* =====================================================================
    HERO
    ===================================================================== */
-function Hero({ line }) {
+function Hero({ line, video, blur, wash, fadeAt, extend, fadeColor }) {
   const [idx, setIdx] = useState(0);
   const cycling = line === "__cycle";
   useEffect(() => {
@@ -345,7 +345,12 @@ function Hero({ line }) {
   }, [cycling]);
   const role = cycling ? DATA.taglines[idx] : line === "__fixed" || !line ? DATA.tagline : line;
   return (
-    <section className="wrap hero" id="top">
+    <section className={`wrap hero ${video && DATA.heroVideo ? "has-vid" : ""}`} id="top"
+    style={{ "--hv-wash": (wash == null ? 55 : wash) + "%", "--hv-fade-at": (fadeAt == null ? 55 : fadeAt) + "%", "--hv-extend": (extend || 0) + "px", "--hv-fc": fadeColor === "black" ? "#000" : fadeColor === "none" ? "transparent" : "var(--bg)" }}>
+      {video && DATA.heroVideo &&
+      <div className="hero-vid" aria-hidden="true">
+          <video src={DATA.heroVideo} autoPlay muted loop playsInline style={{ filter: `blur(${blur || 0}px)` }} />
+        </div>}
       <h1 className="hero-h1">Jacob<br />Fogelhut</h1>
       <div className="hero-role" key={role}>{window.linkify ? window.linkify(role) : role}</div>
     </section>);
@@ -613,7 +618,7 @@ function MainPlayer({ item, onFullscreen, paused, resumeAt }) {
   return null;
 }
 
-function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, onRequestClose }) {
+function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, headVid, onRequestClose }) {
   const slots = React.useContext(SlotsCtx);
   const titles = window.titleStills(slots, item.id);
   const still = REFRAME(titles[0] || window.MediaSlots.crop(slots, "still:" + item.id) || item.still);
@@ -822,6 +827,11 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, onRequ
   const embedItems = combined.filter((it) => it.type === "instagram" || it.type === "spotify" || it.type === "youtube");
   const activeItem = combined[Math.min(activeIdx, combined.length - 1)];
   const activeIsEmbed = activeItem && (activeItem.type === "instagram" || activeItem.type === "spotify" || activeItem.type === "youtube");
+  // blurred cover clip behind the header (file/mp4 covers only — YouTube/IG can't sit in a <video>)
+  const headVidCv = window.ProjInfo && window.ProjInfo.coverVid(item.id);
+  const headVidSrc = !headVid ? null :
+  headVidCv && ["drop", "file", "mp4"].includes(headVidCv.type) ? window.ProjInfo.videoUrlFor(item.id, headVidCv) :
+  m.kind === "video" && !m.pending && /\.(mp4|webm|mov)(\?|$)/i.test(m.src || "") ? m.src : null;
 
   return (
     <div className={`pp pp-text-${text || "gradient"} ${blendMedia ? "pp-blend" : ""}`} ref={rootRef} style={{ "--pp-blur": (blur || 0) + "px", "--pp-dim": (dim || 0) / 100 }}>
@@ -844,6 +854,11 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, onRequ
       <div className="pp-scroll" ref={scrollRef} onScroll={onScroll} onClick={bgClick}>
         <div className="pp-deadzone" />
         <article className="pp-card" onClick={(e) => e.stopPropagation()}>
+          {headVidSrc &&
+          <div className="pp-headvid" aria-hidden="true">
+              <video src={headVidSrc} autoPlay muted loop playsInline
+            onLoadedMetadata={(e) => {if (headVidCv && headVidCv.in) e.currentTarget.currentTime = headVidCv.in;}} />
+            </div>}
           <div className="pp-eyebrow mono">{item.client}</div>
           <h2 className="pp-title" style={{ fontFamily: "JacobMarker", textAlign: item.titleAlign }}>{r.title}</h2>
           <div className="pp-role" style={{ fontSize: item.roleSize, textAlign: item.roleAlign }}>{window.linkify ? window.linkify(r.role) : r.role}</div>
@@ -1191,13 +1206,15 @@ function Teaser({ style }) {
     return out.filter((p) => p && !seen.has(p.u) && seen.add(p.u)).slice(0, 5);
   }, [slots]);
   const collage = style === "collage";
+  const desk = style !== "window" && !collage && window.MiniDesk;
   return (
     <Reveal>
-      <section className="wrap teaser">
+      <section className={`wrap teaser ${desk ? "teaser-top" : ""}`}>
         <div className="teaser-mono mono">Self-directed</div>
+        {desk ? <window.MiniDesk /> :
         <a className={`teaser-link ${collage ? "is-collage" : "is-window"}`} href="#playground">
           {collage ? <TeaserCollage photos={photos} /> : <TeaserWindow />}
-        </a>
+        </a>}
         <div className="teaser-hint">{collage ? "Snapshots from the desktop — step inside →" : "A web app, mixes, photos and a font, on a desktop you can click around →"}</div>
       </section>
     </Reveal>);
@@ -1243,7 +1260,14 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "inlineMulti": false,
   "intro": "photoCycle",
   "introSource": "intro",
-  "teaserStyle": "window",
+  "teaserStyle": "desk",
+  "heroVideo": true,
+  "heroBlur": 8,
+  "heroWash": 55,
+  "heroFadeAt": 55,
+  "heroExtend": 0,
+  "heroFadeColor": "page",
+  "ppHeadVid": true,
   "vizStyle": "radial",
   "vizGrain": 0.2,
   "vizScan": 0.2,
@@ -1407,16 +1431,16 @@ function App() {
 
       <div className={`site ${showBoot || showIntro ? "pre" : "go"} ${openFull ? "site-behind" : ""}`}>
         <Header theme={t.theme} cycleTheme={cycleTheme} />
-        <Hero line={t.heroLine} />
-        <Work activeTag={tagView} listMode={t.listMode} openMode={t.openMode} feel={t.inlineFeel} cursorFollow={showCursor} rowHover={t.rowHover} multiOpen={t.inlineMulti} onOpenFull={openProject} onEditMedia={setEditMedia} />
+        <Hero line={t.heroLine} video={t.heroVideo} blur={t.heroBlur} wash={t.heroWash} fadeAt={t.heroFadeAt} extend={t.heroExtend} fadeColor={t.heroFadeColor} />
         <Teaser style={t.teaserStyle} />
+        <Work activeTag={tagView} listMode={t.listMode} openMode={t.openMode} feel={t.inlineFeel} cursorFollow={showCursor} rowHover={t.rowHover} multiOpen={t.inlineMulti} onOpenFull={openProject} onEditMedia={setEditMedia} />
         <Contact />
         <Footer />
       </div>
 
       {openFull &&
       <ProjectPage key={openFull.item.id} item={openFull.item} fromRect={openFull.fromRect}
-      anim={t.openAnim} blur={t.bgBlur} dim={t.bgDim} text={t.ppText} blendMedia={t.ppBlendMedia} onRequestClose={requestClose} />}
+      anim={t.openAnim} blur={t.bgBlur} dim={t.bgDim} text={t.ppText} blendMedia={t.ppBlendMedia} headVid={t.ppHeadVid} onRequestClose={requestClose} />}
 
       {tagView && <TagView tag={tagView} onOpen={openFromTag} onClose={() => setTagView(null)} />}
 
@@ -1456,6 +1480,18 @@ function App() {
         <TweakSelect label="Role line" value={t.heroLine}
         options={[{ value: "__fixed", label: "Fixed line" }, { value: "__cycle", label: "Auto (cycle all)" }, ...DATA.taglines.map((x) => ({ value: x, label: x }))]}
         onChange={(v) => setTweak("heroLine", v)} />
+        <TweakToggle label="Montage video behind name" value={t.heroVideo}
+        onChange={(v) => setTweak("heroVideo", v)} />
+        <TweakSlider label="Montage blur" value={t.heroBlur} min={0} max={30} step={1}
+        onChange={(v) => setTweak("heroBlur", v)} />
+        <TweakSlider label="Montage wash (text contrast)" value={t.heroWash} min={0} max={90} step={1} unit="%"
+        onChange={(v) => setTweak("heroWash", v)} />
+        <TweakSlider label="Fade starts at" value={t.heroFadeAt} min={0} max={100} step={1} unit="%"
+        onChange={(v) => setTweak("heroFadeAt", v)} />
+        <TweakSlider label="Extend under desktop" value={t.heroExtend} min={0} max={600} step={10} unit="px"
+        onChange={(v) => setTweak("heroExtend", v)} />
+        <TweakRadio label="Fade to" value={t.heroFadeColor} options={[{ value: "page", label: "Page" }, { value: "black", label: "Black" }, { value: "none", label: "None" }]}
+        onChange={(v) => setTweak("heroFadeColor", v)} />
 
         <TweakSection label="Work layout" />
         <TweakSelect label="Row hover" value={t.rowHover}
@@ -1493,10 +1529,12 @@ function App() {
         onChange={(v) => setTweak("bgBlur", v)} />
         <TweakSlider label="Background dim" value={t.bgDim} min={0} max={80} step={2}
         onChange={(v) => setTweak("bgDim", v)} />
+        <TweakToggle label="Blurred cover video behind header" value={t.ppHeadVid}
+        onChange={(v) => setTweak("ppHeadVid", v)} />
 
         <TweakSection label="Playground teaser" />
         <TweakRadio label="Style" value={t.teaserStyle}
-        options={[{ value: "window", label: "Browser window" }, { value: "collage", label: "Polaroid collage" }]}
+        options={[{ value: "desk", label: "Live desktop" }, { value: "window", label: "Window" }, { value: "collage", label: "Collage" }]}
         onChange={(v) => setTweak("teaserStyle", v)} />
 
         <TweakSection label="Radio" />

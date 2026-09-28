@@ -104,12 +104,26 @@
       window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
     };
     const Icon = app.Icon;
+    const [maxed, setMaxed] = useState(false);
+    const prevBox = useRef(null);
+    const toggleMax = () => {
+      const el = ref.current, host = el && el.parentElement; if (!host) return;
+      if (!maxed) {
+        prevBox.current = { l: el.style.left, t: el.style.top, w: el.style.width, h: el.style.height };
+        Object.assign(el.style, { left: "0px", top: "0px", width: host.clientWidth + "px", height: host.clientHeight + "px" });
+      } else if (prevBox.current) {
+        const p = prevBox.current;
+        Object.assign(el.style, { left: p.l, top: p.t, width: p.w, height: p.h });
+      }
+      setMaxed(!maxed); focus(id);
+    };
     return (
       <div className="dkw" data-app={id} ref={ref} style={{ zIndex: z, display: minimized ? "none" : "flex", "--wc": app.tint || "#41669a" }} onPointerDown={() => focus(id)}>
         <div className="dkw-bar" onPointerDown={onDown}>
           <span className="dkw-ic"><Icon s={16} /></span><b>{app.title}</b>
           <span className="dkw-btns">
             <button onClick={() => min(id)} aria-label="Minimize">{I.Mark.min}</button>
+            {app.maxable && <button onClick={toggleMax} aria-label={maxed ? "Restore" : "Maximize"}><svg viewBox="0 0 12 12" aria-hidden="true">{maxed ? <g fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="1.5" y="4" width="6.5" height="6.5" /><path d="M4 4V1.5h6.5V8H8" /></g> : <rect x="1.5" y="1.5" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="1.8" />}</svg></button>}
             <button className="cl" onClick={() => close(id)} aria-label="Close">{I.Mark.close}</button>
           </span>
         </div>
@@ -402,6 +416,15 @@
     const close = (key) => setWins((w) => w.filter((x) => x.key !== key));
     const min = (key) => setWins((w) => w.map((x) => x.key === key ? { ...x, minimized: true } : x));
     const exit = () => { location.hash = ""; };
+    /* deep link from the main-site mini desktop: open that app once booted */
+    useEffect(() => {
+      if (!booted) return;
+      let a = null;
+      try { a = sessionStorage.getItem("jf-desk-open"); sessionStorage.removeItem("jf-desk-open"); } catch (e) {}
+      if (!a) return;
+      const t = setTimeout(() => { if (a === "radio") setMini(true); else open(a); }, 400);
+      return () => clearTimeout(t);
+    }, [booted]);
 
     /* Clicking a desktop icon a second time puts the app away: front window
        minimizes, a buried one comes forward first, the radio panel closes

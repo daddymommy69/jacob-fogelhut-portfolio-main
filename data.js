@@ -40,6 +40,12 @@ window.PORTFOLIO_DATA = {
     null, null, null, null, null, null, null, null, null
   ],
 
+  /* HERO MONTAGE — a video that plays blurred behind the name and hero line.
+     Paste a hosted .mp4 URL (R2, like the project clips) or a path in /media,
+     e.g. "media/hero-montage.mp4". Leave "" for none. Short (10–30s) and
+     under ~8MB keeps it fast. On/off + blur amount are in Tweaks → Hero. */
+  heroVideo: "https://pub-0c4f005a66f14c8394bc1abf2fcf0d25.r2.dev/assets/VIDEOS/MAIN%20PAGE%20VIDEO.MOV",
+
   // Hero role line — the fixed claim under the name.
   tagline: "Multimedia creative | I make things and help make things",
 
@@ -267,6 +273,69 @@ window.PORTFOLIO_DATA = {
   /* ----------------------------------------------------------------------
      PLAYGROUND — a little retro desktop.
      ---------------------------------------------------------------------- */
+  /* KRINKY CREW — the three Krinkys on the main-site mini desktop. Ed, Edd n
+     Eddy rules: all dumb, each dumb differently.
+     disc = the schemer (thinks he runs the place)
+     cursor = the big dumb one (loves everything)
+     player = the worrier (overly technical, anxious, polite)
+     lines: said on their own · click: when you poke them
+     convos: little scenes, each line is [who, text] */
+  krinkyCrew: {
+    disc: {
+      lines: [
+        "come inside. first visit's free. second one's also free. i'm bad at business.",
+        "welcome to krinkyland. population: us three and whoever clicks.",
+        "i'm the ceo of this desktop. nobody voted.",
+        "click the box. i get a commission. (i do not get a commission)",
+        "there's a radio in there. i didn't steal it. probably.",
+        "vip entry is the same as regular entry but i say 'vip' first."
+      ],
+      click: ["hey. hands off the merch.", "that tickled my disc.", "you break it you bought it. it's free."]
+    },
+    cursor: {
+      lines: [
+        "i clicked myself once. i'm still clicking.",
+        "what if the desktop is inside US",
+        "i point at stuff. that's my whole job. i love my job.",
+        "hi. hello. hi.",
+        "i ate a pixel. it tasted like blue.",
+        "is this the inside or the outside"
+      ],
+      click: ["WHEE", "again again again", "i felt that in my arrow"]
+    },
+    player: {
+      lines: [
+        "technically this box is a hyperlink. please use it responsibly.",
+        "i made a playlist for when people don't click. it's very sad.",
+        "has anyone seen my headphones. oh. i am the headphones.",
+        "i've calculated a 94% chance you'll like it in there.",
+        "please don't tell jacob i ate the guestbook. it was mostly paper.",
+        "i'm not nervous. my buffer is just loading."
+      ],
+      click: ["please don't shake me, i skip.", "ow. my cache.", "that was unexpected but ok."]
+    },
+    convos: [
+      [["disc", "ok team, look busy. someone's watching."], ["cursor", "hi someone"], ["player", "that's not looking busy, that's waving."]],
+      [["cursor", "what's a desktop"], ["disc", "it's where the desk lives"], ["player", "that is not correct in any way."]],
+      [["player", "should we tell them there's snacks inside?"], ["disc", "there are no snacks."], ["cursor", "i have one snack. it's a pixel."]],
+      [["disc", "come visit us in krinkyland"], ["cursor", "we have a radio"], ["player", "and a guestbook. please sign it. i'm lonely."]],
+      [["cursor", "i'm gonna click the box"], ["disc", "you can't. you ARE a cursor."], ["cursor", "i clicked myself again"]],
+      [["player", "whose name is krinky"], ["disc", "me"], ["cursor", "me"], ["player", "...also me. this is a problem."]]
+    ]
+  },
+
+  /* GUESTBOOK — endpoint is the Google Apps Script web-app URL (see
+     GUESTBOOK-SETUP.md). Empty = posts save on the visitor's device only.
+     krinkyPosts are fixed and always sit at the bottom. */
+  guestbook: {
+    endpoint: "https://script.google.com/macros/s/AKfycbwweARusdE4wMmWhczrSCsMmiKznMiu4pdqA8D5rTzrb7NAeiG0Ixa-XkoFUIRb5GuhLg/exec",
+    krinkyPosts: [
+      { n: "krinky", l: "the desktop (i own it)", t: "2026-09-03T15:12:00", m: "first! sign under me. it's the law now." },
+      { n: "krinky", l: "top left corner", t: "2026-09-02T02:47:00", m: "hi jacob its me i found the keyboard :D" },
+      { n: "also krinky", l: "inside the radio", t: "2026-09-01T09:05:00", m: "lovely guestbook. i reviewed it. 5 stars. please be nice in here <3" }
+    ]
+  },
+
   playground: {
     // About / readme.txt — verbatim from you.
     about: "just a guy living life.\ni have ideas and i try to make them real\nwhat are your dreams\n\nlive laugh love",
