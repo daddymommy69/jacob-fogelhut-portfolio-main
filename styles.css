@@ -1032,6 +1032,7 @@ textarea.medit-input { resize: vertical; line-height: 1.5; }
 .fontcard .inlink.hl{color:#ffd98a;text-decoration-color:currentColor}.fontcard .inlink.hl:hover{color:#fff}
 .cpage{min-height:100vh;display:flex;flex-direction:column;padding-bottom:96px}
 .cpage-head{position:sticky;top:0}
+@media (max-width:860px){.cpage-head{position:relative}}
 .cpage-brand{opacity:1;transform:none}
 .cpage-here{color:var(--accent);letter-spacing:.06em}
 .cpage-body{flex:1;padding-top:clamp(18px,4vw,40px);padding-bottom:clamp(40px,8vw,80px)}
