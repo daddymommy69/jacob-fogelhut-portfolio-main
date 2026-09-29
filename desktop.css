@@ -342,3 +342,4 @@ body:has(.dk) .pbar.is-full{bottom:38px}
 /* mobile: fit the desktop to the visible screen (Safari toolbar) and give the font story room to reach its last button */
 @supports (height:100dvh){.dk{bottom:auto;height:100dvh}}
 @media (max-width:720px),(pointer:coarse){.dk-fontcard .fc-scroll{padding-bottom:calc(64px + env(safe-area-inset-bottom));overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.dkw{max-height:calc(100% - 6px)}}
+.dkw .fontcard.dk-fontcard{position:relative;width:100%!important;height:100%!important;max-height:none!important}
