@@ -189,6 +189,7 @@
   background: #ffe27a; color: #1b1a16; border: 2px solid #1b1a16; box-shadow: 3px 3px 0 #1b1a16;
   font-family: var(--font-mono, monospace); font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
 }
+.fc-download { width: 50%; min-width: 190px; }
 .fc-download:hover { background: #fff; }
 .fc-download:active { transform: translate(3px,3px); box-shadow: none; }
 

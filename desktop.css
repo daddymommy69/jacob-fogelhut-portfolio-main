@@ -338,3 +338,7 @@ body:has(.dk) .pbar.is-full{bottom:38px}
 /* mobile QA: touch drags + no iOS focus-zoom */
 .dkw-bar,.dkm-bar,.dkw-rz{touch-action:none}
 @media (pointer:coarse){.gb-form input,.gb-form textarea,.dk-url input{font-size:16px}.gb-ink{width:30px;height:30px}.gb-tool{padding:7px 12px;font-size:13px}.dk-lb-x{width:40px;height:40px}.dkw-rz{width:22px;height:22px}}
+
+/* mobile: fit the desktop to the visible screen (Safari toolbar) and give the font story room to reach its last button */
+@supports (height:100dvh){.dk{bottom:auto;height:100dvh}}
+@media (max-width:720px),(pointer:coarse){.dk-fontcard .fc-scroll{padding-bottom:calc(64px + env(safe-area-inset-bottom));overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.dkw{max-height:calc(100% - 6px)}}
