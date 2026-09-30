@@ -369,7 +369,9 @@ window.PORTFOLIO_DATA = {
       { id: "hunters-finds", folder: "web", title: "Hunter's Finds", note: "Food-rating web app I built for friends",
         kind: "web", src: "https://hunters-finds.vercel.app/" },
       { id: "top-dog", folder: "design", title: "Top Dog", note: "Shirt design for friends",
-        kind: "image", src: "", pending: true }
+        desc: "The closing of the final Top Dog in Oakland in [Lakeshore](https://oaklandside.org/2025/10/24/top-dog-lakeshore-closing/). After they announced it to be official, Serious Business Enterprise [DTPx4](https://www.instagram.com/p/DcUYiZKAden/) announced a farewell initiative to the community cornerstone.\n\nRecolored Top Dog's official font with DTP's branded colorway, while also recreating the DTP logo in the style of Top Dog's logo, taking their font and unique placement.\n\nPlay on words on top, and added ending statement due to the fact that Top Dog owners were accused of bigotry. Found out after the event was in motion, but wanted to show no support for their ideas.",
+        kind: "image", src: "media/top-dog-design.jpg",
+        gallery: ["media/top-dog-logo.png", "media/top-dog-1.jpg", "media/top-dog-2.jpg", "media/top-dog-3.jpg"] }
     ],
 
     // Gallery (you upload later → placeholders for now).
