@@ -134,11 +134,11 @@ window.PORTFOLIO_DATA = {
      ---------------------------------------------------------------------- */
   decks: [
     { id: "esenes-hotboys", client: "ESENES × HOTBOYS", title: "Collaboration Deck",
-      note: "Pitch for collaboration [HOTBOYS](https://www.instagram.com/worldfamoushotboys/?hl=en) in Bay Area, CA. Agreed to do their in house merch, uniform, and a food product on their menu. Played off their fun & retro [website](https://worldfamoushotboys.com/).", cover: null },
+      note: "Pitch for collaboration [HOTBOYS](https://www.instagram.com/worldfamoushotboys/?hl=en) in Bay Area, CA. Agreed to do their in house merch, uniform, and a food product on their menu. Played off their fun & retro [website](https://worldfamoushotboys.com/).", cover: "media/deck-esenes-hotboys.png" },
     { id: "liz-campos", client: "Liz Campos", title: "Brand Consultation",
-      note: "Pitch deck for helping develop marketing systems for [Liz Campos](https://lizcamposmx.com/en-us) based in Mexico City. ", cover: null },
+      note: "Pitch deck for helping develop marketing systems for [Liz Campos](https://lizcamposmx.com/en-us) based in Mexico City. ", cover: "media/deck-liz-campos.png" },
     { id: "plus-one", client: "PLUS ONE", title: "Show Pitch Deck",
-      note: "Pitch deck to sell a show concept to creatives", cover: null }
+      note: "Pitch deck to sell a show concept to creatives", cover: "media/deck-plus-one.png" }
   ],
 
   /* ----------------------------------------------------------------------
@@ -368,6 +368,8 @@ window.PORTFOLIO_DATA = {
     projects: [
       { id: "hunters-finds", folder: "web", title: "Hunter's Finds", note: "Food-rating web app I built for friends",
         kind: "web", src: "https://hunters-finds.vercel.app/" },
+      { id: "music-club", folder: "web", title: "music club", note: "A shared playlist, sent to your inbox",
+        kind: "web", src: "https://www.musicclub.fyi/releases", icon: "media/icon-musicclub.png" },
       { id: "top-dog", folder: "design", title: "Top Dog", note: "Shirt design for friends",
         desc: "The closing of the final Top Dog in Oakland in [Lakeshore](https://oaklandside.org/2025/10/24/top-dog-lakeshore-closing/). After they announced it to be official, Serious Business Enterprise [DTPx4](https://www.instagram.com/p/DcUYiZKAden/) announced a farewell initiative to the community cornerstone.\n\nRecolored Top Dog's official font with DTP's branded colorway, while also recreating the DTP logo in the style of Top Dog's logo, taking their font and unique placement.\n\nPlay on words on top, and added ending statement due to the fact that Top Dog owners were accused of bigotry. Found out after the event was in motion, but wanted to show no support for their ideas.",
         kind: "image", src: "media/top-dog-design.jpg",
