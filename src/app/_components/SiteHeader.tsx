@@ -8,8 +8,12 @@ import { usePathname } from "next/navigation";
 // needs to match real routes.
 const NAV_ITEMS = [
   { href: "/releases", label: "Releases" },
-  { href: "/submit", label: "Submit a song" },
-  { href: "/signup", label: "Sign up" },
+  { href: "/browse", label: "Browse" },
+  { href: "/account", label: "Account" },
+  // 2026-10-13 — founder's own ask (see claude/next-build.md's "site
+  // clarity" round): wanted in the main nav, not tucked into a footer
+  // or the Account page, so it's easy to stumble into.
+  { href: "/about", label: "About" },
 ];
 
 export default function SiteHeader() {
@@ -18,7 +22,13 @@ export default function SiteHeader() {
   return (
     <header style={{ padding: "28px 0 0" }}>
       <div className="col" style={{ padding: 0 }}>
-        <div className="wordmark">project music club</div>
+        {/* Clickable (2026-10-07 — see claude/next-build.md): the
+            founder's own "it should link back to releases from
+            everywhere" ask. Always /releases, not "/", since "/" is
+            just a redirect to it anyway. */}
+        <Link href="/releases" className="wordmark">
+          project music club
+        </Link>
         <p className="mut" style={{ fontSize: 11.5, marginTop: 4 }}>
           A shared playlist, sent to you.
         </p>
@@ -37,7 +47,9 @@ export default function SiteHeader() {
               <Link
                 key={item.href}
                 href={item.href}
+                className="nav-link"
                 style={{
+                  position: "relative",
                   fontSize: 11,
                   padding: "6px 10px",
                   borderRadius: 4,
