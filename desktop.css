@@ -385,3 +385,8 @@ body:has(.dk) .pbar.is-full{bottom:38px}
 .dk-work.is-live .dk-cyc-stage,.dk-work.is-live .dk-work-text{transition:none}
 .dk-work.is-grown .dk-work-text{-webkit-mask-image:linear-gradient(180deg,transparent,#000 calc(34px * var(--g)),#000 calc(100% - 40px),transparent);mask-image:linear-gradient(180deg,transparent,#000 calc(34px * var(--g)),#000 calc(100% - 40px),transparent)}
 .dk-cyc-it.is-art{background:none;box-shadow:none;overflow:visible;aspect-ratio:1436/1146;width:min(58cqw,94cqh)}.dk-cyc-it.is-art .cropwrap,.dk-cyc-it.is-art img{object-fit:contain;padding:0}
+
+/* ---- Photos viewer window: photo fills the window, nav sits in the bottom strip ---- */
+.dkw[data-app="photoview"] .dkw-body{position:relative;background:#14161a}
+.dk-lb.dk-lb-win{padding:8px 8px 52px;background:#14161a}
+.dk-lb-win+.dk-lb-nav{bottom:8px}
