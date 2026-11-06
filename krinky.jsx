@@ -15,8 +15,9 @@
      speech would compute to opacity 0 for its whole life.
 
    Bits: wanders, walks to what he's talking about, gets stuck on window
-   edges, falls asleep, gets squashed by an opening window, chases a wiggling
-   cursor, gets shoved by a dragged window, ducks behind windows, trips,
+   edges, falls asleep, gets squashed by an opening window, follows the
+   cursor now and then (stopping beside it, never over windows or the radio),
+   gets shoved by a dragged window, ducks behind windows, trips,
    sunbathes on the taskbar, spins on the music.
    ========================================================================= */
 (function () {
@@ -111,7 +112,8 @@
         mm.t++;
         const now = mm.t, P = playerRef.current;
         const prev = rects.current;
-        rects.current = [...h.querySelectorAll(".dkw")]
+        /* the radio counts as a window: he walks around it and ducks behind it */
+        rects.current = [...h.querySelectorAll(".dkw, .dk-mini")]
           .filter((e) => e.style.display !== "none")
           .map((e) => ({ l: e.offsetLeft, t: e.offsetTop, r: e.offsetLeft + e.offsetWidth, b: e.offsetTop + e.offsetHeight }));
 
@@ -204,7 +206,15 @@
       /* ---- what makes him talk ---- */
       const goTo = (el) => {
         const h = host(); if (!h || mm.pinned || mm.drag) return;
-        mm.target = {
+        if (el.classList && el.classList.contains("dk-mini")) {
+          /* the radio: stand beside it, never on it */
+          const left = el.offsetLeft - SIZE - 10, right = el.offsetLeft + el.offsetWidth + 10;
+          const useLeft = left >= 0 && (mm.x + SIZE / 2 < el.offsetLeft + el.offsetWidth / 2 || right > h.clientWidth - SIZE);
+          mm.target = {
+            x: Math.max(0, Math.min(h.clientWidth - SIZE, useLeft ? left : right)),
+            y: Math.max(0, Math.min(h.clientHeight - SIZE, el.offsetTop + el.offsetHeight - SIZE))
+          };
+        } else mm.target = {
           x: Math.max(0, Math.min(h.clientWidth - SIZE, el.offsetLeft + el.offsetWidth / 2 - SIZE / 2 + 40)),
           y: Math.max(0, Math.min(h.clientHeight - SIZE, el.offsetTop + el.offsetHeight / 2 - SIZE / 2 + 30))
         };
@@ -220,7 +230,7 @@
         /* hover only draws his eye; the blurb waits for a click */
         if (key === mm.lastKey && Date.now() - mm.lookAt < 2500) return;
         mm.lastKey = key; mm.lookAt = Date.now();
-        goTo(tag ? (tag.closest(".dkw") || tag) : ic);
+        goTo(tag ? (tag.closest(".dkw, .dk-mini") || tag) : ic);
       };
       const onTap = (e) => {
         if (!e.target.closest) return;
@@ -230,17 +240,22 @@
         const key = tag ? tag.dataset.krinky : (ic.dataset.app === "font" ? "font" : "app:" + ic.dataset.app);
         mm.saidKey = key; mm.saidAt = Date.now();
         sayFor(key);
-        goTo(tag ? (tag.closest(".dkw") || tag) : ic);
+        goTo(tag ? (tag.closest(".dkw, .dk-mini") || tag) : ic);
       };
       const onMove = (e) => {
         const h = host(); if (!h) return;
         mm.idle = 0;
         if (mm.state === "sleep") { mm.state = "idle"; mm.target = null; }
+        /* no chasing while the mouse is over the radio, a window, the taskbar or the menu */
+        if (e.target && e.target.closest && e.target.closest(".dkw, .dk-mini, .dk-bar, .dk-menu")) return;
         const r = h.getBoundingClientRect();
         const px = e.clientX - r.left, py = e.clientY - r.top;
         const near = Math.hypot(px - (mm.x + SIZE / 2), py - (mm.y + SIZE / 2));
-        if (near < 190 && !mm.pinned && !mm.drag && mm.state !== "stuck" && Math.random() < 0.08) {
-          mm.target = { x: px - SIZE / 2, y: py - SIZE / 2 }; mm.brisk = true; mm.state = "walk";
+        if (near < 190 && !mm.pinned && !mm.drag && mm.state !== "stuck" && Math.random() < 0.04) {
+          /* stop beside the cursor (on the side he came from), never under it */
+          const side = mm.x + SIZE / 2 < px ? -1 : 1;
+          mm.target = { x: Math.max(0, side < 0 ? px - SIZE - 18 : px + 18), y: Math.max(0, py - SIZE / 2) };
+          mm.brisk = true; mm.state = "walk";
         }
       };
       const onKrinky = (e) => {

@@ -181,7 +181,7 @@
       const up = () => { el.classList.remove("grab"); window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); };
       window.addEventListener("pointermove", move); window.addEventListener("pointerup", up);
     };
-    const pick = (i) => { p.openMixes(); p.toMix(i); setList(false); };
+    const pick = (i) => { if (p.tune) p.tune(i); else p.goMix(i, true); setList(false); };
     const cycle = (e) => {
       if (e.target.closest(".dkm-ctl,.dkm-list,.dkm-gear")) return;
       const next = KINDS[(KINDS.indexOf(kind) + 1) % KINDS.length];
@@ -201,7 +201,7 @@
           <span className="dkm-grip" /><b>radio</b>
           <span className="dkm-btns">
             {editable && <button onClick={() => setGear((v) => !v)} title="Visualizer grain">⚙</button>}
-            <button onClick={() => setList((v) => !v)} title="Mixes">☰</button>
+            <button onClick={() => setList((v) => !v)} title="Stations">☰</button>
             <button onClick={() => setShade((s) => !s)} title={shade ? "Unshade" : "Shade"}>{shade ? "▾" : "▴"}</button>
             <button className="x" onClick={onClose} title="Close">✕</button>
           </span>
@@ -221,16 +221,16 @@
             <div className="dkm-ctl">
               <div className="dkm-lcd">
                 <span className="dkm-track"><span className="dkm-scroll"><em>{title}</em><em>{title}</em></span></span>
-                <small>{fmt(p.time)} / {fmt(p.dur)}</small>
+                <small>{p.isMix && window.LiveBadge ? <window.LiveBadge p={p} small /> : null}{p.isMix && p.live ? "on air" : fmt(p.time) + " / " + fmt(p.dur)}</small>
               </div>
-              <input className="dkm-seek" type="range" min={0} max={Math.max(1, p.dur || 1)} step={0.1}
+              {!(p.isMix && p.live) && <input className="dkm-seek" type="range" min={0} max={Math.max(1, p.dur || 1)} step={0.1}
                 value={Math.min(p.time || 0, p.dur || 1)} disabled={!p.isMix}
                 style={{ "--pct": (p.dur ? (p.time / p.dur) * 100 : 0) + "%" }}
-                onChange={(e) => p.seek(+e.target.value)} aria-label="Seek" />
+                onChange={(e) => p.seek(+e.target.value)} aria-label="Seek" />}
               <div className="dkm-row">
-                <button className="dkm-t" onClick={p.prev} title="Previous">◂◂</button>
+                <button className="dkm-t" onClick={p.prev} title="Restart station (twice: previous station)">◂◂</button>
                 <button className="dkm-t" onClick={() => (p.on ? p.togglePlay() : p.openMixes())} title={p.playing ? "Pause" : "Play"}>{p.playing ? "❚❚" : "▸"}</button>
-                <button className="dkm-t" onClick={p.next} title="Next">▸▸</button>
+                <button className="dkm-t" onClick={p.next} title="Next station">▸▸</button>
                 <input className="dkm-vol" type="range" min={0} max={1} step={0.02} value={p.volume}
                   onChange={(e) => p.changeVolume(+e.target.value)} aria-label="Volume" />
               </div>
@@ -329,7 +329,7 @@
     const editable = !!writer();
     /* The main site's Tweaks panel unmounts on this route, so the playground
        carries its own — same storage key, so the two stay in sync. */
-    const [tw, setTweak] = window.useTweaks({ krinkyKind: "disc" }, "jf-tweaks-main");
+    const [tw, setTweak] = window.useTweaks({ krinkyKind: "disc" }, "jf-tweaks-main-v2");
     /* Krinky can be sent away from the Start menu; the choice sticks. */
     const [krOff, setKrOff] = useState(() => {
       try { return localStorage.getItem("jf-krinky-off") === "1"; } catch (e) { return false; }
@@ -413,7 +413,24 @@
         ? w.map((x) => x.key === id ? { ...x, z, minimized: false } : x)
         : [...w, { key: id, app, z, minimized: false }]);
     }, []);
-    const close = (key) => setWins((w) => w.filter((x) => x.key !== key));
+    const close = (key) => { if (key === "photoview") setPv(null); setWins((w) => w.filter((x) => x.key !== key)); };
+    /* Photos app: one reusable viewer window; a new pick replaces its photo set */
+    const [pv, setPv] = useState(null);
+    useEffect(() => {
+      const on = (e) => {
+        const d = e.detail || {};
+        setPv((p) => ({ items: d.items || [], start: d.start || 0, i: d.start || 0, album: d.album || "Photos", nonce: (p ? p.nonce : 0) + 1 }));
+        const z = nextZ();
+        setWins((w) => w.some((x) => x.key === "photoview")
+          ? w.map((x) => x.key === "photoview" ? { ...x, z, minimized: false } : x)
+          : [...w, { key: "photoview", app: APPS.photoViewApp, z, minimized: false }]);
+      };
+      window.addEventListener("jf-photo-view", on);
+      return () => window.removeEventListener("jf-photo-view", on);
+    }, []);
+    const pvIndex = useCallback((i) => setPv((p) => p && p.i !== i ? { ...p, i } : p), []);
+    const pvClose = useCallback(() => close("photoview"), []);
+    const appOf = (w) => w.key === "photoview" && pv ? { ...w.app, title: pv.album + " · " + (pv.i + 1) + " / " + pv.items.length } : w.app;
     const min = (key) => setWins((w) => w.map((x) => x.key === key ? { ...x, minimized: true } : x));
     const exit = () => { location.hash = ""; };
     /* deep link from the main-site mini desktop: open that app once booted */
@@ -489,8 +506,8 @@
               </button>);
           })}
           {wins.map((w) => (
-            <Win key={w.key} id={w.key} app={w.app} z={w.z} minimized={w.minimized} focus={focus} close={close} min={min}>
-              {w.app.body({ open })}
+            <Win key={w.key} id={w.key} app={appOf(w)} z={w.z} minimized={w.minimized} focus={focus} close={close} min={min}>
+              {w.key === "photoview" ? (pv && <APPS.PhotoViewer key={pv.nonce} items={pv.items} start={pv.start} onIndex={pvIndex} onClose={pvClose} />) : w.app.body({ open })}
             </Win>))}
           <MiniPlayer shown={mini} onClose={() => setMini(false)} editable={editable} />
           <window.Krinky kind={tw.krinkyKind || "disc"} off={krOff} player={player} />
@@ -504,7 +521,7 @@
           <div className="dk-tasks">
             {wins.map((w) => { const Icon = w.app.Icon; return (
               <button key={w.key} className={`dk-task ${!w.minimized ? "on" : ""}`} onClick={() => (w.minimized ? focus(w.key) : min(w.key))}>
-                <Icon s={15} /><span>{w.app.title}</span>
+                <Icon s={15} /><span>{appOf(w).title}</span>
               </button>); })}
             <button className="dk-back" onClick={exit}><I.Home s={15} />Back to portfolio</button>
           </div>
