@@ -492,6 +492,30 @@
     pause: pbSvg(<path d="M10 7v10M14 7v10" />),
     close: pbSvg(<path d="M7 7l10 10M17 7 7 17" />)
   };
+  /* The bar's visualizer opens (or raises) the radio window. From the main
+     site it hops to the desktop first; desktop.jsx opens it after boot. */
+  const openRadioWin = (desk) => {
+    if (desk) { window.dispatchEvent(new Event("jf-open-radio")); return; }
+    try { sessionStorage.setItem("jf-desk-open", "radio"); } catch (e) {}
+    location.hash = "playground";
+  };
+  function VizHit({ desk, className, children }) {
+    const [hov, setHov] = useState(false);
+    const go = () => openRadioWin(desk);
+    return (
+      <div className={className} role="button" tabIndex={0} title="Open the radio" onClick={go}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }}
+        onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={{ cursor: "pointer" }}>
+        <div style={{ position: "relative", width: "100%", height: "100%" }}>
+          {children}
+          {hov && <span aria-hidden="true" style={{ position: "absolute", right: 3, top: 3, width: 17, height: 17, borderRadius: 4,
+            background: "rgba(0,0,0,.6)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" /></svg>
+          </span>}
+        </div>
+      </div>);
+  }
+
   function PlayerBar() {
     const p = usePlayer();
     const vizStyle = useTweakVal("vizStyle", "radial");
@@ -512,7 +536,7 @@
     const nextTitle = isMix ? "Next station" : "Next playlist";
     if (desk) return (
       <div className={`pbar pbar-desk ${barStyle === "float" ? "is-float" : "is-full"}`} style={{ "--vc": accent }}>
-        <div className="pbar-cover">{window.DeskViz && <window.DeskViz kind={deskKind} grain={0} scan={0} transparent real={isMix && playing} analyser={p.analyser} />}</div>
+        <VizHit desk className="pbar-cover">{window.DeskViz && <window.DeskViz kind={deskKind} grain={0} scan={0} transparent real={isMix && playing} analyser={p.analyser} />}</VizHit>
         <div className="pbar-info">
           <div className="pbar-title">{title}</div>
           <div className="pbar-meta mono">{sub}<span className="pbar-pl">· {isMix ? "Radio" : "Playlists"}</span></div>
@@ -523,6 +547,7 @@
             <button className="pbd-ic" title={prevTitle} onClick={p.prev}>{PBI.prev}</button>
             <button className="pbd-play" title={playing ? "Pause" : "Play"} onClick={p.togglePlay} disabled={!isMix}>{playing ? PBI.pause : PBI.play}</button>
             <button className="pbd-ic" title={nextTitle} onClick={p.next}>{PBI.next}</button>
+            {isMix && <LiveBadge p={p} />}
           </div>
           <div className="pbar-aux">
             {isMix && <input className="pbar-vol" type="range" min={0} max={1} step={0.02} value={volume} onChange={(e) => p.changeVolume(+e.target.value)} title="Volume" aria-label="Volume" />}
@@ -532,19 +557,20 @@
       </div>);
     return (
       <div className={`pbar ${barStyle === "float" ? "is-float" : "is-full"}`} style={{ "--vc": accent }}>
-        <div className="pbar-cover">{window.DeskViz
+        <VizHit className="pbar-cover">{window.DeskViz
           ? <window.DeskViz kind={deskKind} grain={0} scan={0} transparent real={isMix && playing} analyser={p.analyser} />
-          : <span className="pbar-glyph">{isMix ? "♪" : "♬"}</span>}</div>
+          : <span className="pbar-glyph">{isMix ? "♪" : "♬"}</span>}</VizHit>
         <div className="pbar-info">
           <div className="pbar-title">{title}</div>
           <div className="pbar-meta mono">{sub}<span className="pbar-pl">· {isMix ? "Radio" : "Playlists"}</span></div>
           {seekBar}
         </div>
-        <div className="pbar-viz"><Visualizer style={vizStyle} real={isMix && playing} analyser={p.analyser} color={accent} /></div>
+        <VizHit className="pbar-viz"><Visualizer style={vizStyle} real={isMix && playing} analyser={p.analyser} color={accent} /></VizHit>
         <div className="pbar-ctrls">
           <button className="pb-ic" title={prevTitle} onClick={p.prev}>‹</button>
           <button className="pb-play" title={playing ? "Pause" : "Play"} onClick={p.togglePlay} disabled={!isMix}>{playing ? "❚❚" : "►"}</button>
           <button className="pb-ic" title={nextTitle} onClick={p.next}>›</button>
+          {isMix && <LiveBadge p={p} />}
           {isMix
             ? <input className="pbar-vol" type="range" min={0} max={1} step={0.02} value={volume} onChange={(e) => p.changeVolume(+e.target.value)} title="Volume" />
             : (playlist && playlist.page && <a className="pb-ic" href={playlist.page} target="_blank" rel="noreferrer" title="Open in app">↗</a>)}

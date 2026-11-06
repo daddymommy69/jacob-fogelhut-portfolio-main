@@ -140,7 +140,7 @@
      (per visit, default radial). Grain and scanline dials are owner-only
      and mirror the Tweaks panel through localStorage. */
   const KINDS = window.DESK_VIZ_KINDS || ["radial", "bars", "wave", "grid", "dancer", "stars"];
-  function MiniPlayer({ shown, onClose, editable }) {
+  function MiniPlayer({ shown, onClose, editable, z }) {
     const p = window.usePlayer && window.usePlayer();
     const ref = useRef(null);
     const [shade, setShade] = useState(false);
@@ -196,7 +196,7 @@
       if (key === "vizGrain") setGrain(v); else setScan(v);
     };
     return (
-      <div className={`dk-mini ${shade ? "shade" : ""}`} ref={ref} style={{ "--vc": p.accent }} onPointerDown={(e) => e.stopPropagation()}>
+      <div className={`dk-mini ${shade ? "shade" : ""}`} ref={ref} style={z ? { "--vc": p.accent, zIndex: z } : { "--vc": p.accent }} onPointerDown={(e) => e.stopPropagation()}>
         <div className="dkm-bar" onPointerDown={onDown}>
           <span className="dkm-grip" /><b>radio</b>
           <span className="dkm-btns">
@@ -305,6 +305,7 @@
     const [clock, setClock] = useState(() => new Date());
     const [pos, setPos] = useState(null);
     const [mini, setMini] = useState(false);
+    const [miniZ, setMiniZ] = useState(0);
     /* uniform-lowercase toggle, off by default. Lives on the body so the CSS
        can key off it; the marker face is exempt (it draws caps regardless). */
     const [lower, setLower] = useState(() => {
@@ -428,6 +429,12 @@
       window.addEventListener("jf-photo-view", on);
       return () => window.removeEventListener("jf-photo-view", on);
     }, []);
+    /* the bottom bar's visualizer opens the radio, or brings it to the front */
+    useEffect(() => {
+      const on = () => { setMini(true); setMiniZ(++zRef.current); };
+      window.addEventListener("jf-open-radio", on);
+      return () => window.removeEventListener("jf-open-radio", on);
+    }, []);
     const pvIndex = useCallback((i) => setPv((p) => p && p.i !== i ? { ...p, i } : p), []);
     const pvClose = useCallback(() => close("photoview"), []);
     const appOf = (w) => w.key === "photoview" && pv ? { ...w.app, title: pv.album + " · " + (pv.i + 1) + " / " + pv.items.length } : w.app;
@@ -509,7 +516,7 @@
             <Win key={w.key} id={w.key} app={appOf(w)} z={w.z} minimized={w.minimized} focus={focus} close={close} min={min}>
               {w.key === "photoview" ? (pv && <APPS.PhotoViewer key={pv.nonce} items={pv.items} start={pv.start} onIndex={pvIndex} onClose={pvClose} />) : w.app.body({ open })}
             </Win>))}
-          <MiniPlayer shown={mini} onClose={() => setMini(false)} editable={editable} />
+          <MiniPlayer shown={mini} z={miniZ} onClose={() => setMini(false)} editable={editable} />
           <window.Krinky kind={tw.krinkyKind || "disc"} off={krOff} player={player} />
         </div>
 

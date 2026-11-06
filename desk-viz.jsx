@@ -9,7 +9,9 @@
 
    DANCER (Nov 2026): a club. DJ at the decks in back (dice on the booth in
    Bay Area team colours), the dancer up front in a Kangol and shades, crowd
-   silhouettes along the bottom, stage lights overhead. A kick-drum detector
+   silhouettes along the bottom, stage lights overhead, and 6–8 more dancers
+   spread across the floor at different depths (own colour, height, build,
+   hat — fitted, beanie or bucket — and their own moves). A kick-drum detector
    keeps the dancer on the beat; moves rotate every 16 beats (head nod,
    two-step, hands up, house shuffle, hyphy) and a drop gets a jump + spin.
    Energy is kept on the chill side on purpose.
@@ -124,6 +126,28 @@
     };
   }
 
+  /* hats for the extra dancers: fitted, beanie, bucket */
+  function hatProps(g, type, col) {
+    return (hx, hy, r) => {
+      const pb = g.shadowBlur; g.shadowBlur = 0;
+      g.fillStyle = "#151311"; g.strokeStyle = col; g.lineWidth = Math.max(1, r * 0.28);
+      g.beginPath();
+      if (type === "fitted") {
+        g.ellipse(hx, hy - r * 0.35, r * 1.05, r * 0.85, 0, Math.PI, TAU); g.closePath(); g.fill(); g.stroke();
+        g.beginPath(); g.ellipse(hx + r * 0.55, hy - r * 0.32, r * 1.0, r * 0.22, 0, 0, TAU); g.fill(); g.stroke();
+      } else if (type === "beanie") {
+        g.ellipse(hx, hy - r * 0.4, r * 1.02, r * 1.05, 0, Math.PI, TAU); g.closePath(); g.fill(); g.stroke();
+        g.beginPath(); g.rect(hx - r * 1.08, hy - r * 0.55, r * 2.16, r * 0.42); g.fill(); g.stroke();
+        g.beginPath(); g.arc(hx, hy - r * 1.52, r * 0.22, 0, TAU); g.fill(); g.stroke();
+      } else {
+        g.ellipse(hx, hy - r * 0.55, r * 0.95, r * 0.7, 0, Math.PI, TAU); g.closePath(); g.fill(); g.stroke();
+        g.beginPath(); g.moveTo(hx - r * 1.0, hy - r * 0.6); g.lineTo(hx + r * 1.0, hy - r * 0.6);
+        g.lineTo(hx + r * 1.55, hy - r * 0.12); g.lineTo(hx - r * 1.55, hy - r * 0.12); g.closePath(); g.fill(); g.stroke();
+      }
+      g.shadowBlur = pb;
+    };
+  }
+
   function drawDie(g, x, y, sz, rot, body, pip, face) {
     g.save(); g.translate(x, y); g.rotate(rot);
     g.fillStyle = body; g.strokeStyle = "rgba(255,255,255,.28)"; g.lineWidth = 1;
@@ -155,6 +179,21 @@
       for (let i = 0; i < 90; i++) stars.push({ a: Math.random() * 6.283, d: Math.random(), s: 0.4 + Math.random() });
       const crowd = [];
       for (let i = 0; i < 40; i++) crowd.push({ o: Math.random(), h: 0.85 + Math.random() * 0.35, w: 0.9 + Math.random() * 0.3, up: Math.random() < 0.34 });
+      /* the extra dancers: 6–8 spread across the floor at different depths,
+         each with their own height, build, colour, hat and moves */
+      const HUES = [330, 190, 45, 280, 15, 160, 210, 100].sort(() => Math.random() - 0.5);
+      const HATS = ["fitted", "beanie", "bucket", null];
+      const SLOTS = [0.07, 0.19, 0.31, 0.69, 0.81, 0.93, 0.41, 0.59];
+      const extras = [];
+      const nEx = 6 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < nEx; i++) {
+        const behindLead = i >= 6;
+        extras.push({ fx: SLOTS[i] + (Math.random() - 0.5) * 0.05, d: behindLead ? Math.random() * 0.25 : Math.random(),
+          h: 0.86 + Math.random() * 0.3, w: 0.75 + Math.random() * 0.65, hue: HUES[i % HUES.length],
+          hat: HATS[Math.floor(Math.random() * HATS.length)], move: Math.floor(Math.random() * MOVE_LIST.length),
+          from: 0, len: 10 + Math.floor(Math.random() * 14), off: Math.random(), pose: Object.assign({}, REST) });
+      }
+      extras.sort((p, q) => p.d - q.d);   /* back rows first */
       let t = 0, raf = 0, freq = null, time = null;
       const sm = {};
       /* beat tracking (per canvas) */
@@ -344,6 +383,24 @@
             drawFigure(bx, W / 2, H * 0.97, s, pose, { jump: jump * 6 * s, scaleX: spin, props: dancerProps(bx, col) });
           } else {
             const s = Math.min(H * 0.0145, W * 0.022);
+            extras.forEach((ex) => {
+              if (bt.n - ex.from >= ex.len) {
+                ex.from = bt.n; ex.len = 10 + Math.floor(Math.random() * 14);
+                let mv; do { mv = Math.floor(Math.random() * MOVE_LIST.length); } while (mv === ex.move);
+                ex.move = mv;
+              }
+              let tg;
+              if (d) tg = MOVES[MOVE_LIST[ex.move]](bt.ph, bt.n + (ex.off > 0.5 ? 1 : 0), a * (0.8 + ex.off * 0.35));
+              else {
+                const sw = Math.sin(t * 0.5 + ex.off * 6);
+                tg = Object.assign({}, REST, { sx: 0.6 * sw, nod: 0.1 * Math.max(0, Math.sin(t * 1.1 + ex.off * 4)) });
+              }
+              Object.keys(REST).forEach((key) => { ex.pose[key] += ((tg[key] == null ? REST[key] : tg[key]) - ex.pose[key]) * k; });
+              const es = s * (0.55 + 0.38 * ex.d) * ex.h;
+              const ecol = "hsl(" + ex.hue + " 85% " + (50 + 20 * lo) + "%)";
+              bx.strokeStyle = ecol; bx.fillStyle = ecol; bx.shadowColor = ecol; bx.lineWidth = Math.max(1.4, es * 0.62 * ex.w);
+              drawFigure(bx, W * ex.fx, H * (0.66 + 0.17 * ex.d), es, ex.pose, { props: ex.hat ? hatProps(bx, ex.hat, ecol) : null });
+            });
             bx.strokeStyle = col; bx.fillStyle = col; bx.shadowColor = col; bx.lineWidth = Math.max(2, s * 0.62);
             drawFigure(bx, W * 0.5, H * 0.87, s, pose, { jump: jump * 7 * s, scaleX: spin, props: dancerProps(bx, col) });
             /* DJ + booth + dice: behind the dancer, crisp (no trails) */
