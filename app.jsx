@@ -195,20 +195,143 @@ function EmbedBlock({ embed, title }) {
   return null;
 }
 
+/* ---- touch screens: no hover, so the project cover video in the row closest
+   to the middle of the screen (and at least 60% visible) plays instead. Every
+   cover video downloads in full as soon as the page opens, top of the list
+   first, and only fades in once it's fully loaded so it loops cleanly. ---- */
+const IS_TOUCH = !!(window.matchMedia && matchMedia("(hover: none), (pointer: coarse)").matches);
+window.ThumbCenter = (function () {
+  const els = new Map();
+  let active = null, raf = 0;
+  function pick() {
+    raf = 0;
+    const vh = window.innerHeight, mid = vh / 2;
+    let best = null, bd = 1e9;
+    els.forEach((o, k) => {
+      const r = o.el.getBoundingClientRect();
+      if (!r.height) return;
+      const vis = (Math.min(r.bottom, vh) - Math.max(r.top, 0)) / r.height;
+      if (vis < 0.6) return;
+      const d = Math.abs((r.top + r.bottom) / 2 - mid);
+      if (d < bd) { bd = d; best = k; }
+    });
+    if (best === active) return;
+    const prev = active; active = best;
+    if (prev && els.get(prev)) els.get(prev).set(false);
+    if (best) els.get(best).set(true);
+  }
+  const req = () => { if (!raf) raf = requestAnimationFrame(pick); };
+  if (IS_TOUCH) {
+    document.addEventListener("scroll", req, { passive: true, capture: true });
+    window.addEventListener("resize", req);
+  }
+  return {
+    add(k, el, set) { els.set(k, { el, set }); req(); setTimeout(req, 400); },
+    remove(k) { if (active === k) active = null; els.delete(k); req(); }
+  };
+})();
+window.ThumbLoad = (function () {
+  const cache = new Map(), q = [], blocked = new Set();
+  let running = 0;
+  const origin = (u) => { try { return new URL(u, location.href).origin; } catch (e) { return ""; } };
+  function pump() {
+    q.sort((a, b) => a.top() - b.top());
+    while (running < 2 && q.length) {
+      const j = q.shift();
+      if (blocked.has(origin(j.url))) { j.res(null); continue; }
+      running++;
+      fetch(j.url).then((r) => { if (!r.ok) throw 0; return r.blob(); }).
+      then((b) => URL.createObjectURL(b)).catch(() => { blocked.add(origin(j.url)); return null; }).
+      then((u) => { running--; j.res(u); pump(); });
+    }
+  }
+  return {
+    get(url, top) {
+      if (!cache.has(url)) cache.set(url, new Promise((res) => { q.push({ url, top, res }); setTimeout(pump, 0); }));
+      return cache.get(url);
+    }
+  };
+})();
+/* returns the src to use + whether to show/play the video. `auto` = touch
+   screen AND the Projects list (not Brands, not the cursor thumb). */
+function useCenterPlay(vref, url, auto, vin, vout) {
+  const [active, setActive] = useState(false);
+  const [src, setSrc] = useState(url);
+  const [full, setFull] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  /* in-app browsers that can't play inline: never start the clip */
+  const noInline = window.useNoInline();
+  const clip = vout > vin;
+  useEffect(() => { setSrc(url); setFull(false); }, [url]);
+  useEffect(() => {
+    if (!auto || !url) return;
+    let dead = false;
+    const top = () => { const v = vref.current; return v ? v.getBoundingClientRect().top + window.scrollY : 1e9; };
+    window.ThumbLoad.get(url, top).then((u) => {
+      if (dead) return;
+      if (u) { setSrc(u); setFull(true); return; }
+      // host blocks JS downloads (no CORS) — let the <video> buffer the whole
+      // clip itself, and show it once it's buffered (or after 12s regardless)
+      const v = vref.current; if (!v) { setFull(true); return; }
+      const end = () => { const d = v.duration; return clip ? Math.min(vout, d || vout) : d; };
+      const check = () => {
+        const e = end(); if (!e || !isFinite(e)) return;
+        const b = v.buffered;
+        for (let i = 0; i < b.length; i++) if (b.start(i) <= (vin || 0) + 0.3 && b.end(i) >= e - 0.3) { stop(); setFull(true); return; }
+      };
+      const evs = ["progress", "canplaythrough", "loadeddata"];
+      const stop = () => { clearTimeout(t); evs.forEach((n) => v.removeEventListener(n, check)); };
+      const t = setTimeout(() => { stop(); if (!dead) setFull(true); }, 12000);
+      evs.forEach((n) => v.addEventListener(n, check));
+      v.preload = "auto"; try { v.load(); } catch (e) {}
+      check();
+    });
+    return () => { dead = true; };
+  }, [auto, url]);
+  useEffect(() => {
+    if (!auto) return;
+    const v = vref.current; if (!v) return;
+    const k = {};
+    window.ThumbCenter.add(k, v, setActive);
+    return () => window.ThumbCenter.remove(k);
+  }, [auto]);
+  useEffect(() => {
+    if (!auto) return;
+    const v = vref.current; if (!v) return;
+    if (active && full && !noInline) {
+      if (clip && (v.currentTime < vin || v.currentTime >= vout)) { try { v.currentTime = vin; } catch (e) {} }
+      v.play().catch(() => {});
+    } else {
+      v.pause();
+      try { v.currentTime = vin || 0; } catch (e) {}
+    }
+  }, [auto, active, full, src, noInline]);
+  return {
+    src: auto ? src : url,
+    show: auto && active && full && playing && !noInline,
+    waiting: auto && active && !noInline && !(full && playing),
+    onPlaying: () => setPlaying(true),
+    onPause: () => setPlaying(false)
+  };
+}
+
 /* hover video — muted loop, optionally clipped to a [in,out] window set in
    the ✎ editor. Shows the first (in-point) frame at rest. */
-function HoverVideo({ url, vin, vout, crop }) {
+function HoverVideo({ url, vin, vout, crop, auto = false }) {
   const clip = vout > vin;
   const [waiting, setWaiting] = useState(false);
+  const vref = useRef(null);
+  const cp = useCenterPlay(vref, url, auto, vin, vout);
   const seekIn = (v) => { try { v.currentTime = vin || 0; } catch (e) {} };
-  useEffect(() => { if (url && window.MediaWarm) window.MediaWarm.add(url); }, [url]);
+  useEffect(() => { if (url && window.MediaWarm && !auto) window.MediaWarm.add(url); }, [url]);
   return (
-    <CroppedVideo url={url} crop={crop} className={`thumb-video ${waiting ? "is-waiting" : ""}`}
+    <CroppedVideo url={cp.src} crop={crop} vref={vref} className={`thumb-video ${waiting || cp.waiting ? "is-waiting" : ""}`}
       videoProps={{
-        muted: true, playsInline: true, preload: "metadata", loop: !clip,
+        onPlaying: cp.onPlaying, onPause: cp.onPause,
+        muted: true, ...window.INLINE_ATTRS, preload: "metadata", loop: !clip,
         onLoadedMetadata: (e) => seekIn(e.currentTarget),
         onCanPlay: () => setWaiting(false),
-        onMouseEnter: (e) => { const v = e.currentTarget; v.preload = "auto"; if (v.readyState < 3) setWaiting(true); if (clip && (v.currentTime < vin || v.currentTime >= vout)) seekIn(v); v.play().catch(() => {}); },
+        onMouseEnter: (e) => { if (window.NoInlineVideo.get()) return; const v = e.currentTarget; v.preload = "auto"; if (v.readyState < 3) setWaiting(true); if (clip && (v.currentTime < vin || v.currentTime >= vout)) seekIn(v); v.play().catch(() => {}); },
         onMouseLeave: (e) => { const v = e.currentTarget; setWaiting(false); v.pause(); seekIn(v); },
         onTimeUpdate: (e) => { const v = e.currentTarget; if (clip && v.currentTime >= vout) seekIn(v); }
       }} />);
@@ -217,16 +340,18 @@ function HoverVideo({ url, vin, vout, crop }) {
 /* video card that RESTS on title picture #1 and cross-fades to the muted
    hover-loop video on hover; reverts to the picture on leave. Used when a
    project has BOTH a hover video and at least one title picture. */
-function VideoWithStill({ url, vin, vout, still, alt, crop }) {
+function VideoWithStill({ url, vin, vout, still, alt, crop, auto = false }) {
   const [hover, setHover] = useState(false);
   const [ready, setReady] = useState(false); // video can actually play through
   const vref = useRef(null);
+  const cp = useCenterPlay(vref, url, auto, vin, vout);
   const clip = vout > vin;
   const seekIn = (v) => { try { v.currentTime = vin || 0; } catch (e) {} };
   // quietly buffer the first second or so once the intro is over, so hover
   // rarely has to wait at all
-  useEffect(() => { if (url && window.MediaWarm) window.MediaWarm.add(url); }, [url]);
+  useEffect(() => { if (url && window.MediaWarm && !auto) window.MediaWarm.add(url); }, [url]);
   const enter = () => {
+    if (auto || window.NoInlineVideo.get()) return;
     setHover(true);
     const v = vref.current; if (!v) return;
     v.preload = "auto";
@@ -235,21 +360,24 @@ function VideoWithStill({ url, vin, vout, still, alt, crop }) {
     v.play().catch(() => {});
   };
   const leave = () => {
+    if (auto) return;
     setHover(false);
     const v = vref.current; if (!v) return;
     v.pause(); seekIn(v);
   };
   // hold the photo up until the video can play — no blank frame on slow wifi
-  const showVid = hover && ready;
+  const showVid = auto ? cp.show : hover && ready;
+  const waitVid = auto ? cp.waiting : hover && !ready;
   return (
     <div className="vws" onMouseEnter={enter} onMouseLeave={leave}>
-      <div className={`vws-layer vws-still ${hover && !ready ? "is-waiting" : ""}`} style={{ opacity: showVid ? 0 : 1 }}>
+      <div className={`vws-layer vws-still ${waitVid ? "is-waiting" : ""}`} style={{ opacity: showVid ? 0 : 1 }}>
         <CroppedImg value={still} alt={alt} />
       </div>
       <div className="vws-layer vws-video-wrap" style={{ opacity: showVid ? 1 : 0 }}>
-        <CroppedVideo url={url} crop={crop} className="thumb-video" vref={vref}
+        <CroppedVideo url={cp.src} crop={crop} className="thumb-video" vref={vref}
           videoProps={{
-            muted: true, playsInline: true, preload: "metadata", loop: !clip,
+            onPlaying: cp.onPlaying, onPause: cp.onPause,
+            muted: true, ...window.INLINE_ATTRS, preload: "metadata", loop: !clip,
             onLoadedMetadata: (e) => seekIn(e.currentTarget),
             onCanPlay: () => setReady(true),
             onTimeUpdate: (e) => { const v = e.currentTarget; if (clip && v.currentTime >= vout) seekIn(v); }
@@ -260,7 +388,8 @@ function VideoWithStill({ url, vin, vout, still, alt, crop }) {
 
 /* a static thumbnail for the main list (title pictures cross-fade on hover;
    a project video, if set, loops muted on hover instead) */
-function Thumb({ item, revealName }) {
+function Thumb({ item, revealName, autoCenter = false }) {
+  const auto = autoCenter && IS_TOUCH;
   const slots = React.useContext(SlotsCtx);
   const titles = window.titleStills(slots, item.id);
   const m = item.media;
@@ -280,15 +409,15 @@ function Thumb({ item, revealName }) {
     <div className="thumb" data-thumb-id={item.id}>
       {hoverVid ?
       (titles.length ?
-      <VideoWithStill url={hoverVid} vin={vin} vout={vout} still={titles[0]} alt={item.title} crop={vcrop} /> :
-      <HoverVideo url={hoverVid} vin={vin} vout={vout} crop={vcrop} />) :
+      <VideoWithStill url={hoverVid} vin={vin} vout={vout} still={titles[0]} alt={item.title} crop={vcrop} auto={auto} /> :
+      <HoverVideo url={hoverVid} vin={vin} vout={vout} crop={vcrop} auto={auto} />) :
       titles.length ?
       <CyclingStill values={titles} alt={item.title} /> :
       still ?
       <CroppedImg value={still} alt={item.title} /> :
       showVideo ?
-      <video className="zoom" src={m.src} poster={m.poster} muted loop playsInline preload="metadata"
-      onMouseEnter={(e) => e.currentTarget.play()} onMouseLeave={(e) => e.currentTarget.pause()} /> :
+      <video className="zoom" src={m.src} poster={m.poster} muted loop playsInline webkit-playsinline="true" preload="metadata"
+      onMouseEnter={(e) => { if (!window.NoInlineVideo.get()) e.currentTarget.play(); }} onMouseLeave={(e) => e.currentTarget.pause()} /> :
       <div className="block"><MediaBlock item={item} /></div>}
       <div className="reveal" style={{ fontSize: "20px" }}><span className="b-name" style={{ fontFamily: "JacobMarker", fontSize: "26px" }}>{revealName}</span></div>
     </div>);
@@ -356,7 +485,7 @@ function Hero({ line, video, blur, wash, fadeAt, extend, fadeColor }) {
     style={{ "--hv-wash": (wash == null ? 55 : wash) + "%", "--hv-fade-at": (fadeAt == null ? 55 : fadeAt) + "%", "--hv-extend": (extend || 0) + "px", "--hv-fc": fadeColor === "black" ? "#000" : fadeColor === "none" ? "transparent" : "var(--bg)" }}>
       {video && DATA.heroVideo &&
       <div className="hero-vid" aria-hidden="true">
-          <video src={DATA.heroVideo} autoPlay muted loop playsInline style={{ filter: `blur(${blur || 0}px)` }} />
+          <video src={window.NoInlineVideo.get() ? DATA.heroVideo + "#t=0.5" : DATA.heroVideo} autoPlay={!window.NoInlineVideo.get()} muted loop playsInline webkit-playsinline="true" style={{ filter: `blur(${blur || 0}px)` }} />
         </div>}
       <h1 className="hero-h1">Jacob<br />Fogelhut</h1>
       <div className="hero-role" key={role}>{window.linkify ? window.linkify(role) : role}</div>
@@ -421,7 +550,7 @@ function ProjectItem({ item, openMode, feel, isOpen, viewItem, onToggle, onStep,
         {window.MEDIT_EDITABLE &&
         <button className="edit-media-btn" title="Edit media (only you see this)"
         onClick={(e) => {e.stopPropagation();onEditMedia(item);}}>✎ media</button>}
-        <Thumb item={item} revealName={item.client} />
+        <Thumb item={item} revealName={item.client} autoCenter />
         <div>
           <div className="item-name serif" style={{ fontFamily: "JacobMarker", fontSize: "34px" }}>{r.title}</div>
           <div className="item-sub">
@@ -827,6 +956,32 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, headVi
     if (history.state && history.state.fs) { window.__ppFsPopPending = true; try { history.back(); } catch (e) { window.__ppFsPopPending = false; } }
   };
   useEffect(() => { window.__ppFsOpen = !!fs; }, [fs]);
+  // phone: swipe the main player sideways to step through this project's media
+  const swRef = useRef(null);
+  // laptop: two-finger sideways swipe on the trackpad does the same
+  const actRef = useRef(null); actRef.current = { n: combined.length };
+  useEffect(() => {
+    const el = mainRef.current; if (!el) return;
+    let acc = 0, lock = 0, idle = 0;
+    const wh = (e) => {
+      const n = actRef.current.n;
+      if (n < 2 || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      e.preventDefault();
+      clearTimeout(idle); idle = setTimeout(() => { acc = 0; }, 180);
+      if (Date.now() < lock) return;
+      acc += e.deltaX;
+      if (Math.abs(acc) > 50) { const d = acc > 0 ? 1 : -1; setActiveIdx((k) => (Math.min(k, n - 1) + d + n) % n); acc = 0; lock = Date.now() + 420; }
+    };
+    el.addEventListener("wheel", wh, { passive: false });
+    return () => { el.removeEventListener("wheel", wh); clearTimeout(idle); };
+  }, [item.id, combined.length > 0]);
+  const swStart = (e) => { const t = e.touches[0]; swRef.current = { x: t.clientX, y: t.clientY }; };
+  const swEnd = (e) => {
+    const s = swRef.current; swRef.current = null; const n = combined.length;
+    if (!s || n < 2) return;
+    const t = e.changedTouches[0], dx = t.clientX - s.x, dy = t.clientY - s.y;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.4) setActiveIdx((k) => (Math.min(k, n - 1) + (dx < 0 ? 1 : -1) + n) % n);
+  };
   useEffect(() => { window.__ppFsClose = () => { window.__ppFsOpen = false; setFs(null); }; return () => { window.__ppFsClose = null; window.__ppFsOpen = false; }; }, []);
   // Instagram/Spotify/YouTube embeds stay PERSISTENTLY mounted for the life of
   // the page and are shown/hidden via CSS rather than conditionally rendered,
@@ -863,7 +1018,7 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, headVi
         <article className="pp-card" onClick={(e) => e.stopPropagation()}>
           {headVidSrc &&
           <div className="pp-headvid" aria-hidden="true">
-              <video src={headVidSrc} autoPlay muted loop playsInline
+              <video src={headVidSrc} autoPlay={!window.NoInlineVideo.get()} muted loop playsInline webkit-playsinline="true"
             onLoadedMetadata={(e) => {if (headVidCv && headVidCv.in) e.currentTarget.currentTime = headVidCv.in;}} />
             </div>}
           <div className="pp-eyebrow mono">{item.client}</div>
@@ -877,7 +1032,7 @@ function ProjectPage({ item, fromRect, anim, blur, dim, text, blendMedia, headVi
           {item.blurb && <p className="pp-blurb">{item.blurb}</p>}
 
           {combined.length > 0 &&
-          <div className="pp-mainplayer-wrap" ref={mainRef}>
+          <div className="pp-mainplayer-wrap" ref={mainRef} onTouchStart={swStart} onTouchEnd={swEnd}>
               {embedItems.map((it) =>
               <div key={it.idx} className="pp-mainplayer pp-mainplayer-embed" style={{ display: activeIdx === it.idx ? "block" : "none" }}>
                   <EmbedBlock embed={{ kind: it.type, src: it.src }} title={item.title} />
@@ -1286,8 +1441,15 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "rowHover": "wash"
 } /*EDITMODE-END*/;
 
+/* v1 stored a full snapshot on any theme tap, freezing old layouts on returning
+   phones. Carry over only the theme choice. */
+try {
+  const old = JSON.parse(localStorage.getItem("jf-tweaks-main") || "null");
+  if (old && !localStorage.getItem("jf-tweaks-main-v2") && old.theme) localStorage.setItem("jf-tweaks-main-v2", JSON.stringify({ theme: old.theme }));
+  localStorage.removeItem("jf-tweaks-main");
+} catch (e) {}
 function App() {
-  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS, "jf-tweaks-main");
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS, "jf-tweaks-main-v2");
   // first-visit loading gate (skipped on return visits and on internal nav)
   const [bootDone, setBootDone] = useState(() =>
     CAME_FROM_INTERNAL || window.__booted === true || window.bootAlreadySeen());

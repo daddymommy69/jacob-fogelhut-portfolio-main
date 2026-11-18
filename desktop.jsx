@@ -17,7 +17,7 @@
 
   const POS_FILE = "desk-icons.state.json";
   const BOOT_KEY = "jf-desk-booted-v1";
-  const ORDER = ["font", "design", "decks", "web", "radio", "listening", "photos", "paint", "guestbook", "letter", "trash"];
+  const ORDER = ["font", "web", "decks", "design", "radio", "listening", "photos", "paint", "guestbook", "letter", "trash"];
   const writer = () => (window.omelette && window.omelette.writeFile) || null;
 
   /* ---------------- boot ---------------- */
