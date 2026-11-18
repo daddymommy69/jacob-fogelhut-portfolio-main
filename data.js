@@ -370,6 +370,8 @@ window.PORTFOLIO_DATA = {
         kind: "web", src: "https://hunters-finds.vercel.app/" },
       { id: "music-club", folder: "web", title: "music club", note: "A shared playlist, sent to your inbox",
         kind: "web", src: "https://www.musicclub.fyi/releases", icon: "media/icon-musicclub.png" },
+      { id: "food-money-matrix", folder: "web", title: "Bay Area Food Money Matrix", note: "Who owns the Bay's restaurants: private equity or independent",
+        kind: "web", src: "https://bay-area-food-money-matrix.random-sites.workers.dev/", icon: "media/icon-foodmatrix.png" },
       { id: "top-dog", folder: "design", title: "Top Dog", note: "Shirt design for friends",
         desc: "The closing of the final Top Dog in Oakland in [Lakeshore](https://oaklandside.org/2025/10/24/top-dog-lakeshore-closing/). After they announced it to be official, Serious Business Enterprise [DTPx4](https://www.instagram.com/p/DcUYiZKAden/) announced a farewell initiative to the community cornerstone.\n\nRecolored Top Dog's official font with DTP's branded colorway, while also recreating the DTP logo in the style of Top Dog's logo, taking their font and unique placement.\n\nPlay on words on top, and added ending statement due to the fact that Top Dog owners were accused of bigotry. Found out after the event was in motion, but wanted to show no support for their ideas.",
         kind: "image", src: "media/top-dog-design.jpg",
